@@ -1,0 +1,16 @@
+version: '3'
+services:
+    history-postgresql:
+        ports:
+            - 5438:5432
+        image: postgres:10.4
+        environment:
+            - POSTGRES_USER=history
+            - POSTGRES_PASSWORD=
+        volumes:
+            - psql_history:/var/lib/postgresql/data
+volumes:
+    psql_history:
+        external: true
+
+# docker volume create psql_history
