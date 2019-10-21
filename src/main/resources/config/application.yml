@@ -195,3 +195,9 @@ jhipster:
 # ===================================================================
 
 # application:
+
+ecos-history:
+    recover:
+        scheduled: true
+        sourceFolder: /home/impi/history_record_csv/
+        errorsFolder: /home/impi/history_record_csv/errors/
