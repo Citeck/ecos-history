@@ -1,0 +1,84 @@
+package ru.citeck.ecos.history.repository;
+
+import org.springframework.data.domain.Pageable;
+import org.springframework.data.jpa.repository.Query;
+import org.springframework.data.repository.CrudRepository;
+import org.springframework.data.repository.query.Param;
+import ru.citeck.ecos.history.domain.HistoryRecordEntity;
+
+import java.util.List;
+
+public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEntity, String> {
+
+    /**
+     * Get all records by document id
+     *
+     * @param documentId Document id
+     * @return List of history records
+     */
+    @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
+        "WHERE record." + HistoryRecordEntity.DOCUMENT_ID + " = :documentId " +
+        "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
+    List<HistoryRecordEntity> getRecordsByDocumentId(@Param("documentId") String documentId);
+
+    /**
+     * Get history record by history event id
+     *
+     * @param historyEventId History event id
+     * @return History record or null
+     */
+    @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
+        "WHERE record." + HistoryRecordEntity.HISTORY_EVENT_ID + " = :historyEventId")
+    HistoryRecordEntity getHistoryRecordByHistoryEventId(@Param("historyEventId") String historyEventId);
+
+    /**
+     * Get history records by username without filtering
+     *
+     * @param username Username
+     * @return List of history records
+     */
+    @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
+        "WHERE record." + HistoryRecordEntity.USERNAME + " = :username " +
+        "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
+    List<HistoryRecordEntity> getAllHistoryRecordsByUsername(
+        @Param("username") String username,
+        Pageable pageable
+    );
+
+    /**
+     * Get history records by username with start date
+     *
+     * @param username  Username
+     * @param startDate Start date
+     * @return List of history records
+     */
+    @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
+        "WHERE record." + HistoryRecordEntity.USERNAME + " = :username " +
+        "AND cast(" + HistoryRecordEntity.CREATION_TIME + " as date) >= cast(:startDate as date) " +
+        "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
+    List<HistoryRecordEntity> getAllHistoryRecordsByUsernameWithStartDate(
+        @Param("username") String username,
+        @Param("startDate") String startDate,
+        Pageable pageable
+    );
+
+    /**
+     * Get history records by username with start and end date
+     *
+     * @param username  Username
+     * @param startDate Start date
+     * @param endDate   End date
+     * @return List of history records
+     */
+    @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
+        "WHERE record." + HistoryRecordEntity.USERNAME + " = :username " +
+        "AND cast(" + HistoryRecordEntity.CREATION_TIME + " as date) " +
+        "BETWEEN cast(:startDate as date) AND cast(:endDate as date) " +
+        "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
+    List<HistoryRecordEntity> getAllHistoryRecordsByUsernameWithStartEndDate(
+        @Param("username") String username,
+        @Param("startDate") String startDate,
+        @Param("endDate") String endDate,
+        Pageable pageable
+    );
+}

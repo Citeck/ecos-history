@@ -1,10 +1,6 @@
 package ru.citeck.ecos.history;
 
-import ru.citeck.ecos.history.config.ApplicationProperties;
-import ru.citeck.ecos.history.config.DefaultProfileUtil;
-
 import io.github.jhipster.config.JHipsterConstants;
-
 import org.apache.commons.lang3.StringUtils;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -15,6 +11,8 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.core.env.Environment;
+import ru.citeck.ecos.history.config.ApplicationProperties;
+import ru.citeck.ecos.history.config.DefaultProfileUtil;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
@@ -42,7 +40,7 @@ public class HistoryApp implements InitializingBean {
      * You can find more information on how profiles work with JHipster on <a href="https://www.jhipster.tech/profiles/">https://www.jhipster.tech/profiles/</a>.
      */
     @Override
-    public void afterPropertiesSet() throws Exception {
+    public void afterPropertiesSet() {
         Collection<String> activeProfiles = Arrays.asList(env.getActiveProfiles());
         if (activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_DEVELOPMENT) && activeProfiles.contains(JHipsterConstants.SPRING_PROFILE_PRODUCTION)) {
             log.error("You have misconfigured your application! It should not run " +
@@ -102,6 +100,6 @@ public class HistoryApp implements InitializingBean {
             configServerStatus = "Not found or not setup for this application";
         }
         log.info("\n----------------------------------------------------------\n\t" +
-                "Config Server: \t{}\n----------------------------------------------------------", configServerStatus);
+            "Config Server: \t{}\n----------------------------------------------------------", configServerStatus);
     }
 }
