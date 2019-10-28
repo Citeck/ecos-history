@@ -201,3 +201,14 @@ ecos-history:
         scheduled: true
         sourceFolder: /home/impi/history_record_csv/
         errorsFolder: /home/impi/history_record_csv/errors/
+    records:
+        rest:
+            secure: false
+        apps:
+            alfresco:
+                rec-base-url: /alfresco/s/citeck/ecos/records/
+                rec-user-base-url: /share/proxy/alfresco/citeck/ecos/records/
+                auth:
+                    username: admin
+                    password: admin
+    try-header-for-username: X-Alfresco-Remote-User

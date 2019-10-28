@@ -13,14 +13,21 @@ import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.core.env.Environment;
 import ru.citeck.ecos.history.config.ApplicationProperties;
 import ru.citeck.ecos.history.config.DefaultProfileUtil;
+import ru.citeck.ecos.records2.spring.RecordsServiceFactoryConfig;
 
 import java.net.InetAddress;
 import java.net.UnknownHostException;
 import java.util.Arrays;
 import java.util.Collection;
 
-@SpringBootApplication
-@EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
+@SpringBootApplication(scanBasePackageClasses = {
+    HistoryApp.class,
+    RecordsServiceFactoryConfig.class,
+})
+@EnableConfigurationProperties({
+    LiquibaseProperties.class,
+    ApplicationProperties.class
+})
 @EnableDiscoveryClient
 public class HistoryApp implements InitializingBean {
 
