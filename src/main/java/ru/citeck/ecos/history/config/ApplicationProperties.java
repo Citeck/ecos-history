@@ -2,6 +2,7 @@ package ru.citeck.ecos.history.config;
 
 import lombok.Data;
 import org.springframework.boot.context.properties.ConfigurationProperties;
+import ru.citeck.ecos.records2.RecordsProperties;
 
 /**
  * Properties specific to History.
@@ -13,7 +14,9 @@ import org.springframework.boot.context.properties.ConfigurationProperties;
 @ConfigurationProperties(prefix = "ecos-history", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+    private RecordsProperties records;
     private Recover recover = new Recover();
+    private String tryHeaderForUsername;
 
     @Data
     public static class Recover {

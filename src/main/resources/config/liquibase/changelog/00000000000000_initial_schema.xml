@@ -20,7 +20,7 @@
                 <constraints primaryKey="true" nullable="false"/>
             </column>
             <column name="principal" type="varchar(50)">
-                <constraints nullable="false" />
+                <constraints nullable="false"/>
             </column>
             <column name="event_date" type="timestamp"/>
             <column name="event_type" type="varchar(255)"/>
@@ -71,4 +71,134 @@
             <column name="local_date" type="date"/>
         </createTable>
     </changeSet>
+
+    <changeSet id="00000000000003" author="lev.bavshin">
+        <createTable tableName="task_records">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true"
+                             primaryKeyName="task_records_pk"
+                             nullable="false"/>
+            </column>
+
+            <column name="task_id" type="varchar(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="workflow_id" type="varchar(255)"/>
+
+            <column name="assignee" type="varchar(255)"/>
+            <column name="assignee_manager" type="varchar(255)"/>
+
+            <column name="start_event_id" type="bigint">
+                <constraints foreignKeyName="task_start_history_event_fk"
+                             references="history_records(id)"/>
+            </column>
+            <column name="start_event_date" type="timestamp"/>
+
+            <column name="assign_event_id" type="bigint">
+                <constraints foreignKeyName="task_assign_history_event_fk"
+                             references="history_records(id)"/>
+            </column>
+            <column name="assign_event_date" type="timestamp"/>
+
+            <column name="complete_event_id" type="bigint">
+                <constraints foreignKeyName="task_complete_history_event_fk"
+                             references="history_records(id)"/>
+            </column>
+            <column name="complete_event_date" type="timestamp"/>
+
+            <column name="due_date" type="timestamp"/>
+
+            <column name="document_id" type="varchar(255)"/>
+            <column name="document_type" type="varchar(255)"/>
+            <column name="document_status_name" type="varchar(255)"/>
+            <column name="document_status_title" type="varchar(512)"/>
+
+            <column name="completion_comment" type="varchar(6000)"/>
+
+            <column name="created_by" type="varchar(255)"/>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(255)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+
+        <createSequence
+            sequenceName="task_records_seq"
+            startValue="1"
+            incrementBy="1"
+            minValue="1"
+            maxValue="9223372036854775807"/>
+
+        <createTable tableName="actor_records">
+            <column name="id" type="bigint">
+                <constraints primaryKey="true"
+                             primaryKeyName="actor_records_pk"
+                             nullable="false"/>
+            </column>
+            <column name="actor_name" type="varchar(512)">
+                <constraints nullable="false"/>
+            </column>
+
+            <column name="created_by" type="varchar(255)"/>
+            <column name="created_date" type="timestamp"/>
+            <column name="last_modified_by" type="varchar(255)"/>
+            <column name="last_modified_date" type="timestamp"/>
+        </createTable>
+
+        <createSequence
+            sequenceName="actor_records_seq"
+            startValue="1"
+            incrementBy="1"
+            minValue="1"
+            maxValue="9223372036854775807"/>
+
+        <createTable tableName="tasks_actors">
+            <column name="task_records_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="task_actors_task_records_fk"
+                             references="task_records(id)"/>
+            </column>
+            <column name="actor_records_id" type="bigint">
+                <constraints nullable="false"
+                             foreignKeyName="task_actors_actor_records_fk"
+                             references="actor_records(id)"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet id="00000000000004" author="lev.bavshin">
+        <createIndex tableName="task_records"
+                     indexName="task_records_task_id_idx"
+                     unique="true">
+            <column name="task_id" type="varchar(255)" descending="false"/>
+        </createIndex>
+
+        <createIndex tableName="task_records"
+                     indexName="task_records_document_id_idx">
+            <column name="document_id" type="varchar(255)" descending="false"/>
+        </createIndex>
+
+        <createIndex tableName="task_records"
+                     indexName="task_records_document_type_idx">
+            <column name="document_type" type="varchar(255)" descending="false"/>
+        </createIndex>
+
+        <createIndex tableName="task_records"
+                     indexName="task_records_document_status_name_idx">
+            <column name="document_status_name" type="varchar(255)" descending="false"/>
+        </createIndex>
+
+        <createIndex tableName="tasks_actors"
+                     indexName="tasks_actors_ids_idx"
+                     unique="true">
+            <column name="task_records_id" type="bigint" descending="false"/>
+            <column name="actor_records_id" type="bigint" descending="false"/>
+        </createIndex>
+
+        <createIndex tableName="actor_records"
+                     indexName="actor_records_actor_name_idx"
+                     unique="true">
+            <column name="actor_name" type="varchar(512)" descending="false"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

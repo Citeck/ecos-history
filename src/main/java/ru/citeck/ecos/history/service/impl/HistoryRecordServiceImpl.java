@@ -8,6 +8,7 @@ import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
+import ru.citeck.ecos.history.service.TaskRecordService;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -18,9 +19,11 @@ import java.util.*;
 public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+
     private ObjectMapper objectMapper = new ObjectMapper();
 
     private HistoryRecordRepository historyRecordRepository;
+    private TaskRecordService taskRecordService;
 
     @Override
     public List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException {
@@ -37,7 +40,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
                 new TypeReference<HashMap<String, String>>() {
                 });
 
-            String eventId = resultMap.get(HistoryRecordService.HISTORY_EVENT_ID);
+            String eventId = resultMap.get(HISTORY_EVENT_ID);
             HistoryRecordEntity recordEntity = historyRecordRepository.getHistoryRecordByHistoryEventId(eventId);
             if (recordEntity == null) {
                 recordEntity = new HistoryRecordEntity();
@@ -138,11 +141,19 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         }
 
         historyRecordRepository.save(result);
+
+        taskRecordService.handleTaskFromHistoryRecord(result, requestParams);
+
         return result;
     }
 
     @Autowired
     public void setHistoryRecordRepository(HistoryRecordRepository historyRecordRepository) {
         this.historyRecordRepository = historyRecordRepository;
+    }
+
+    @Autowired
+    public void setTaskRecordService(TaskRecordService taskRecordService) {
+        this.taskRecordService = taskRecordService;
     }
 }

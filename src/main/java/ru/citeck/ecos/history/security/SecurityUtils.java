@@ -5,6 +5,9 @@ import org.springframework.security.core.GrantedAuthority;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.security.core.userdetails.UserDetails;
+import org.springframework.web.context.request.RequestAttributes;
+import org.springframework.web.context.request.RequestContextHolder;
+import ru.citeck.ecos.history.aop.UsernameModelProviderAdvice;
 
 import java.util.Optional;
 import java.util.stream.Stream;
@@ -71,6 +74,15 @@ public final class SecurityUtils {
         Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
         return authentication != null &&
             getAuthorities(authentication).anyMatch(authority::equals);
+    }
+
+    public static Optional<String> getCurrentUsername() {
+        RequestAttributes requestAttributes = RequestContextHolder.currentRequestAttributes();
+        Object attribute = requestAttributes.getAttribute(
+            UsernameModelProviderAdvice.REQUEST_USERNAME,
+            RequestAttributes.SCOPE_REQUEST);
+
+        return Optional.ofNullable((String) attribute);
     }
 
     private static Stream<String> getAuthorities(Authentication authentication) {
