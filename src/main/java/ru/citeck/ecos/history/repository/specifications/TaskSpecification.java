@@ -5,8 +5,9 @@ import ru.citeck.ecos.history.domain.ActorRecordEntity;
 import ru.citeck.ecos.history.domain.TaskActorRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
 
-import javax.persistence.criteria.*;
-import java.util.Collection;
+import javax.persistence.criteria.Expression;
+import javax.persistence.criteria.Join;
+import javax.persistence.criteria.JoinType;
 import java.util.List;
 
 public class TaskSpecification {
@@ -31,31 +32,6 @@ public class TaskSpecification {
             Join<TaskActorRecordEntity, ActorRecordEntity> actor = taskActors.join("actor", JoinType.INNER);
             Expression<Object> actorName = actor.get("actorName");
             return actorName.in(actorList);
-
-//            return cb.in(in);
-
-
-//            Join<TaskRecordEntity, ActorRecordEntity> actorsJoin = root.join("actors");
-//            Expression<Object> actorName1 = actorsJoin.get("actorName");
-//            Predicate in = actorName1.in(actorList);
-//            return cb.in(in);
-
-//            query.distinct(true);
-//            Subquery<ActorRecordEntity> actorSubQuery = query.subquery(ActorRecordEntity.class);
-//            Root<ActorRecordEntity> actor = actorSubQuery.from(ActorRecordEntity.class);
-//            Expression<Collection<TaskRecordEntity>> actorTasks = actor.get("tasks");
-//            actorSubQuery.select(actor);
-//            Expression<Object> actorName = actor.get("actorName");
-//            Predicate actorIn = actorName.in(actorList);
-//            actorSubQuery.where(cb.in(actorIn), cb.isMember(root, actorTasks));
-//            return cb.exists(actorSubQuery);
-
-//            query.distinct(true);
-//            Root<ActorRecordEntity> actor = query.from(ActorRecordEntity.class);
-//            Expression<Collection<TaskRecordEntity>> actorTasks = actor.get("tasks");
-//            Expression<Object> actorName = actor.get("actorName");
-//            Predicate actorIn = actorName.in(actorList);
-//            return cb.and(cb.in(actorIn), cb.isMember(root, actorTasks));
         };
     }
 

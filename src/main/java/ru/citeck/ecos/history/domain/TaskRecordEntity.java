@@ -89,13 +89,6 @@ public class TaskRecordEntity extends AbstractAuditingEntity {
     @Column(name = "completion_comment")
     private String completionComment;
 
-//    @ManyToMany(fetch = FetchType.LAZY)
-//    @JoinTable(name = "tasks_actors",
-//        joinColumns = @JoinColumn(name = "task_records_id", referencedColumnName = "id"),
-//        inverseJoinColumns = @JoinColumn(name = "actor_records_id", referencedColumnName = "id")
-//    )
-//    private Set<ActorRecordEntity> actors;
-
     @OneToMany(mappedBy = "task")
     private List<TaskActorRecordEntity> actors;
 
