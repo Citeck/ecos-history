@@ -1,0 +1,134 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-1">
+        <createSequence sequenceName="actor_records_seq"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-2">
+        <createSequence sequenceName="history_records_seq"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-3">
+        <createSequence sequenceName="task_records_seq"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-4">
+        <createTable tableName="actor_records">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="TIMESTAMP"/>
+            <column name="actor_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-5">
+        <createTable tableName="history_records">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comments" type="VARCHAR(6000)"/>
+            <column name="creation_time" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_version" type="VARCHAR(255)"/>
+            <column name="event_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expected_perform_time" type="INT"/>
+            <column name="full_task_type" type="VARCHAR(255)"/>
+            <column name="history_event_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="initiator" type="VARCHAR(255)"/>
+            <column name="property_name" type="VARCHAR(255)"/>
+            <column name="task_event_instance_id" type="VARCHAR(255)"/>
+            <column name="task_outcome" type="VARCHAR(6000)"/>
+            <column name="task_role" type="VARCHAR(255)"/>
+            <column name="task_type" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="VARCHAR(255)"/>
+            <column name="workflow_description" type="VARCHAR(6000)"/>
+            <column name="workflow_instance_id" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-6">
+        <createTable tableName="task_records">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="TIMESTAMP"/>
+            <column name="assign_event_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="assignee" type="VARCHAR(255)"/>
+            <column name="assignee_manager" type="VARCHAR(255)"/>
+            <column name="complete_event_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="completion_comment" type="VARCHAR(255)"/>
+            <column name="document_id" type="VARCHAR(255)"/>
+            <column name="document_status_name" type="VARCHAR(255)"/>
+            <column name="document_status_title" type="VARCHAR(255)"/>
+            <column name="document_type" type="VARCHAR(255)"/>
+            <column name="due_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="start_event_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="task_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="workflow_id" type="VARCHAR(255)"/>
+            <column name="assign_event_id" type="BIGINT"/>
+            <column name="complete_event_id" type="BIGINT"/>
+            <column name="start_event_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-7">
+        <createTable tableName="tasks_actors">
+            <column name="actor_records_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_records_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-8">
+        <addPrimaryKey columnNames="id" constraintName="actor_recordsPK" tableName="actor_records"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-9">
+        <addPrimaryKey columnNames="id" constraintName="history_recordsPK" tableName="history_records"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-10">
+        <addPrimaryKey columnNames="id" constraintName="task_recordsPK" tableName="task_records"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-11">
+        <addPrimaryKey columnNames="actor_records_id, task_records_id" constraintName="tasks_actorsPK" tableName="tasks_actors"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-12">
+        <addForeignKeyConstraint baseColumnNames="start_event_id" baseTableName="task_records" constraintName="FK12u31wpuim2nr0enm0s9pgt8r" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="history_records"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-13">
+        <addForeignKeyConstraint baseColumnNames="complete_event_id" baseTableName="task_records" constraintName="FK6j29le79078rbrkugtyr6acxu" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="history_records"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-14">
+        <addForeignKeyConstraint baseColumnNames="assign_event_id" baseTableName="task_records" constraintName="FK9lsux3nrjgp0aprl28mguglww" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="history_records"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-15">
+        <addForeignKeyConstraint baseColumnNames="task_records_id" baseTableName="tasks_actors" constraintName="FKhbvbboo64bgnvl30gvxdcabmu" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="task_records"/>
+    </changeSet>
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-16">
+        <addForeignKeyConstraint baseColumnNames="actor_records_id" baseTableName="tasks_actors" constraintName="FKlqq433x6nyqpiqhnmyjtqi77g" deferrable="false" initiallyDeferred="false" referencedColumnNames="id" referencedTableName="actor_records"/>
+    </changeSet>
+</databaseChangeLog>
