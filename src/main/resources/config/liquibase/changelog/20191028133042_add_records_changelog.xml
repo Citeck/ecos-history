@@ -207,6 +207,7 @@
                                  deferrable="false"
                                  initiallyDeferred="false"
                                  referencedColumnNames="id"
+                                 onDelete="CASCADE"
                                  referencedTableName="history_records"/>
     </changeSet>
 
@@ -223,6 +224,7 @@
                                  deferrable="false"
                                  initiallyDeferred="false"
                                  referencedColumnNames="id"
+                                 onDelete="CASCADE"
                                  referencedTableName="history_records"/>
     </changeSet>
 
@@ -239,6 +241,7 @@
                                  deferrable="false"
                                  initiallyDeferred="false"
                                  referencedColumnNames="id"
+                                 onDelete="CASCADE"
                                  referencedTableName="history_records"/>
     </changeSet>
 
@@ -255,6 +258,7 @@
                                  deferrable="false"
                                  initiallyDeferred="false"
                                  referencedColumnNames="id"
+                                 onDelete="CASCADE"
                                  referencedTableName="task_records"/>
     </changeSet>
 
@@ -271,6 +275,7 @@
                                  deferrable="false"
                                  initiallyDeferred="false"
                                  referencedColumnNames="id"
+                                 onDelete="CASCADE"
                                  referencedTableName="actor_records"/>
     </changeSet>
 
