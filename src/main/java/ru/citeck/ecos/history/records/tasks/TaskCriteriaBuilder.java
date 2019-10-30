@@ -126,7 +126,7 @@ public class TaskCriteriaBuilder {
         SkipPage skipPage = query.getSkipPage();
 
         int maxItems = skipPage.getMaxItems();
-        if (maxItems <= 1) {
+        if (maxItems < 1) {
             maxItems = 10;
         }
 
