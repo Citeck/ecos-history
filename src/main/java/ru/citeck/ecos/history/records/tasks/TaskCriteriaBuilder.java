@@ -62,7 +62,10 @@ public class TaskCriteriaBuilder {
                     searchSpecifications.add(TaskSpecification.isActive(activeNode.asBoolean()));
                     break;
                 case STRING:
-                    searchSpecifications.add(TaskSpecification.isActive(Boolean.parseBoolean(activeNode.asText())));
+                    String rawActive = activeNode.asText();
+                    if (StringUtils.isNotBlank(rawActive)) {
+                        searchSpecifications.add(TaskSpecification.isActive(Boolean.parseBoolean(rawActive)));
+                    }
                     break;
                 default:
                     log.warn("Active not search criteria not parsed: " + activeNode.asText());
@@ -71,24 +74,31 @@ public class TaskCriteriaBuilder {
 
         if (query.has("docType")) {
             JsonNode docTypeNode = query.get("docType");
-            searchSpecifications.add(TaskSpecification.hasDocumentType(docTypeNode.asText()));
+            String documentType = docTypeNode.asText();
+            if (StringUtils.isNotBlank(documentType)) {
+                searchSpecifications.add(TaskSpecification.hasDocumentType(documentType));
+            }
         }
 
         if (query.has("docStatus")) {
             JsonNode docStatusNode = query.get("docStatus");
-            searchSpecifications.add(TaskSpecification.hasDocumentStatus(docStatusNode.asText()));
+            String documentStatus = docStatusNode.asText();
+            if (StringUtils.isNotBlank(documentStatus)) {
+                searchSpecifications.add(TaskSpecification.hasDocumentStatus(documentStatus));
+            }
         }
 
         if (query.has("document")) {
             String documentRef = query.get("document").asText();
-
-            String documentId = documentRef;
-            int alfrescoIdIndex = documentRef.indexOf("workspace://SpacesStore/");
-            if (alfrescoIdIndex >= 0) {
-                int alfrescoIdLength = "workspace://SpacesStore/".length();
-                documentId = documentRef.substring(alfrescoIdIndex + alfrescoIdLength);
+            if (StringUtils.isNotBlank(documentRef)) {
+                String documentId = documentRef;
+                int alfrescoIdIndex = documentRef.indexOf("workspace://SpacesStore/");
+                if (alfrescoIdIndex >= 0) {
+                    int alfrescoIdLength = "workspace://SpacesStore/".length();
+                    documentId = documentRef.substring(alfrescoIdIndex + alfrescoIdLength);
+                }
+                searchSpecifications.add(TaskSpecification.hasDocument(documentId));
             }
-            searchSpecifications.add(TaskSpecification.hasDocument(documentId));
         }
 
         return searchSpecifications;
