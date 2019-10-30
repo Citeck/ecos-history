@@ -265,7 +265,7 @@
     <changeSet author="lev.bavshin (generated)" id="1572269447663-16">
         <preConditions onFail="MARK_RAN">
             <not>
-                <foreignKeyConstraintExists foreignKeyName="FKhbvbboo64bgnvl30gvxdcabmu"
+                <foreignKeyConstraintExists foreignKeyName="FKlqq433x6nyqpiqhnmyjtqi77g"
                                             foreignKeyTableName="tasks_actors"/>
             </not>
         </preConditions>
