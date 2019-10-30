@@ -125,9 +125,16 @@ public class TaskCriteriaBuilder {
     public Pageable buildPageable(RecordsQuery query) {
         SkipPage skipPage = query.getSkipPage();
 
-        int skipCount = skipPage.getSkipCount();
         int maxItems = skipPage.getMaxItems();
+        if (maxItems <= 1) {
+            maxItems = 10;
+        }
+
+        int skipCount = skipPage.getSkipCount();
         int pageNumber = skipCount / maxItems;
+        if (pageNumber < 0) {
+            pageNumber = 0;
+        }
 
         return PageRequest.of(pageNumber, maxItems, Sort.by(parseSortList(query)));
     }
@@ -138,10 +145,10 @@ public class TaskCriteriaBuilder {
         for (SortBy sortBy : sortByList) {
             switch (sortBy.getAttribute()) {
                 case "cm:created":
-                    sortResultList.add(createOrder("created_date", sortBy.isAscending()));
+                    sortResultList.add(createOrder("createdDate", sortBy.isAscending()));
                     break;
                 case "cm:modified":
-                    sortResultList.add(createOrder("last_modified_date", sortBy.isAscending()));
+                    sortResultList.add(createOrder("lastModifiedBy", sortBy.isAscending()));
                     break;
                 default:
                     log.warn("Received not supported sorting attribute: " + sortBy.getAttribute());
