@@ -58,7 +58,7 @@ public class CacheableCurrentActorsProvider {
     }
 
     @Data
-    private static class UserDTO {
+    static class UserDTO {
         private String userName;
         @MetaAtt("authorities.list[]")
         private List<String> authorities;

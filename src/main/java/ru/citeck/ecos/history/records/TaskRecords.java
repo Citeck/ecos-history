@@ -147,7 +147,7 @@ public class TaskRecords extends LocalRecordsDAO implements RecordsQueryWithMeta
                 case ATT_DOC_TYPE:
                     return entity.getDocumentType();
                 case ATT_STARTED:
-                    return entity.getStartEvent();
+                    return entity.getStartEventDate();
                 case ATT_ACTIVE:
                     return entity.getCompleteEventDate() == null;
             }
