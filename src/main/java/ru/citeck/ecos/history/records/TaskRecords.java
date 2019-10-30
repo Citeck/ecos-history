@@ -22,17 +22,17 @@ import ru.citeck.ecos.records2.request.query.RecordsQuery;
 import ru.citeck.ecos.records2.request.query.RecordsQueryResult;
 import ru.citeck.ecos.records2.request.result.RecordsResult;
 import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDAO;
+import ru.citeck.ecos.records2.source.dao.local.RecordsMetaLocalDAO;
 import ru.citeck.ecos.records2.source.dao.local.RecordsQueryWithMetaLocalDAO;
 import ru.citeck.ecos.records2.spring.RemoteRecordsUtils;
 
-import java.util.HashMap;
-import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
+import java.util.*;
 import java.util.stream.Collectors;
 
 @Service
-public class TaskRecords extends LocalRecordsDAO implements RecordsQueryWithMetaLocalDAO<MetaValue> {
+public class TaskRecords extends LocalRecordsDAO implements
+    RecordsQueryWithMetaLocalDAO<MetaValue>,
+    RecordsMetaLocalDAO<MetaValue> {
 
     private static final String ID = "tasks";
     private static final String TASK_RECORD_DATA_KEY = "taskRecordDataKey";
@@ -96,6 +96,17 @@ public class TaskRecords extends LocalRecordsDAO implements RecordsQueryWithMeta
         }
 
         return result;
+    }
+
+    @Override
+    public List<MetaValue> getMetaValues(List<RecordRef> list) {
+        if (CollectionUtils.isEmpty(list)) {
+            return Collections.emptyList();
+        }
+
+        List<String> taskIds = list.stream().map(RecordRef::getId).collect(Collectors.toList());
+        List<TaskRecordEntity> entities = taskRecordService.findTasksByTaskId(taskIds);
+        return entities.stream().map(Task::new).collect(Collectors.toList());
     }
 
     public class Task implements MetaValue {

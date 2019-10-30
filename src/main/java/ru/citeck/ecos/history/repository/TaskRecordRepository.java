@@ -16,6 +16,8 @@ public interface TaskRecordRepository extends
         "WHERE task." + TaskRecordEntity.FIELD_TASK_ID + " = :" + TaskRecordEntity.FIELD_TASK_ID)
     TaskRecordEntity getByTaskId(@Param(TaskRecordEntity.FIELD_TASK_ID) String taskId);
 
+    List<TaskRecordEntity> findAllByTaskId(List<String> taskIds);
+
     List<TaskRecordEntity> getByDocumentId(String documentId);
 
 }

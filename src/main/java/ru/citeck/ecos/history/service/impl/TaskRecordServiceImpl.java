@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history.service.impl;
 
+import org.apache.commons.collections4.IterableUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -15,6 +16,7 @@ import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.RecordsService;
 import ru.citeck.ecos.records2.spring.RemoteRecordsUtils;
 
+import java.util.List;
 import java.util.Map;
 
 @Service("taskRecordService")
@@ -29,6 +31,12 @@ public class TaskRecordServiceImpl implements TaskRecordService {
                                                            Pageable pageable) {
 
         return taskRecordRepository.findAll(specification, pageable);
+    }
+
+    @Override
+    public List<TaskRecordEntity> findTasksByTaskId(List<String> taskIds) {
+
+        return IterableUtils.toList(taskRecordRepository.findAllByTaskId(taskIds));
     }
 
     @Override
