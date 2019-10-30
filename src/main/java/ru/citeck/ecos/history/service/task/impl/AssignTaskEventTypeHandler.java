@@ -60,10 +60,15 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
     }
 
     private Set<String> findActors(HistoryRecordEntity historyRecord) {
-        ActorsInfo actorsInfo = taskRecordService.getTaskInfo(historyRecord.getTaskEventInstanceId(), ActorsInfo.class);
+        ActorsInfo actorsInfo = null;
+        try {
+            actorsInfo = taskRecordService.getTaskInfo(historyRecord.getTaskEventInstanceId(), ActorsInfo.class);
+        } catch (Exception e){
+            log.error("Exception while receiving actors info from alfresco", e);
+        }
 
         Set<String> resultActors = new HashSet<>();
-        if (CollectionUtils.isNotEmpty(actorsInfo.actors)) {
+        if (actorsInfo != null && CollectionUtils.isNotEmpty(actorsInfo.actors)) {
             actorsInfo.actors.forEach(actor -> {
                 if (StringUtils.isNotBlank(actor.authorityName)) {
                     resultActors.add(actor.authorityName);
@@ -107,11 +112,11 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
 
     @Data
     private static class ActorsInfo {
-        private List<AuthortyDto> actors;
+        private List<AuthorityDto> actors;
     }
 
     @Data
-    private static class AuthortyDto {
+    private static class AuthorityDto {
         private String authorityName;
         private String userName;
     }

@@ -148,7 +148,7 @@ public class TaskCriteriaBuilder {
                     sortResultList.add(createOrder("createdDate", sortBy.isAscending()));
                     break;
                 case "cm:modified":
-                    sortResultList.add(createOrder("lastModifiedBy", sortBy.isAscending()));
+                    sortResultList.add(createOrder("lastModifiedDate", sortBy.isAscending()));
                     break;
                 default:
                     log.warn("Received not supported sorting attribute: " + sortBy.getAttribute());
