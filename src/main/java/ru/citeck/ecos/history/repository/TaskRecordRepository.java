@@ -20,4 +20,6 @@ public interface TaskRecordRepository extends
 
     List<TaskRecordEntity> getByDocumentId(String documentId);
 
+    List<TaskRecordEntity> findAllByWorkflowId(String workflowId);
+
 }
