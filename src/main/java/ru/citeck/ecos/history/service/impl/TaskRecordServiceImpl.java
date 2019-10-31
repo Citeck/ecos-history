@@ -35,8 +35,7 @@ public class TaskRecordServiceImpl implements TaskRecordService {
 
     @Override
     public List<TaskRecordEntity> findTasksByTaskId(List<String> taskIds) {
-
-        return IterableUtils.toList(taskRecordRepository.findAllByTaskId(taskIds));
+        return IterableUtils.toList(taskRecordRepository.findAllByTaskIdIn(taskIds));
     }
 
     @Override
