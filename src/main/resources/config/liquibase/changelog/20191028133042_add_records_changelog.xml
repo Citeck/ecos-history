@@ -377,4 +377,15 @@
         </createIndex>
     </changeSet>
 
+    <changeSet author="lev.bavshin" id="1572269447663-25">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="task_records" indexName="history_records_workflow_id_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="task_records" indexName="history_records_workflow_id_idx">
+            <column name="workflow_id" type="VARCHAR(255)"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>
