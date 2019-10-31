@@ -66,7 +66,7 @@ public class StatusChangeEventTypeHandler extends AbstractTaskHistoryEventHandle
     }
 
     @Data
-    private static class DocumentStatus {
+    static class DocumentStatus {
         private String id;
 
         @MetaAtt("icase:caseStatusAssoc.cm:name")

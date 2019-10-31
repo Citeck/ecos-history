@@ -81,7 +81,7 @@ public class CreateTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
     }
 
     @Data
-    private static class DocumentStatus {
+    static class DocumentStatus {
         private String id;
 
         @MetaAtt("_type")
