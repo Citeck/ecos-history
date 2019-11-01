@@ -1,22 +1,19 @@
 package ru.citeck.ecos.history.service.task.impl;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
-import org.apache.commons.lang3.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.ActorRecordEntity;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskActorRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
-import ru.citeck.ecos.history.service.ActorRecordService;
+import ru.citeck.ecos.history.service.ActorService;
+import ru.citeck.ecos.history.service.DeferredActorsLoadingService;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.TaskActorRecordService;
-import ru.citeck.ecos.history.service.TaskRecordService;
 import ru.citeck.ecos.history.service.task.AbstractTaskHistoryEventHandler;
 
-import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -28,9 +25,9 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
 
     private static final String ASSIGN_TASK_TYPE = "task.assign";
 
-    private TaskRecordService taskRecordService;
-    private ActorRecordService actorRecordService;
+    private ActorService actorService;
     private TaskActorRecordService taskActorRecordService;
+    private DeferredActorsLoadingService deferredActorsLoadingService;
 
     @Override
     public String getEventType() {
@@ -53,32 +50,15 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
         taskRecordEntity.setAssignEvent(historyRecord);
         taskRecordEntity.setAssignEventDate(historyRecord.getCreationTime());
 
-        Set<String> actors = findActors(historyRecord);
-        taskRecordEntity.setActors(findActorEntities(taskRecordEntity, actors));
+        try {
+            Set<String> actors = actorService.queryActorsFromRemote(taskRecordEntity.getTaskId());
+            taskRecordEntity.setActors(findActorEntities(taskRecordEntity, actors));
+        } catch (Exception e) {
+            log.error("Error while receiving actors from remote", e);
+            deferredActorsLoadingService.enableDeferredActorLoading(taskRecordEntity);
+        }
 
         taskRecordRepository.save(taskRecordEntity);
-    }
-
-    private Set<String> findActors(HistoryRecordEntity historyRecord) {
-        ActorsInfo actorsInfo = null;
-        try {
-            actorsInfo = taskRecordService.getTaskInfo(historyRecord.getTaskEventInstanceId(), ActorsInfo.class);
-        } catch (Exception e){
-            log.error("Exception while receiving actors info from alfresco", e);
-        }
-
-        Set<String> resultActors = new HashSet<>();
-        if (actorsInfo != null && CollectionUtils.isNotEmpty(actorsInfo.actors)) {
-            actorsInfo.actors.forEach(actor -> {
-                if (StringUtils.isNotBlank(actor.authorityName)) {
-                    resultActors.add(actor.authorityName);
-                } else if (StringUtils.isNotBlank(actor.userName)) {
-                    resultActors.add(actor.userName);
-                }
-            });
-        }
-
-        return resultActors;
     }
 
     private List<TaskActorRecordEntity> findActorEntities(TaskRecordEntity taskRecordEntity, Set<String> actors) {
@@ -87,7 +67,7 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
         }
 
         Set<ActorRecordEntity> actorRecordEntities = actors.stream()
-            .map(actorRecordService::findOrCreateActorByName)
+            .map(actorService::findOrCreateActorByName)
             .collect(Collectors.toSet());
 
         return actorRecordEntities.stream()
@@ -96,13 +76,8 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
     }
 
     @Autowired
-    public void setTaskRecordService(TaskRecordService taskRecordService) {
-        this.taskRecordService = taskRecordService;
-    }
-
-    @Autowired
-    public void setActorRecordService(ActorRecordService actorRecordService) {
-        this.actorRecordService = actorRecordService;
+    public void setActorService(ActorService actorService) {
+        this.actorService = actorService;
     }
 
     @Autowired
@@ -110,14 +85,8 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
         this.taskActorRecordService = taskActorRecordService;
     }
 
-    @Data
-    private static class ActorsInfo {
-        private List<AuthorityDto> actors;
-    }
-
-    @Data
-    private static class AuthorityDto {
-        private String authorityName;
-        private String userName;
+    @Autowired
+    public void setDeferredActorsLoadingService(DeferredActorsLoadingService deferredActorsLoadingService) {
+        this.deferredActorsLoadingService = deferredActorsLoadingService;
     }
 }

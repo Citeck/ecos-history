@@ -388,4 +388,49 @@
         </createIndex>
     </changeSet>
 
+    <changeSet author="lev.bavshin" id="1572269447663-26">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="deferred_actors_loading_seq"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="deferred_actors_loading_seq"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin" id="1572269447663-27">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="deferred_actors_loading"/>
+            </not>
+        </preConditions>
+        <createTable tableName="deferred_actors_loading">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="TIMESTAMP"/>
+            <column name="task_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="lev.bavshin" id="1572269447663-28">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="deferred_actors_loading"
+                             indexName="deferred_actors_loading_task_id_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="deferred_actors_loading"
+                     indexName="deferred_actors_loading_task_id_idx"
+                     unique="true">
+            <column name="task_id" type="VARCHAR(255)"/>
+        </createIndex>
+    </changeSet>
+
 </databaseChangeLog>

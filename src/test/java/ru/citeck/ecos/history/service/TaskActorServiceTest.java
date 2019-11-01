@@ -15,7 +15,7 @@ import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
-public class TaskActorRecordServiceTest {
+public class TaskActorServiceTest {
 
     private final TaskActorRecordEntityId existingId = new TaskActorRecordEntityId(1L, 2L);
     private final TaskActorRecordEntityId notExistingId = new TaskActorRecordEntityId(4L, 5L);

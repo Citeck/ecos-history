@@ -4,15 +4,15 @@ import org.junit.Test;
 import org.mockito.Mockito;
 import ru.citeck.ecos.history.domain.ActorRecordEntity;
 import ru.citeck.ecos.history.repository.ActorRecordRepository;
-import ru.citeck.ecos.history.service.impl.ActorRecordServiceImpl;
+import ru.citeck.ecos.history.service.impl.ActorServiceImpl;
 
 import static org.junit.Assert.assertEquals;
 
-public class ActorRecordServiceTest {
+public class ActorServiceTest {
 
     @Test
     public void findOrCreateActorByExistingName() {
-        ActorRecordServiceImpl actorRecordService = new ActorRecordServiceImpl();
+        ActorServiceImpl actorRecordService = new ActorServiceImpl();
         actorRecordService.setActorRecordRepository(setupRepositoryForSearchByExistingName());
 
         ActorRecordEntity actor = actorRecordService.findOrCreateActorByName("TESK_ACTOR_NAME");
@@ -21,7 +21,7 @@ public class ActorRecordServiceTest {
 
     @Test(expected = IllegalArgumentException.class)
     public void findOrCreateActorByExistingNameWithError() {
-        ActorRecordServiceImpl actorRecordService = new ActorRecordServiceImpl();
+        ActorServiceImpl actorRecordService = new ActorServiceImpl();
         actorRecordService.setActorRecordRepository(setupRepositoryForSearchByExistingName());
 
         actorRecordService.findOrCreateActorByName("NOT_EXISTING_ACTOR_NAME");
