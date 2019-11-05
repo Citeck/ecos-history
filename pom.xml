@@ -4,7 +4,7 @@
 
     <groupId>ru.citeck.ecos.history</groupId>
     <artifactId>history</artifactId>
-    <version>1.0.0</version>
+    <version>1.0.1-SNAPSHOT</version>
     <packaging>war</packaging>
     <name>History</name>
 
