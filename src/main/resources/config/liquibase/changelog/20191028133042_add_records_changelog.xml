@@ -433,4 +433,10 @@
         </createIndex>
     </changeSet>
 
+    <changeSet author="lev.bavshin" id="1572269447663-29">
+        <modifyDataType tableName="task_records"
+                        columnName="completion_comment"
+                        newDataType="VARCHAR(6000)"/>
+    </changeSet>
+
 </databaseChangeLog>
