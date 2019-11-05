@@ -1,0 +1,391 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog"
+                   xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+                   xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog
+                        http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-1">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="actor_records_seq"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="actor_records_seq"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-2">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="history_records_seq"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="history_records_seq"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-3">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <sequenceExists sequenceName="task_records_seq"/>
+            </not>
+        </preConditions>
+        <createSequence sequenceName="task_records_seq"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-4">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="actor_records"/>
+            </not>
+        </preConditions>
+        <createTable tableName="actor_records">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="TIMESTAMP"/>
+            <column name="actor_name" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-5">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="history_records"/>
+            </not>
+        </preConditions>
+        <createTable tableName="history_records">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="comments" type="VARCHAR(6000)"/>
+            <column name="creation_time" type="TIMESTAMP WITHOUT TIME ZONE">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="document_version" type="VARCHAR(255)"/>
+            <column name="event_type" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="expected_perform_time" type="INT"/>
+            <column name="full_task_type" type="VARCHAR(255)"/>
+            <column name="history_event_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="initiator" type="VARCHAR(255)"/>
+            <column name="property_name" type="VARCHAR(255)"/>
+            <column name="task_event_instance_id" type="VARCHAR(255)"/>
+            <column name="task_outcome" type="VARCHAR(6000)"/>
+            <column name="task_role" type="VARCHAR(255)"/>
+            <column name="task_type" type="VARCHAR(255)"/>
+            <column name="user_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="username" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="version" type="VARCHAR(255)"/>
+            <column name="workflow_description" type="VARCHAR(6000)"/>
+            <column name="workflow_instance_id" type="VARCHAR(255)"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-6">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="task_records"/>
+            </not>
+        </preConditions>
+        <createTable tableName="task_records">
+            <column name="id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_by" type="VARCHAR(50)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="created_date" type="TIMESTAMP"/>
+            <column name="last_modified_by" type="VARCHAR(50)"/>
+            <column name="last_modified_date" type="TIMESTAMP"/>
+            <column name="assign_event_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="assignee" type="VARCHAR(255)"/>
+            <column name="assignee_manager" type="VARCHAR(255)"/>
+            <column name="complete_event_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="completion_comment" type="VARCHAR(255)"/>
+            <column name="document_id" type="VARCHAR(255)"/>
+            <column name="document_status_name" type="VARCHAR(255)"/>
+            <column name="document_status_title" type="VARCHAR(255)"/>
+            <column name="document_type" type="VARCHAR(255)"/>
+            <column name="due_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="start_event_date" type="TIMESTAMP WITHOUT TIME ZONE"/>
+            <column name="task_id" type="VARCHAR(255)">
+                <constraints nullable="false"/>
+            </column>
+            <column name="workflow_id" type="VARCHAR(255)"/>
+            <column name="assign_event_id" type="BIGINT"/>
+            <column name="complete_event_id" type="BIGINT"/>
+            <column name="start_event_id" type="BIGINT"/>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-7">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <tableExists tableName="tasks_actors"/>
+            </not>
+        </preConditions>
+        <createTable tableName="tasks_actors">
+            <column name="actor_records_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+            <column name="task_records_id" type="BIGINT">
+                <constraints nullable="false"/>
+            </column>
+        </createTable>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-8">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <primaryKeyExists primaryKeyName="actor_records_pk" tableName="actor_records"/>
+            </not>
+        </preConditions>
+        <addPrimaryKey columnNames="id"
+                       constraintName="actor_records_pk"
+                       tableName="actor_records"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-9">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <primaryKeyExists primaryKeyName="history_records_pkey" tableName="history_records"/>
+            </not>
+        </preConditions>
+        <addPrimaryKey columnNames="id"
+                       constraintName="history_records_pkey"
+                       tableName="history_records"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-10">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <primaryKeyExists primaryKeyName="task_records_pk" tableName="task_records"/>
+            </not>
+        </preConditions>
+        <addPrimaryKey columnNames="id"
+                       constraintName="task_records_pk"
+                       tableName="task_records"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-11">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <primaryKeyExists primaryKeyName="tasks_actors_pk" tableName="tasks_actors"/>
+            </not>
+        </preConditions>
+        <addPrimaryKey columnNames="actor_records_id, task_records_id"
+                       constraintName="tasks_actors_pk"
+                       tableName="tasks_actors"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-12">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="FK12u31wpuim2nr0enm0s9pgt8r"
+                                            foreignKeyTableName="task_records"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="start_event_id"
+                                 baseTableName="task_records"
+                                 constraintName="FK12u31wpuim2nr0enm0s9pgt8r"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 referencedTableName="history_records"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-13">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="FK6j29le79078rbrkugtyr6acxu"
+                                            foreignKeyTableName="task_records"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="complete_event_id"
+                                 baseTableName="task_records"
+                                 constraintName="FK6j29le79078rbrkugtyr6acxu"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 referencedTableName="history_records"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-14">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="FK9lsux3nrjgp0aprl28mguglww"
+                                            foreignKeyTableName="task_records"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="assign_event_id"
+                                 baseTableName="task_records"
+                                 constraintName="FK9lsux3nrjgp0aprl28mguglww"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 referencedTableName="history_records"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-15">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="FKhbvbboo64bgnvl30gvxdcabmu"
+                                            foreignKeyTableName="tasks_actors"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="task_records_id"
+                                 baseTableName="tasks_actors"
+                                 constraintName="FKhbvbboo64bgnvl30gvxdcabmu"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 referencedTableName="task_records"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin (generated)" id="1572269447663-16">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <foreignKeyConstraintExists foreignKeyName="FKlqq433x6nyqpiqhnmyjtqi77g"
+                                            foreignKeyTableName="tasks_actors"/>
+            </not>
+        </preConditions>
+        <addForeignKeyConstraint baseColumnNames="actor_records_id"
+                                 baseTableName="tasks_actors"
+                                 constraintName="FKlqq433x6nyqpiqhnmyjtqi77g"
+                                 deferrable="false"
+                                 initiallyDeferred="false"
+                                 referencedColumnNames="id"
+                                 onDelete="CASCADE"
+                                 referencedTableName="actor_records"/>
+    </changeSet>
+
+    <changeSet id="1572269447663-17" author="lev.bavshin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="task_records" indexName="task_records_task_id_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="task_records"
+                     indexName="task_records_task_id_idx"
+                     unique="true">
+            <column name="task_id" type="varchar(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="1572269447663-18" author="lev.bavshin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="task_records" indexName="task_records_document_id_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="task_records"
+                     indexName="task_records_document_id_idx">
+            <column name="document_id" type="varchar(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="1572269447663-19" author="lev.bavshin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="task_records" indexName="task_records_document_type_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="task_records"
+                     indexName="task_records_document_type_idx">
+            <column name="document_type" type="varchar(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="1572269447663-20" author="lev.bavshin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="task_records" indexName="task_records_document_status_name_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="task_records"
+                     indexName="task_records_document_status_name_idx">
+            <column name="document_status_name" type="varchar(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="1572269447663-21" author="lev.bavshin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="tasks_actors" indexName="tasks_actors_ids_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="tasks_actors"
+                     indexName="tasks_actors_ids_idx"
+                     unique="true">
+            <column name="task_records_id" type="bigint"/>
+            <column name="actor_records_id" type="bigint"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet id="1572269447663-22" author="lev.bavshin">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="actor_records" indexName="actor_records_actor_name_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="actor_records"
+                     indexName="actor_records_actor_name_idx"
+                     unique="true">
+            <column name="actor_name" type="varchar(512)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="lev.bavshin" id="1572269447663-23">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="history_records" indexName="history_records_document_id_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="history_records" indexName="history_records_document_id_idx">
+            <column name="document_id" type="VARCHAR(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="lev.bavshin" id="1572269447663-24">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="history_records" indexName="history_records_event_id_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="history_records" indexName="history_records_event_id_idx">
+            <column name="history_event_id" type="VARCHAR(255)"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="lev.bavshin" id="1572269447663-25">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="task_records" indexName="history_records_workflow_id_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="task_records" indexName="history_records_workflow_id_idx">
+            <column name="workflow_id" type="VARCHAR(255)"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>

@@ -1,9 +1,9 @@
 package ru.citeck.ecos.history.client;
 
+import ru.citeck.ecos.history.security.SecurityUtils;
 import feign.RequestInterceptor;
 import feign.RequestTemplate;
 import org.springframework.stereotype.Component;
-import ru.citeck.ecos.history.security.SecurityUtils;
 
 @Component
 public class UserFeignClientInterceptor implements RequestInterceptor {
@@ -13,6 +13,6 @@ public class UserFeignClientInterceptor implements RequestInterceptor {
     @Override
     public void apply(RequestTemplate template) {
         SecurityUtils.getCurrentUserJWT()
-            .ifPresent(s -> template.header(AUTHORIZATION_HEADER, String.format("%s %s", BEARER, s)));
+            .ifPresent(s -> template.header(AUTHORIZATION_HEADER,String.format("%s %s", BEARER, s)));
     }
 }

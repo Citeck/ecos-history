@@ -1,7 +1,7 @@
 ######################
 # Project Specific
 ######################
-/target/classes/static/**
+/target/www/**
 /src/test/javascript/coverage/
 
 ######################
@@ -50,8 +50,6 @@ local.properties
 # PDT-specific
 .buildpath
 
-# STS-specific
-/.sts4-cache/*
 ######################
 # Intellij
 ######################

@@ -33,7 +33,7 @@ eureka:
         metadata-map:
             zone: primary # This is needed for the load balancer
             profile: ${spring.profiles.active}
-            version: #project.version#
+            version: ${info.project.version:}
             git-version: ${git.commit.id.describe:}
             git-commit: ${git.commit.id.abbrev:}
             git-branch: ${git.branch:}
@@ -43,11 +43,11 @@ ribbon:
 feign:
     hystrix:
         enabled: true
-    # client:
-    #     config:
-    #         default:
-    #             connectTimeout: 5000
-    #             readTimeout: 5000
+#    client:
+#        config:
+#            default:
+#                connectTimeout: 5000
+#                readTimeout: 5000
 
 # See https://github.com/Netflix/Hystrix/wiki/Configuration
 hystrix:
@@ -56,9 +56,9 @@ hystrix:
             execution:
                 isolation:
                     strategy: SEMAPHORE
-                    # See https://github.com/spring-cloud/spring-cloud-netflix/issues/1330
-                    # thread:
-                    #     timeoutInMilliseconds: 10000
+    # See https://github.com/spring-cloud/spring-cloud-netflix/issues/1330
+    #                    thread:
+    #                        timeoutInMilliseconds: 10000
     shareSecurityContext: true
 
 management:
@@ -66,12 +66,11 @@ management:
         web:
             base-path: /management
             exposure:
-                include: ['configprops', 'env', 'health', 'info', 'jhimetrics', 'logfile', 'loggers', 'prometheus', 'threaddump']
+                include: ["configprops", "env", "health", "info", "threaddump", "logfile", "jhi-metrics", "prometheus" ]
     endpoint:
         health:
             show-details: when-authorized
-            roles: 'ROLE_ADMIN'
-        jhimetrics:
+        jhi-metrics:
             enabled: true
     info:
         git:
@@ -85,19 +84,24 @@ management:
             prometheus:
                 enabled: true
                 step: 60
-        enable:
-            http: true
-            jvm: true
-            logback: true
-            process: true
-            system: true
+        binders:
+            jvm:
+                enabled: true
+            processor:
+                enabled: true
+            uptime:
+                enabled: true
+            logback:
+                enabled: true
+            files:
+                enabled: true
+            integration:
+                enabled: true
         distribution:
             percentiles-histogram:
                 all: true
             percentiles:
                 all: 0, 0.5, 0.75, 0.95, 0.99, 1.0
-        tags:
-            application: ${spring.application.name}
         web:
             server:
                 auto-time-requests: true
@@ -105,12 +109,6 @@ management:
 spring:
     application:
         name: history
-    jmx:
-        enabled: false
-    data:
-        jpa:
-            repositories:
-                bootstrap-mode: deferred
     jpa:
         open-in-view: false
         properties:
@@ -122,27 +120,11 @@ spring:
                 implicit-strategy: org.springframework.boot.orm.jpa.hibernate.SpringImplicitNamingStrategy
     messages:
         basename: i18n/messages
-    main:
-        allow-bean-definition-overriding: true
     mvc:
         favicon:
             enabled: false
-    task:
-        execution:
-            thread-name-prefix: history-task-
-            pool:
-                core-size: 2
-                max-size: 50
-                queue-capacity: 10000
-        scheduling:
-            thread-name-prefix: history-scheduling-
-            pool:
-                size: 2
     thymeleaf:
         mode: HTML
-    output:
-        ansi:
-            console-available: true
 
 server:
     servlet:
@@ -153,7 +135,7 @@ server:
 # Properties to be exposed on the /info management endpoint
 info:
     # Comma separated list of profiles that will trigger the ribbon to show
-    display-ribbon-on-profiles: 'dev'
+    display-ribbon-on-profiles: "dev"
 
 # ===================================================================
 # JHipster specific properties
@@ -162,16 +144,18 @@ info:
 # ===================================================================
 
 jhipster:
-    clientApp:
-        name: 'historyApp'
-    # By default CORS is disabled. Uncomment to enable.
-    # cors:
-    #     allowed-origins: "*"
-    #     allowed-methods: "*"
-    #     allowed-headers: "*"
-    #     exposed-headers: "Authorization,Link,X-Total-Count"
-    #     allow-credentials: true
-    #     max-age: 1800
+    async:
+        core-pool-size: 2
+        max-pool-size: 50
+        queue-capacity: 10000
+        # By default CORS is disabled. Uncomment to enable.
+        #cors:
+        #allowed-origins: "*"
+        #allowed-methods: "*"
+        #allowed-headers: "*"
+        #exposed-headers: "Authorization,Link,X-Total-Count"
+        #allow-credentials: true
+        #max-age: 1800
     mail:
         from: history@localhost
     swagger:
@@ -195,3 +179,20 @@ jhipster:
 # ===================================================================
 
 # application:
+
+ecos-history:
+    recover:
+        scheduled: true
+        sourceFolder: /home/impi/history_record_csv/
+        errorsFolder: /home/impi/history_record_csv/errors/
+    records:
+        rest:
+            secure: false
+        apps:
+            alfresco:
+                rec-base-url: /alfresco/s/citeck/ecos/records/
+                rec-user-base-url: /share/proxy/alfresco/citeck/ecos/records/
+                auth:
+                    username: admin
+                    password: admin
+    try-header-for-username: X-Alfresco-Remote-User

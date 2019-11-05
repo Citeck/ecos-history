@@ -1,14 +1,16 @@
 {
   "generator-jhipster": {
+    "promptValues": {
+      "packageName": "ru.citeck.ecos.history",
+      "nativeLanguage": "en"
+    },
+    "jhipsterVersion": "5.8.1",
     "applicationType": "microservice",
-    "gitCompany": "",
     "baseName": "history",
     "packageName": "ru.citeck.ecos.history",
     "packageFolder": "ru/citeck/ecos/history",
-    "serverPort": 8086,
-    "serviceDiscoveryType": "eureka",
+    "serverPort": "8086",
     "authenticationType": "jwt",
-    "uaaBaseName": "../uaa",
     "cacheProvider": "hazelcast",
     "enableHibernateCache": true,
     "websocket": false,
@@ -16,27 +18,23 @@
     "devDatabaseType": "postgresql",
     "prodDatabaseType": "postgresql",
     "searchEngine": false,
-    "enableSwaggerCodegen": false,
     "messageBroker": false,
+    "serviceDiscoveryType": "eureka",
     "buildTool": "maven",
-    "useSass": true,
-    "clientPackageManager": "npm",
+    "enableSwaggerCodegen": false,
+    "jwtSecretKey": "NTMwNDVhODZhYmQyZmFhOTU0YzQ2NzBjOTUyYzQ2N2NmNDE2NTk3Nzk4M2E2NDYwYmZlYTg0YzQ2YzkzZmRmM2UzOWZjNDYxMzE2ZmFkY2FhMTJmYjEyNjIwNTI5MWYyMDA2NmZkZmI2Yzc1ZGU3MTU3ZGE4ZjQ2MjkyMDhmOTg=",
     "testFrameworks": [],
-    "enableTranslation": true,
-    "nativeLanguage": "en",
-    "languages": [
-      "ru",
-      "en"
-    ],
-    "clientFramework": "angularX",
     "jhiPrefix": "jhi",
-    "jhipsterVersion": "6.4.1",
-    "jwtSecretKey": "ZmY3NTU1ZjY2NDQwNzA4NmI0ODNlMzQ1YTlmZDExMmMwYTM4ZDBlYjlmMWZlZGYxODBiZGRkODE1MWFjMDJjOThhZTlkYTkzODM5Mjg2MDY1OGZlMjEwMWRkNDA1NDJjNjExYjMxZTgyOGE5NWM5YzIwZDgyYTEwYzAzYzBkNDc=",
-    "embeddableLaunchScript": false,
     "entitySuffix": "",
     "dtoSuffix": "DTO",
     "otherModules": [],
-    "blueprints": [],
+    "enableTranslation": true,
+    "clientPackageManager": "npm",
+    "nativeLanguage": "en",
+    "languages": [
+      "en",
+      "ru"
+    ],
     "skipClient": true,
     "skipUserManagement": true
   }
