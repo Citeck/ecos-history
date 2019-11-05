@@ -12,9 +12,6 @@ import ru.citeck.ecos.history.repository.TaskRecordRepository;
 import ru.citeck.ecos.history.service.TaskRecordService;
 import ru.citeck.ecos.history.service.task.TaskHistoryEventHandler;
 import ru.citeck.ecos.history.service.task.TaskHistoryEventHandlerRegistry;
-import ru.citeck.ecos.records2.RecordRef;
-import ru.citeck.ecos.records2.RecordsService;
-import ru.citeck.ecos.records2.spring.RemoteRecordsUtils;
 
 import java.util.List;
 import java.util.Map;
@@ -22,7 +19,6 @@ import java.util.Map;
 @Service("taskRecordService")
 public class TaskRecordServiceImpl implements TaskRecordService {
 
-    private RecordsService recordsService;
     private TaskRecordRepository taskRecordRepository;
     private TaskHistoryEventHandlerRegistry eventHandlerRegistry;
 
@@ -39,6 +35,11 @@ public class TaskRecordServiceImpl implements TaskRecordService {
     }
 
     @Override
+    public TaskRecordEntity findTaskByTaskId(String taskId) {
+        return taskRecordRepository.getByTaskId(taskId);
+    }
+
+    @Override
     public void handleTaskFromHistoryRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams) {
         String eventType = historyRecord.getEventType();
         TaskHistoryEventHandler handler = eventHandlerRegistry.getHandler(eventType);
@@ -50,18 +51,8 @@ public class TaskRecordServiceImpl implements TaskRecordService {
     }
 
     @Override
-    public <T> T getTaskInfo(String taskId, Class<T> infoClass) {
-        return RemoteRecordsUtils.runAsSystem(() ->
-            recordsService.getMeta(composeTaskRecordRef(taskId), infoClass));
-    }
-
-    private RecordRef composeTaskRecordRef(String taskId) {
-        return RecordRef.create("alfresco", "wftask", taskId);
-    }
-
-    @Autowired
-    public void setRecordsService(RecordsService recordsService) {
-        this.recordsService = recordsService;
+    public TaskRecordEntity save(TaskRecordEntity taskRecordEntity) {
+        return taskRecordRepository.save(taskRecordEntity);
     }
 
     @Autowired

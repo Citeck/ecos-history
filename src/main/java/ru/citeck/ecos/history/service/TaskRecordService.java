@@ -15,8 +15,10 @@ public interface TaskRecordService {
 
     List<TaskRecordEntity> findTasksByTaskId(List<String> taskIds);
 
+    TaskRecordEntity findTaskByTaskId(String taskId);
+
     void handleTaskFromHistoryRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams);
 
-    <T> T getTaskInfo(String taskId, Class<T> infoClass);
+    TaskRecordEntity save(TaskRecordEntity taskRecordEntity);
 
 }
