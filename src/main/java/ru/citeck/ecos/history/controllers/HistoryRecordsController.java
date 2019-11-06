@@ -11,6 +11,7 @@ import ru.citeck.ecos.history.service.HistoryRecordService;
 import javax.servlet.http.HttpServletRequest;
 import java.io.IOException;
 import java.text.ParseException;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -45,20 +46,25 @@ public class HistoryRecordsController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/by_username/{username}/start_date/{startDate}/limit/{limit}")
     public Object getAllRecordsByUsernameWithDateFilter(@PathVariable String username,
-                                                        @PathVariable String startDate,
+                                                        @PathVariable Long startDate,
                                                         @PathVariable Integer limit) {
+        Date start = new Date(startDate);
+
         List<HistoryRecordEntity> records = historyRecordRepository.getAllHistoryRecordsByUsernameWithStartDate(
-            username, startDate, PageRequest.of(0, limit));
+            username, start, PageRequest.of(0, limit));
         return historyRecordConverter.convertAll(records);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/by_username/{username}/start_date/{startDate}/end_date/{endDate}/limit/{limit}")
     public Object getAllRecordsByUsernameWithDateFilter(@PathVariable String username,
-                                                        @PathVariable String startDate,
-                                                        @PathVariable String endDate,
+                                                        @PathVariable Long startDate,
+                                                        @PathVariable Long endDate,
                                                         @PathVariable Integer limit) {
+        Date start = new Date(startDate);
+        Date end = new Date(endDate);
+
         List<HistoryRecordEntity> records = historyRecordRepository.getAllHistoryRecordsByUsernameWithStartEndDate(
-            username, startDate, endDate, PageRequest.of(0, limit));
+            username, start, end, PageRequest.of(0, limit));
         return historyRecordConverter.convertAll(records);
     }
 

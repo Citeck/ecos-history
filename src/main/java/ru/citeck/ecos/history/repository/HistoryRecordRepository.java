@@ -6,6 +6,7 @@ import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 
+import java.util.Date;
 import java.util.List;
 
 public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEntity, String> {
@@ -58,7 +59,7 @@ public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEnt
         "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
     List<HistoryRecordEntity> getAllHistoryRecordsByUsernameWithStartDate(
         @Param("username") String username,
-        @Param("startDate") String startDate,
+        @Param("startDate") Date startDate,
         Pageable pageable
     );
 
@@ -77,8 +78,8 @@ public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEnt
         "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
     List<HistoryRecordEntity> getAllHistoryRecordsByUsernameWithStartEndDate(
         @Param("username") String username,
-        @Param("startDate") String startDate,
-        @Param("endDate") String endDate,
+        @Param("startDate") Date startDate,
+        @Param("endDate") Date endDate,
         Pageable pageable
     );
 }
