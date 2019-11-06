@@ -33,8 +33,8 @@ public class ActorRecordServiceTest {
         ActorRecordEntity t = new ActorRecordEntity();
         t.setActorName("TESK_ACTOR_NAME");
 
-        Mockito.when(repository.findByActorName("TESK_ACTOR_NAME")).thenReturn(t);
-        Mockito.when(repository.findByActorName("NOT_EXISTING_ACTOR_NAME")).thenReturn(null);
+        Mockito.when(repository.findByActorNameIgnoreCase("TESK_ACTOR_NAME")).thenReturn(t);
+        Mockito.when(repository.findByActorNameIgnoreCase("NOT_EXISTING_ACTOR_NAME")).thenReturn(null);
         Mockito.when(repository.save(Mockito.any())).thenThrow(IllegalArgumentException.class);
         return repository;
     }
