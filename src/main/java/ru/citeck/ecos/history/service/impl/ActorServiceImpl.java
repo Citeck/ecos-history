@@ -24,7 +24,7 @@ public class ActorServiceImpl implements ActorService {
 
     @Override
     public ActorRecordEntity findOrCreateActorByName(String name) {
-        ActorRecordEntity actor = actorRecordRepository.findByActorName(name);
+        ActorRecordEntity actor = actorRecordRepository.findByActorNameIgnoreCase(name);
         if (actor == null) {
             actor = new ActorRecordEntity();
             actor.setActorName(name);
