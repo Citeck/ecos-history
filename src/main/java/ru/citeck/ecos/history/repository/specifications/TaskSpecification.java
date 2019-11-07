@@ -9,6 +9,7 @@ import javax.persistence.criteria.Expression;
 import javax.persistence.criteria.Join;
 import javax.persistence.criteria.JoinType;
 import java.util.List;
+import java.util.stream.Collectors;
 
 public class TaskSpecification {
 
@@ -27,11 +28,12 @@ public class TaskSpecification {
     }
 
     public static Specification<TaskRecordEntity> hasActor(List<String> actorList) {
+        final List<String> upperCaseActors = actorList.stream().map(String::toUpperCase).collect(Collectors.toList());
         return (root, query, cb) -> {
             Join<TaskRecordEntity, TaskActorRecordEntity> taskActors = root.join("actors", JoinType.INNER);
             Join<TaskActorRecordEntity, ActorRecordEntity> actor = taskActors.join("actor", JoinType.INNER);
-            Expression<Object> actorName = actor.get("actorName");
-            return actorName.in(actorList);
+            Expression<String> actorName = cb.upper(actor.get("actorName"));
+            return actorName.in(upperCaseActors);
         };
     }
 
