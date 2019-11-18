@@ -13,12 +13,18 @@ import ru.citeck.ecos.history.service.TaskRecordService;
 import java.io.IOException;
 import java.text.ParseException;
 import java.text.SimpleDateFormat;
+import java.time.ZoneId;
 import java.util.*;
 
 @Service("historyRecordService")
 public class HistoryRecordServiceImpl implements HistoryRecordService {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+    private static final SimpleDateFormat dateFormat;
+
+    static {
+        dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+        dateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("UTC")));
+    }
 
     private ObjectMapper objectMapper = new ObjectMapper();
 
