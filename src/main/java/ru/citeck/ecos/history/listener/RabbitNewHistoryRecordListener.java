@@ -23,17 +23,17 @@ import static ru.citeck.ecos.history.config.RabbitMqConfig.*;
 @ConditionalOnClass({EnableRabbit.class})
 public class RabbitNewHistoryRecordListener {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
+
     private HistoryRecordService historyRecordService;
     private HistoryRecordRepository historyRecordRepository;
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     /**
      * @param message Message (json-object)
      */
     @RabbitListener(queues = SEND_NEW_RECORD_QUEUE)
     public void sendNewRecordListener(String message) throws IOException, ParseException {
-        Map<String, String> resultMap = objectMapper.readValue(message, new TypeReference<HashMap<String, String>>() {
+        Map<String, String> resultMap = OBJECT_MAPPER.readValue(message, new TypeReference<HashMap<String, String>>() {
         });
         historyRecordService.saveOrUpdateRecord(new HistoryRecordEntity(), resultMap);
     }
