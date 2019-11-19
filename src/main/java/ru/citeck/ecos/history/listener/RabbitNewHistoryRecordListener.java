@@ -17,13 +17,11 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
+import static ru.citeck.ecos.history.config.RabbitMqConfig.*;
+
 @Service("rabbitNewHistoryRecordListener")
 @ConditionalOnClass({EnableRabbit.class})
 public class RabbitNewHistoryRecordListener {
-
-    private static final String SEND_NEW_RECORD_QUEUE = "send_new_record_queue";
-    private static final String SEND_NEW_RECORDS_QUEUE = "send_new_records_queue";
-    private static final String DELETE_RECORDS_BY_DOCUMENT = "delete_records_by_document_queue";
 
     private HistoryRecordService historyRecordService;
     private HistoryRecordRepository historyRecordRepository;
