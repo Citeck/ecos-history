@@ -151,3 +151,6 @@ ecos-history:
         scheduled: true
         sourceFolder: d:\\history_csv\\
         errorsFolder: d:\\history_csv\\errors\\
+
+spring.rabbitmq:
+    host: localhost

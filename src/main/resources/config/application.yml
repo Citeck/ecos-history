@@ -196,3 +196,8 @@ ecos-history:
                     username: admin
                     password: admin
     try-header-for-username: X-Alfresco-Remote-User
+
+spring.rabbitmq:
+    host: rabbitmq
+    username: admin
+    password: admin
