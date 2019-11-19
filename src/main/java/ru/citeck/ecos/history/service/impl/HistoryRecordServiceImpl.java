@@ -42,9 +42,8 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         });
 
         for (String record : recordsList) {
-            Map<String, String> resultMap = objectMapper.readValue(record,
-                new TypeReference<HashMap<String, String>>() {
-                });
+            // TODO: arrays processing is break reading
+            Map<String, String> resultMap = objectMapper.readValue(record, HashMap.class);
 
             String eventId = resultMap.get(HISTORY_EVENT_ID);
             HistoryRecordEntity recordEntity = historyRecordRepository.getHistoryRecordByHistoryEventId(eventId);
