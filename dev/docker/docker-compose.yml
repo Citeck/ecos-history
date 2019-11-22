@@ -139,12 +139,12 @@ services:
             - POSTGRES_PASSWORD=
         volumes:
             - psql_emodel:/var/lib/postgresql/data
-    emodel-mongodb:
+    history-mongodb:
         image: mongo:4.0.2
         ports:
             - "27017:27017"
         volumes:
-            - mongo_emodel:/data/db/
+            - mongo_history:/data/db/
 
 volumes:
     psql_eapps:
@@ -159,7 +159,7 @@ volumes:
         external: true
     rabbitmq_data:
         external: true
-    mongo_emodel:
+    mongo_history:
         external: true
 
 # Create volumes for DB:
