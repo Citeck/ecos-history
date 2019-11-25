@@ -399,6 +399,12 @@
             <artifactId>mongobee</artifactId>
         </dependency>
 
+        <dependency>
+            <groupId>ru.citeck.ecos</groupId>
+            <artifactId>ecos-events</artifactId>
+            <version>1.1.0-SNAPSHOT</version>
+        </dependency>
+
     </dependencies>
 
     <build>
