@@ -4,7 +4,7 @@
 
     <groupId>ru.citeck.ecos.history</groupId>
     <artifactId>history</artifactId>
-    <version>1.1.2-SNAPSHOT</version>
+    <version>1.1.2</version>
     <packaging>war</packaging>
     <name>History</name>
 
@@ -386,7 +386,7 @@
         <dependency>
             <groupId>ru.citeck.ecos.community</groupId>
             <artifactId>ecos-records-spring</artifactId>
-            <version>1.9.1-SNAPSHOT</version>
+            <version>1.9.1</version>
         </dependency>
     </dependencies>
 
