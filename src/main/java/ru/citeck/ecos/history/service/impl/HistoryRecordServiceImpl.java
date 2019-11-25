@@ -19,14 +19,13 @@ import java.util.*;
 @Service("historyRecordService")
 public class HistoryRecordServiceImpl implements HistoryRecordService {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final SimpleDateFormat dateFormat;
 
     static {
         dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("UTC")));
     }
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     private HistoryRecordRepository historyRecordRepository;
     private TaskRecordService taskRecordService;
@@ -38,12 +37,12 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         }
 
         List<HistoryRecordEntity> result = new ArrayList<>();
-        List<String> recordsList = objectMapper.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {
+        List<String> recordsList = OBJECT_MAPPER.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {
         });
 
         for (String record : recordsList) {
             // TODO: arrays processing is break reading
-            Map<String, String> resultMap = objectMapper.readValue(record, HashMap.class);
+            Map<String, String> resultMap = OBJECT_MAPPER.readValue(record, HashMap.class);
 
             String eventId = resultMap.get(HISTORY_EVENT_ID);
             HistoryRecordEntity recordEntity = historyRecordRepository.getHistoryRecordByHistoryEventId(eventId);
