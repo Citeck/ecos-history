@@ -53,4 +53,10 @@ public class RecordsFacadeServiceImpl implements RecordsFacadeService {
 
         return result;
     }
+
+    @Override
+    public Record getByExternalId(String externalId) {
+        Query query = new Query(Criteria.where("ext_id").is(externalId));
+        return mongoTemplate.findOne(query, Record.class);
+    }
 }

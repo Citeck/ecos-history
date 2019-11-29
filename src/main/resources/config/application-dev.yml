@@ -155,9 +155,6 @@ ecos-history:
         scheduled: true
         sourceFolder: d:\\history_csv\\
         errorsFolder: d:\\history_csv\\errors\\
-    event:
-        username: admin
-        password: admin
 
 spring.rabbitmq:
     host: localhost

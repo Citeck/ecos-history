@@ -7,4 +7,6 @@ public interface RecordsFacadeService {
 
     Record save(RecordEventDto dto);
 
+    Record getByExternalId(String externalId);
+
 }

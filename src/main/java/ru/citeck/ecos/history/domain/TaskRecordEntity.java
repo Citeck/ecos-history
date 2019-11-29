@@ -89,6 +89,10 @@ public class TaskRecordEntity extends AbstractAuditingEntity {
     @Column(name = "completion_comment")
     private String completionComment;
 
+    @Basic
+    @Column(name = "form_key")
+    private String formKey;
+
     @OneToMany(mappedBy = "task")
     private List<TaskActorRecordEntity> actors;
 

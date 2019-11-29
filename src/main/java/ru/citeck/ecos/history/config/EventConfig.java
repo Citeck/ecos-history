@@ -1,6 +1,7 @@
 package ru.citeck.ecos.history.config;
 
 import lombok.extern.slf4j.Slf4j;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -20,11 +21,19 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class EventConfig {
 
-    private final ApplicationProperties appProps;
     private final RecordsFacadeService facadeService;
 
-    public EventConfig(ApplicationProperties appProps, RecordsFacadeService facadeService) {
-        this.appProps = appProps;
+    @Value("${spring.rabbitmq.host}")
+    private String rabbitHost;
+
+    @Value("${spring.rabbitmq.username}")
+    private String rabbitUsername;
+
+    @Value("${spring.rabbitmq.password}")
+    private String rabbitPassword;
+
+
+    public EventConfig(RecordsFacadeService facadeService) {
         this.facadeService = facadeService;
     }
 
@@ -32,10 +41,9 @@ public class EventConfig {
     @Profile("!test")
     public EventConnection eventConnection() {
         return new EventConnection.Builder()
-            .host(appProps.getEvent().getHost())
-            .port(appProps.getEvent().getPort())
-            .username(appProps.getEvent().getUsername())
-            .password(appProps.getEvent().getPassword())
+            .host(rabbitHost)
+            .username(rabbitUsername)
+            .password(rabbitPassword)
             .build();
     }
 
