@@ -148,13 +148,13 @@ public class TaskRecords extends LocalRecordsDAO implements
                 String attrSchema = attributesMap.get(att);
 
                 if (ATTRIBUTES_TO_RECEIVING_FROM_ALFRESCO.contains(att)) {
-                    printDebugRemoteAttributeAccess(att, attrSchema);
+                    printDebugRemoteAttributeAccess(att, attrSchema, entity);
                     contextData.attributesToRequest.put(att, attrSchema);
                     continue;
                 }
                 if (att.startsWith(ECM_DOCUMENT_FIELD_PREFIX)
                     && !facadeAtts.containsKey(StringUtils.remove(att, ECM_DOCUMENT_FIELD_PREFIX))) {
-                    printDebugRemoteAttributeAccess(att, attrSchema);
+                    printDebugRemoteAttributeAccess(att, attrSchema, entity);
                     contextData.attributesToRequest.put(att, attrSchema);
                 }
             }
@@ -262,8 +262,9 @@ public class TaskRecords extends LocalRecordsDAO implements
         private Map<RecordRef, RecordMeta> result;
     }
 
-    private void printDebugRemoteAttributeAccess(String attr, String schema) {
-        log.debug("Remote access attribute from alfresco - key:{}, value:{}", attr, schema);
+    private void printDebugRemoteAttributeAccess(String attr, String schema, TaskRecordEntity entity) {
+        log.debug("Remote access attribute from alfresco - taskId:{}, docId:{}, key:{}, value:{}", entity.getTaskId(),
+            entity.getDocumentId(), attr, schema);
     }
 
 }
