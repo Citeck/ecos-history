@@ -38,7 +38,7 @@ public class ApplicationProperties {
     @Setter
     public static class Alfresco {
         //TODO: add support multiple tenant id
-        private String TENANT_ID = HistoryDefault.Alfresco.TENANT_ID;
+        private String tenantId = HistoryDefault.Alfresco.TENANT_ID;
     }
 
     @Data

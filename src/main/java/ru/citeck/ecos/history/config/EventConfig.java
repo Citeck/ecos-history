@@ -46,7 +46,7 @@ public class EventConfig {
         return args -> {
             try {
                 eventConnection.receive("record.#", "attribute-facade",
-                    appProps.getAlfresco().getTENANT_ID(),
+                    appProps.getAlfresco().getTenantId(),
                     (consumerTag, message, channel) -> {
                         try {
                             String msg = new String(message.getBody(), StandardCharsets.UTF_8);
