@@ -1,6 +1,8 @@
 package ru.citeck.ecos.history.config;
 
 import lombok.Data;
+import lombok.Getter;
+import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
 import ru.citeck.ecos.records2.RecordsProperties;
 
@@ -14,9 +16,17 @@ import ru.citeck.ecos.records2.RecordsProperties;
 @ConfigurationProperties(prefix = "ecos-history", ignoreUnknownFields = false)
 public class ApplicationProperties {
 
+    private final Recover recover = new Recover();
+
     private RecordsProperties records;
-    private Recover recover = new Recover();
     private String tryHeaderForUsername;
+
+    @Getter
+    @Setter
+    public static class Alfresco {
+        //TODO: add support multiple tenant id
+        private String TENANT_ID = HistoryDefault.Alfresco.TENANT_ID;
+    }
 
     @Data
     public static class Recover {

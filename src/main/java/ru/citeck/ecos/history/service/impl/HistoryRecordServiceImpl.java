@@ -144,6 +144,13 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             result.setExpectedPerformTime(Integer.valueOf(requestParams.get(EXPECTED_PERFORM_TIME)));
         }
 
+        if (requestParams.containsKey(TASK_FORM_KEY)) {
+            String taskFormKey = requestParams.get(TASK_FORM_KEY);
+            if (StringUtils.isNotBlank(taskFormKey)) {
+                result.setTaskFormKey(requestParams.get(TASK_FORM_KEY));
+            }
+        }
+
         historyRecordRepository.save(result);
 
         taskRecordService.handleTaskFromHistoryRecord(result, requestParams);

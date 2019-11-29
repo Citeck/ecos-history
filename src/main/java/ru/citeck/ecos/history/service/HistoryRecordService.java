@@ -30,6 +30,7 @@ public interface HistoryRecordService {
     String EXPECTED_PERFORM_TIME = "expectedPerformTime";
     String TASK_DUE_DATE = "taskDueDate";
     String TASK_ASSIGNEE_MANAGER = "assigneeManager";
+    String TASK_FORM_KEY = "taskFormKey";
 
     List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException;
 

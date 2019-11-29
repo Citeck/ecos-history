@@ -26,6 +26,7 @@ public class CompleteTaskEventTypeHandler extends AbstractTaskHistoryEventHandle
 
         taskRecordEntity.setDocumentId(historyRecord.getDocumentId());
         taskRecordEntity.setWorkflowId(historyRecord.getWorkflowInstanceId());
+        taskRecordEntity.setFormKey(historyRecord.getTaskFormKey());
 
         taskRecordEntity.setCompleteEvent(historyRecord);
         taskRecordEntity.setCompleteEventDate(historyRecord.getCreationTime());
