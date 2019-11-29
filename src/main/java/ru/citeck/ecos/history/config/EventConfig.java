@@ -41,6 +41,7 @@ public class EventConfig {
 
     //TODO: implement support multiple tenant id
     @Bean
+    @Profile("!test")
     public CommandLineRunner registerEventHistoryProcessor(EventConnection eventConnection) {
         return args -> {
             try {
