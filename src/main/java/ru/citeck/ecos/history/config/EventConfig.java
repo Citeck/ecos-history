@@ -32,7 +32,6 @@ public class EventConfig {
     @Value("${spring.rabbitmq.password}")
     private String rabbitPassword;
 
-
     public EventConfig(RecordsFacadeService facadeService) {
         this.facadeService = facadeService;
     }
