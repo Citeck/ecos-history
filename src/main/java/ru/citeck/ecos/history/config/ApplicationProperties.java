@@ -18,6 +18,7 @@ public class ApplicationProperties {
 
     private final Recover recover = new Recover();
     private final Event event = new Event();
+    private final Alfresco alfresco = new Alfresco();
 
     private RecordsProperties records;
     private String tryHeaderForUsername;

@@ -106,7 +106,7 @@ services:
     history-psql:
         image: postgres:10.4
         ports:
-            - 5438:5432
+            - 5439:5432
         environment:
             - POSTGRES_USER=history
             - POSTGRES_PASSWORD=

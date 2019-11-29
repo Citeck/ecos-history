@@ -45,7 +45,8 @@ public class EventConfig {
     public CommandLineRunner registerEventHistoryProcessor(EventConnection eventConnection) {
         return args -> {
             try {
-                eventConnection.receive("record.#", "attribute-facade", "local-ecos",
+                eventConnection.receive("record.#", "attribute-facade",
+                    appProps.getAlfresco().getTENANT_ID(),
                     (consumerTag, message, channel) -> {
                         try {
                             String msg = new String(message.getBody(), StandardCharsets.UTF_8);
