@@ -1,7 +1,6 @@
 package ru.citeck.ecos.history.config;
 
 import lombok.extern.slf4j.Slf4j;
-import org.springframework.beans.factory.annotation.Value;
 import org.springframework.boot.CommandLineRunner;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
@@ -21,18 +20,11 @@ import java.nio.charset.StandardCharsets;
 @Configuration
 public class EventConfig {
 
+    private final ApplicationProperties appProps;
     private final RecordsFacadeService facadeService;
 
-    @Value("${spring.rabbitmq.host}")
-    private String rabbitHost;
-
-    @Value("${spring.rabbitmq.username}")
-    private String rabbitUsername;
-
-    @Value("${spring.rabbitmq.password}")
-    private String rabbitPassword;
-
-    public EventConfig(RecordsFacadeService facadeService) {
+    public EventConfig(ApplicationProperties appProps, RecordsFacadeService facadeService) {
+        this.appProps = appProps;
         this.facadeService = facadeService;
     }
 
@@ -40,9 +32,10 @@ public class EventConfig {
     @Profile("!test")
     public EventConnection eventConnection() {
         return new EventConnection.Builder()
-            .host(rabbitHost)
-            .username(rabbitUsername)
-            .password(rabbitPassword)
+            .host(appProps.getEvent().getHost())
+            .port(appProps.getEvent().getPort())
+            .username(appProps.getEvent().getUsername())
+            .password(appProps.getEvent().getPassword())
             .build();
     }
 
@@ -53,29 +46,29 @@ public class EventConfig {
             try {
                 eventConnection.receive("record.#", "attribute-facade", "local-ecos",
                     (consumerTag, message, channel) -> {
-                    try {
-                        String msg = new String(message.getBody(), StandardCharsets.UTF_8);
-                        String routingKey = message.getEnvelope().getRoutingKey();
+                        try {
+                            String msg = new String(message.getBody(), StandardCharsets.UTF_8);
+                            String routingKey = message.getEnvelope().getRoutingKey();
 
-                        if (log.isDebugEnabled()) {
-                            String info = "\n===========RECEIVE RECORD EVENT HISTORY============";
-                            info += "\nroutingKey: " + routingKey;
-                            info += "\nmsg: " + msg;
-                            info += "\nchannel: " + channel;
-                            info += "\n===========/RECEIVE RECORD EVENT HISTORY============";
-                            log.debug(info);
+                            if (log.isDebugEnabled()) {
+                                String info = "\n===========RECEIVE RECORD EVENT HISTORY============";
+                                info += "\nroutingKey: " + routingKey;
+                                info += "\nmsg: " + msg;
+                                info += "\nchannel: " + channel;
+                                info += "\n===========/RECEIVE RECORD EVENT HISTORY============";
+                                log.debug(info);
+                            }
+
+                            RecordEventDto dto = EventDtoFactory.fromEventDtoMsg(msg);
+
+                            facadeService.save(dto);
+                        } catch (Throwable e) {
+                            log.error("Failed process event", e);
+                            channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
                         }
 
-                        RecordEventDto dto = EventDtoFactory.fromEventDtoMsg(msg);
-
-                        facadeService.save(dto);
-                    } catch (Throwable e) {
-                        log.error("Failed process event", e);
-                        channel.basicNack(message.getEnvelope().getDeliveryTag(), false, false);
-                    }
-
-                    channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
-                });
+                        channel.basicAck(message.getEnvelope().getDeliveryTag(), false);
+                    });
             } catch (IOException e) {
                 throw new RuntimeException("Failed register event history processor", e);
             }

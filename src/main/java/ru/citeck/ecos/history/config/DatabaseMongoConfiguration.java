@@ -28,7 +28,7 @@ import java.util.List;
  */
 @Configuration
 @EnableMongoRepositories("ru.citeck.ecos.history.mongo.repository")
-@Profile("!" + JHipsterConstants.SPRING_PROFILE_CLOUD)
+@Profile({"!" + JHipsterConstants.SPRING_PROFILE_CLOUD, "!test"})
 @Import(value = MongoAutoConfiguration.class)
 @EnableMongoAuditing(auditorAwareRef = "springSecurityAuditorAware")
 public class DatabaseMongoConfiguration {

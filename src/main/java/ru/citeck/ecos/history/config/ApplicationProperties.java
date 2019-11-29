@@ -17,9 +17,21 @@ import ru.citeck.ecos.records2.RecordsProperties;
 public class ApplicationProperties {
 
     private final Recover recover = new Recover();
+    private final Event event = new Event();
 
     private RecordsProperties records;
     private String tryHeaderForUsername;
+
+    @Getter
+    @Setter
+    public static class Event {
+
+        private String host = HistoryDefault.Event.HOST;
+        private int port = HistoryDefault.Event.PORT;
+        private String username = HistoryDefault.Event.USERNAME;
+        private String password = HistoryDefault.Event.PASSWORD;
+
+    }
 
     @Getter
     @Setter
@@ -30,6 +42,7 @@ public class ApplicationProperties {
 
     @Data
     public static class Recover {
+
         private Boolean scheduled;
         private String sourceFolder;
         private String errorsFolder;
