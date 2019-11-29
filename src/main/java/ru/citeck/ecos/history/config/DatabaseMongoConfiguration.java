@@ -2,7 +2,6 @@ package ru.citeck.ecos.history.config;
 
 import com.github.mongobee.Mongobee;
 import com.mongodb.MongoClient;
-import io.github.jhipster.config.JHipsterConstants;
 import io.github.jhipster.domain.util.JSR310DateConverters;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,7 +27,7 @@ import java.util.List;
  */
 @Configuration
 @EnableMongoRepositories("ru.citeck.ecos.history.mongo.repository")
-@Profile({"!" + JHipsterConstants.SPRING_PROFILE_CLOUD, "!test"})
+@Profile({"!test"})
 @Import(value = MongoAutoConfiguration.class)
 @EnableMongoAuditing(auditorAwareRef = "springSecurityAuditorAware")
 public class DatabaseMongoConfiguration {
