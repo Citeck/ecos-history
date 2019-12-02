@@ -12,7 +12,7 @@ public class FacadeRecordsUtils {
 
     public static List<FacadeRecordAttrMeta> getAttrMetaFromDocuments(List<Document> documents) {
         if (CollectionUtils.isEmpty(documents)) {
-            return null;
+            return Collections.emptyList();
         }
 
         List<FacadeRecordAttrMeta> result = new ArrayList<>();

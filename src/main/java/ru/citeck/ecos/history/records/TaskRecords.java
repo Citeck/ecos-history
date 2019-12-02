@@ -225,6 +225,9 @@ public class TaskRecords extends LocalRecordsDAO implements
 
         @SuppressWarnings("unchecked")
         private List<Document> getAttributeAsMongoDocument(String name) {
+            if (facadeDocument == null) {
+                return Collections.emptyList();
+            }
             return (List<Document>) facadeDocument.getAttributes().get(name);
         }
 

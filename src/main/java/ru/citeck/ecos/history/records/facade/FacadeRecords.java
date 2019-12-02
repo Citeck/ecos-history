@@ -1,11 +1,9 @@
 package ru.citeck.ecos.history.records.facade;
 
 import org.apache.commons.lang.StringUtils;
-import org.springframework.data.mongodb.core.MongoTemplate;
-import org.springframework.data.mongodb.core.query.Criteria;
-import org.springframework.data.mongodb.core.query.Query;
 import org.springframework.stereotype.Component;
 import ru.citeck.ecos.history.mongo.domain.Record;
+import ru.citeck.ecos.history.service.RecordsFacadeService;
 import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDAO;
 import ru.citeck.ecos.records2.source.dao.local.RecordsMetaLocalDAO;
@@ -21,14 +19,16 @@ public class FacadeRecords extends LocalRecordsDAO implements RecordsMetaLocalDA
 
     public static final String ID = "facade";
 
-    private final MongoTemplate mongoTemplate;
+    private static final String ALFRESCO_PREFIX = "alfresco@";
+
+    private final RecordsFacadeService facadeService;
 
     {
         setId(ID);
     }
 
-    public FacadeRecords(MongoTemplate mongoTemplate) {
-        this.mongoTemplate = mongoTemplate;
+    public FacadeRecords(RecordsFacadeService facadeService) {
+        this.facadeService = facadeService;
     }
 
     @Override
@@ -42,10 +42,10 @@ public class FacadeRecords extends LocalRecordsDAO implements RecordsMetaLocalDA
             }
 
             //TODO: fix explicit set alfresco@
-            Query query = new Query(Criteria.where("ext_id").is("alfresco@" + id));
-            Record one = mongoTemplate.findOne(query, Record.class);
-
-            result.add(new FacadeRecordMeta(one));
+            Record record = facadeService.getByExternalId(ALFRESCO_PREFIX + id);
+            if (record != null) {
+                result.add(new FacadeRecordMeta(record));
+            }
         }
 
         return result;
