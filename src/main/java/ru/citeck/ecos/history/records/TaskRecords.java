@@ -263,7 +263,7 @@ public class TaskRecords extends LocalRecordsDAO implements
     }
 
     private void printDebugRemoteAttributeAccess(String attr, String schema, TaskRecordEntity entity) {
-        log.debug("Remote access attribute from alfresco - taskId:{}, docId:{}, key:{}, value:{}", entity.getTaskId(),
+        log.warn("Remote access attribute from alfresco - taskId:{}, docId:{}, key:{}, value:{}", entity.getTaskId(),
             entity.getDocumentId(), attr, schema);
     }
 
