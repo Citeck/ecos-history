@@ -25,9 +25,9 @@ import java.util.List;
 /**
  * @author Roman Makarskiy
  */
+@Profile("facade")
 @Configuration
 @EnableMongoRepositories("ru.citeck.ecos.history.mongo.repository")
-@Profile({"!test"})
 @Import(value = MongoAutoConfiguration.class)
 @EnableMongoAuditing(auditorAwareRef = "springSecurityAuditorAware")
 public class DatabaseMongoConfiguration {

@@ -1,0 +1,4 @@
+#enable auto mongodb configs
+spring:
+    autoconfigure:
+        exclude:

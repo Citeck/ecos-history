@@ -3,6 +3,7 @@ package ru.citeck.ecos.history.service.impl;
 import lombok.NonNull;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.springframework.context.annotation.Profile;
 import org.springframework.data.mongodb.core.FindAndModifyOptions;
 import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.query.Criteria;
@@ -16,6 +17,7 @@ import ru.citeck.ecos.history.service.RecordsFacadeService;
 
 import java.util.List;
 
+@Profile("facade")
 @Slf4j
 @Service
 public class RecordsFacadeServiceImpl implements RecordsFacadeService {

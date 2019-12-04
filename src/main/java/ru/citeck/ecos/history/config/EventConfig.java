@@ -16,6 +16,8 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author Roman Makarskiy
  */
+
+@Profile("facade")
 @Slf4j
 @Configuration
 public class EventConfig {
@@ -29,7 +31,6 @@ public class EventConfig {
     }
 
     @Bean
-    @Profile("!test")
     public EventConnection eventConnection() {
         return new EventConnection.Builder()
             .host(appProps.getEvent().getHost())
@@ -41,7 +42,6 @@ public class EventConfig {
 
     //TODO: implement support multiple tenant id
     @Bean
-    @Profile("!test")
     public CommandLineRunner registerEventHistoryProcessor(EventConnection eventConnection) {
         return args -> {
             try {

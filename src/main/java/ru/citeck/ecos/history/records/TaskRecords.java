@@ -55,12 +55,16 @@ public class TaskRecords extends LocalRecordsDAO implements
     private static final String ATT_DOC_TYPE = "docType";
     private static final String ATT_DOC_STATUS_TITLE = "docStatusTitle";
     private static final String ATT_DOC_DISPLAY_NAME = "docDisplayName";
+    private static final String ATT_ECM_NODE_UUID = "_ECM_sys:node-uuid";
 
     private static final String ECM_DOCUMENT_FIELD_PREFIX = "_ECM_";
 
     private static final String ALFRESCO_SPACES_STORE_PREFIX = "alfresco@workspace://SpacesStore/";
 
     private static final Set<String> ATTRIBUTES_TO_RECEIVING_FROM_ALFRESCO = Sets.newHashSet(
+        "docSum",
+        "docDisplayName",
+        "docStatusTitle",
         "sender",
         "dueDate",
         "assignee",
@@ -141,7 +145,12 @@ public class TaskRecords extends LocalRecordsDAO implements
 
             Map<String, String> attributesMap = field.getInnerAttributesMap();
             for (String att : attributesMap.keySet()) {
-                if (facadeAtts.containsKey(att)) {
+                String facadeAttribute = fixLegacyAttNameForFacade(att);
+                if (facadeAtts.containsKey(facadeAttribute)) {
+                    continue;
+                }
+
+                if (ATT_ECM_NODE_UUID.equals(att)) {
                     continue;
                 }
 
@@ -153,7 +162,7 @@ public class TaskRecords extends LocalRecordsDAO implements
                     continue;
                 }
                 if (att.startsWith(ECM_DOCUMENT_FIELD_PREFIX)
-                    && !facadeAtts.containsKey(StringUtils.remove(att, ECM_DOCUMENT_FIELD_PREFIX))) {
+                    && !facadeAtts.containsKey(facadeAttribute)) {
                     printDebugRemoteAttributeAccess(att, attrSchema, entity);
                     contextData.attributesToRequest.put(att, attrSchema);
                 }
@@ -189,9 +198,15 @@ public class TaskRecords extends LocalRecordsDAO implements
                 case ATT_DOC_STATUS:
                     JsonNode statusStr = recordsService.getAttribute(RecordRef.create("", FacadeRecords.ID,
                         "workspace://SpacesStore/" + entity.getDocumentId()), "caseStatus{.str}");
-                    if (statusStr != null) {
-                        return statusStr.asText();
+                    return statusStr != null && StringUtils.isNotBlank(statusStr.asText())
+                        ? statusStr.asText() : entity.getDocumentStatusName();
+                case ATT_DOC_TYPE:
+                    String documentType = entity.getDocumentType();
+                    if (StringUtils.isNotBlank(documentType)) {
+                        return documentType;
                     }
+                case ATT_ECM_NODE_UUID:
+                    return entity.getDocumentId();
             }
 
             String facadeAttr = fixLegacyAttNameForFacade(name);
