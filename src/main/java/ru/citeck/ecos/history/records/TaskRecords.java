@@ -62,9 +62,10 @@ public class TaskRecords extends LocalRecordsDAO implements
     private static final String ALFRESCO_SPACES_STORE_PREFIX = "alfresco@workspace://SpacesStore/";
 
     private static final Set<String> ATTRIBUTES_TO_RECEIVING_FROM_ALFRESCO = Sets.newHashSet(
+        ATT_FORM_KEY,
+        ATT_DOC_DISPLAY_NAME,
+        ATT_DOC_STATUS_TITLE,
         "docSum",
-        "docDisplayName",
-        "docStatusTitle",
         "sender",
         "dueDate",
         "assignee",
@@ -150,12 +151,15 @@ public class TaskRecords extends LocalRecordsDAO implements
                     continue;
                 }
 
-                if (ATT_ECM_NODE_UUID.equals(att)) {
+                if (ATT_ECM_NODE_UUID.equals(att) && StringUtils.isNotBlank(entity.getDocumentId())) {
+                    continue;
+                }
+
+                if (ATT_FORM_KEY.equals(att) && StringUtils.isNotBlank(entity.getFormKey())) {
                     continue;
                 }
 
                 String attrSchema = attributesMap.get(att);
-
                 if (ATTRIBUTES_TO_RECEIVING_FROM_ALFRESCO.contains(att)) {
                     printDebugRemoteAttributeAccess(att, attrSchema, entity);
                     contextData.attributesToRequest.put(att, attrSchema);
