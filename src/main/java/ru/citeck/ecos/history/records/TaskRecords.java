@@ -38,6 +38,8 @@ import ru.citeck.ecos.records2.spring.RemoteRecordsUtils;
 import java.util.*;
 import java.util.stream.Collectors;
 
+import static ru.citeck.ecos.history.service.HistoryRecordService.EMPTY_VALUE_KEY;
+
 @Slf4j
 @Service
 public class TaskRecords extends LocalRecordsDAO implements
@@ -217,7 +219,8 @@ public class TaskRecords extends LocalRecordsDAO implements
                 case ATT_ECM_NODE_UUID:
                     return entity.getDocumentId();
                 case ATT_LAST_COMMENT:
-                    return entity.getLastTaskComment();
+                    String lastTaskComment = entity.getLastTaskComment();
+                    return EMPTY_VALUE_KEY.equals(lastTaskComment) ? null : lastTaskComment;
             }
 
             String facadeAttr = fixLegacyAttNameForFacade(name);

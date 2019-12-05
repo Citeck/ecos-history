@@ -140,7 +140,8 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             result.setPropertyName(requestParams.get(PROPERTY_NAME));
         }
 
-        if (requestParams.containsKey(EXPECTED_PERFORM_TIME) && StringUtils.isNotEmpty(requestParams.get(EXPECTED_PERFORM_TIME))) {
+        if (requestParams.containsKey(EXPECTED_PERFORM_TIME)
+            && StringUtils.isNotEmpty(requestParams.get(EXPECTED_PERFORM_TIME))) {
             result.setExpectedPerformTime(Integer.valueOf(requestParams.get(EXPECTED_PERFORM_TIME)));
         }
 
@@ -151,18 +152,23 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             }
         }
 
-        if (requestParams.containsKey(LAST_TASK_COMMENT)) {
-            String lastTaskComment = requestParams.get(LAST_TASK_COMMENT);
-            if (StringUtils.isNotBlank(lastTaskComment)) {
-                result.setLastTaskComment(lastTaskComment);
-            }
-        }
+        String lastTaskComment = getLasComment(requestParams);
+        result.setLastTaskComment(lastTaskComment);
 
         historyRecordRepository.save(result);
 
         taskRecordService.handleTaskFromHistoryRecord(result, requestParams);
 
         return result;
+    }
+
+    private String getLasComment(Map<String, String> requestParams) {
+        if (!requestParams.containsKey(LAST_TASK_COMMENT)) {
+            return EMPTY_VALUE_KEY;
+        }
+
+        String lastTaskComment = requestParams.get(LAST_TASK_COMMENT);
+        return StringUtils.isNotBlank(lastTaskComment) ? lastTaskComment : EMPTY_VALUE_KEY;
     }
 
     @Autowired
