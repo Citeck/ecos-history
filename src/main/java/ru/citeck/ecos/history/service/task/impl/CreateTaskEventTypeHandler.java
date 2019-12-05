@@ -49,6 +49,8 @@ public class CreateTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
         taskRecordEntity.setStartEvent(historyRecord);
         taskRecordEntity.setStartEventDate(historyRecord.getCreationTime());
 
+        taskRecordEntity.setLastTaskComment(historyRecord.getLastTaskComment());
+
         String dueDate = requestParams.get(HistoryRecordService.TASK_DUE_DATE);
         if (dueDate != null) {
             try {

@@ -13,6 +13,7 @@ public interface HistoryRecordService {
     String DOCUMENT_ID = "documentId";
     String EVENT_TYPE = "eventType";
     String COMMENTS = "comments";
+    String LAST_TASK_COMMENT = "lastTaskComment";
     String VERSION = "version";
     String CREATION_TIME = "creationTime";
     String USERNAME = "username";

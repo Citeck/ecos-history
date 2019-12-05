@@ -50,6 +50,7 @@ public class TaskRecords extends LocalRecordsDAO implements
     private static final String ATT_STARTED = "started";
     private static final String ATT_ACTIVE = "active";
     private static final String ATT_FORM_KEY = "_formKey";
+    private static final String ATT_LAST_COMMENT = "lastcomment";
 
     private static final String ATT_DOC_STATUS = "docStatus";
     private static final String ATT_DOC_TYPE = "docType";
@@ -65,13 +66,13 @@ public class TaskRecords extends LocalRecordsDAO implements
         ATT_FORM_KEY,
         ATT_DOC_DISPLAY_NAME,
         ATT_DOC_STATUS_TITLE,
+        ATT_LAST_COMMENT,
         "docSum",
         "sender",
         "dueDate",
         "assignee",
         "candidate",
         "actors",
-        "lastcomment",
         "title",
         "reassignable",
         "releasable",
@@ -159,6 +160,10 @@ public class TaskRecords extends LocalRecordsDAO implements
                     continue;
                 }
 
+                if (ATT_LAST_COMMENT.equals(att) && StringUtils.isNotBlank(entity.getLastTaskComment())) {
+                    continue;
+                }
+
                 String attrSchema = attributesMap.get(att);
                 if (ATTRIBUTES_TO_RECEIVING_FROM_ALFRESCO.contains(att)) {
                     printDebugRemoteAttributeAccess(att, attrSchema, entity);
@@ -211,6 +216,8 @@ public class TaskRecords extends LocalRecordsDAO implements
                     }
                 case ATT_ECM_NODE_UUID:
                     return entity.getDocumentId();
+                case ATT_LAST_COMMENT:
+                    return entity.getLastTaskComment();
             }
 
             String facadeAttr = fixLegacyAttNameForFacade(name);

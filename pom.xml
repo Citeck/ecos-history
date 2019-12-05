@@ -587,7 +587,7 @@
                         <changeLogFile>${project.basedir}/src/main/resources/config/liquibase/master.xml</changeLogFile>
                         <diffChangeLogFile>${project.basedir}/src/main/resources/config/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
                         <driver>org.postgresql.Driver</driver>
-                        <url>jdbc:postgresql://localhost:5438/history</url>
+                        <url>jdbc:postgresql://localhost:5439/history</url>
                         <defaultSchemaName></defaultSchemaName>
                         <username>history</username>
                         <password></password>

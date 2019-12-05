@@ -33,6 +33,8 @@ public class CompleteTaskEventTypeHandler extends AbstractTaskHistoryEventHandle
 
         taskRecordEntity.setCompletionComment(historyRecord.getComments());
 
+        taskRecordEntity.setLastTaskComment(historyRecord.getLastTaskComment());
+
         taskRecordRepository.save(taskRecordEntity);
     }
 

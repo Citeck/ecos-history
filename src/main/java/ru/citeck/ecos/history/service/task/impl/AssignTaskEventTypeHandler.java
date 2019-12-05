@@ -51,6 +51,8 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
         taskRecordEntity.setAssignEvent(historyRecord);
         taskRecordEntity.setAssignEventDate(historyRecord.getCreationTime());
 
+        taskRecordEntity.setLastTaskComment(historyRecord.getLastTaskComment());
+
         try {
             Set<String> actors = actorService.queryActorsFromRemote(taskRecordEntity.getTaskId());
             taskRecordEntity.setActors(findActorEntities(taskRecordEntity, actors));

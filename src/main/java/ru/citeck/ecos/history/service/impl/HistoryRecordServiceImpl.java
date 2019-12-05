@@ -147,7 +147,14 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         if (requestParams.containsKey(TASK_FORM_KEY)) {
             String taskFormKey = requestParams.get(TASK_FORM_KEY);
             if (StringUtils.isNotBlank(taskFormKey)) {
-                result.setTaskFormKey(requestParams.get(TASK_FORM_KEY));
+                result.setTaskFormKey(taskFormKey);
+            }
+        }
+
+        if (requestParams.containsKey(LAST_TASK_COMMENT)) {
+            String lastTaskComment = requestParams.get(LAST_TASK_COMMENT);
+            if (StringUtils.isNotBlank(lastTaskComment)) {
+                result.setLastTaskComment(lastTaskComment);
             }
         }
 
