@@ -4,7 +4,7 @@
 
     <groupId>ru.citeck.ecos.history</groupId>
     <artifactId>history</artifactId>
-    <version>1.1.2</version>
+    <version>1.2.0</version>
     <packaging>war</packaging>
     <name>History</name>
 
@@ -388,6 +388,23 @@
             <artifactId>ecos-records-spring</artifactId>
             <version>1.9.1</version>
         </dependency>
+
+        <dependency>
+            <groupId>org.springframework.boot</groupId>
+            <artifactId>spring-boot-starter-data-mongodb</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>com.github.mongobee</groupId>
+            <artifactId>mongobee</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.citeck.ecos</groupId>
+            <artifactId>ecos-events</artifactId>
+            <version>1.1.0</version>
+        </dependency>
+
     </dependencies>
 
     <build>
@@ -570,7 +587,7 @@
                         <changeLogFile>${project.basedir}/src/main/resources/config/liquibase/master.xml</changeLogFile>
                         <diffChangeLogFile>${project.basedir}/src/main/resources/config/liquibase/changelog/${maven.build.timestamp}_changelog.xml</diffChangeLogFile>
                         <driver>org.postgresql.Driver</driver>
-                        <url>jdbc:postgresql://localhost:5438/history</url>
+                        <url>jdbc:postgresql://localhost:5439/history</url>
                         <defaultSchemaName></defaultSchemaName>
                         <username>history</username>
                         <password></password>

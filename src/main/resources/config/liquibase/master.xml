@@ -6,6 +6,8 @@
 
     <include file="config/liquibase/changelog/00000000000000_initial_schema.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191028133042_add_records_changelog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20191127091135_add_form_key_changelog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20191205130349_add_last_task_comment_changelog.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
 </databaseChangeLog>

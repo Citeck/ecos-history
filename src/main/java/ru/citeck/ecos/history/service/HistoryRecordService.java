@@ -13,6 +13,7 @@ public interface HistoryRecordService {
     String DOCUMENT_ID = "documentId";
     String EVENT_TYPE = "eventType";
     String COMMENTS = "comments";
+    String LAST_TASK_COMMENT = "lastTaskComment";
     String VERSION = "version";
     String CREATION_TIME = "creationTime";
     String USERNAME = "username";
@@ -30,6 +31,8 @@ public interface HistoryRecordService {
     String EXPECTED_PERFORM_TIME = "expectedPerformTime";
     String TASK_DUE_DATE = "taskDueDate";
     String TASK_ASSIGNEE_MANAGER = "assigneeManager";
+    String TASK_FORM_KEY = "taskFormKey";
+    String EMPTY_VALUE_KEY = "{empty}";
 
     List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException;
 

@@ -41,12 +41,15 @@ public class CreateTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
 
         taskRecordEntity.setDocumentId(historyRecord.getDocumentId());
         taskRecordEntity.setWorkflowId(historyRecord.getWorkflowInstanceId());
+        taskRecordEntity.setFormKey(historyRecord.getTaskFormKey());
 
         taskRecordEntity.setAssignee(historyRecord.getInitiator());
         taskRecordEntity.setAssigneeManager(requestParams.get(HistoryRecordService.TASK_ASSIGNEE_MANAGER));
 
         taskRecordEntity.setStartEvent(historyRecord);
         taskRecordEntity.setStartEventDate(historyRecord.getCreationTime());
+
+        taskRecordEntity.setLastTaskComment(historyRecord.getLastTaskComment());
 
         String dueDate = requestParams.get(HistoryRecordService.TASK_DUE_DATE);
         if (dueDate != null) {

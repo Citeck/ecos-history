@@ -19,14 +19,13 @@ import java.util.*;
 @Service("historyRecordService")
 public class HistoryRecordServiceImpl implements HistoryRecordService {
 
+    private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     private static final SimpleDateFormat dateFormat;
 
     static {
         dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
         dateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("UTC")));
     }
-
-    private ObjectMapper objectMapper = new ObjectMapper();
 
     private HistoryRecordRepository historyRecordRepository;
     private TaskRecordService taskRecordService;
@@ -38,12 +37,12 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         }
 
         List<HistoryRecordEntity> result = new ArrayList<>();
-        List<String> recordsList = objectMapper.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {
+        List<String> recordsList = OBJECT_MAPPER.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {
         });
 
         for (String record : recordsList) {
             // TODO: arrays processing is break reading
-            Map<String, String> resultMap = objectMapper.readValue(record, HashMap.class);
+            Map<String, String> resultMap = OBJECT_MAPPER.readValue(record, HashMap.class);
 
             String eventId = resultMap.get(HISTORY_EVENT_ID);
             HistoryRecordEntity recordEntity = historyRecordRepository.getHistoryRecordByHistoryEventId(eventId);
@@ -141,15 +140,35 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             result.setPropertyName(requestParams.get(PROPERTY_NAME));
         }
 
-        if (requestParams.containsKey(EXPECTED_PERFORM_TIME) && StringUtils.isNotEmpty(requestParams.get(EXPECTED_PERFORM_TIME))) {
+        if (requestParams.containsKey(EXPECTED_PERFORM_TIME)
+            && StringUtils.isNotEmpty(requestParams.get(EXPECTED_PERFORM_TIME))) {
             result.setExpectedPerformTime(Integer.valueOf(requestParams.get(EXPECTED_PERFORM_TIME)));
         }
+
+        if (requestParams.containsKey(TASK_FORM_KEY)) {
+            String taskFormKey = requestParams.get(TASK_FORM_KEY);
+            if (StringUtils.isNotBlank(taskFormKey)) {
+                result.setTaskFormKey(taskFormKey);
+            }
+        }
+
+        String lastTaskComment = getLasComment(requestParams);
+        result.setLastTaskComment(lastTaskComment);
 
         historyRecordRepository.save(result);
 
         taskRecordService.handleTaskFromHistoryRecord(result, requestParams);
 
         return result;
+    }
+
+    private String getLasComment(Map<String, String> requestParams) {
+        if (!requestParams.containsKey(LAST_TASK_COMMENT)) {
+            return EMPTY_VALUE_KEY;
+        }
+
+        String lastTaskComment = requestParams.get(LAST_TASK_COMMENT);
+        return StringUtils.isNotBlank(lastTaskComment) ? lastTaskComment : EMPTY_VALUE_KEY;
     }
 
     @Autowired

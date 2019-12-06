@@ -100,4 +100,12 @@ public class HistoryRecordEntity implements Serializable {
     @Column(name = "expected_perform_time")
     private Integer expectedPerformTime;
     public static final String EXPECTED_PERFORM_TIME = "expectedPerformTime";
+
+    @Column(name = "task_form_key")
+    private String taskFormKey;
+    public static final String TASK_FORM_KEY = "taskFormKey";
+
+    @Column(name = "last_task_comment", length = 1000)
+    private String lastTaskComment;
+    public static final String LAT_TASK_COMMENT = "lastTaskComment";
 }

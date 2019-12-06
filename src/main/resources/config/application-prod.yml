@@ -32,6 +32,10 @@ spring:
             enabled: false
         livereload:
             enabled: false
+    data:
+        mongodb:
+            uri: mongodb://localhost:27017
+            database: history
     datasource:
         type: com.zaxxer.hikari.HikariDataSource
         url: jdbc:postgresql://localhost:5432/history

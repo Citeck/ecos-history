@@ -43,12 +43,15 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
 
         taskRecordEntity.setDocumentId(historyRecord.getDocumentId());
         taskRecordEntity.setWorkflowId(historyRecord.getWorkflowInstanceId());
+        taskRecordEntity.setFormKey(historyRecord.getTaskFormKey());
 
         taskRecordEntity.setAssignee(historyRecord.getInitiator());
         taskRecordEntity.setAssigneeManager(requestParams.get(HistoryRecordService.TASK_ASSIGNEE_MANAGER));
 
         taskRecordEntity.setAssignEvent(historyRecord);
         taskRecordEntity.setAssignEventDate(historyRecord.getCreationTime());
+
+        taskRecordEntity.setLastTaskComment(historyRecord.getLastTaskComment());
 
         try {
             Set<String> actors = actorService.queryActorsFromRemote(taskRecordEntity.getTaskId());
