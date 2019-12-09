@@ -1,6 +1,7 @@
 package ru.citeck.ecos.history.records;
 
 import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.node.ArrayNode;
 import com.google.common.collect.Sets;
 import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
@@ -196,7 +197,14 @@ public class TaskRecords extends LocalRecordsDAO implements
             RecordMeta recordMeta = getDocData(getAlfrescoWfTaskRemoteRecordRef());
 
             if (recordMeta.has(name)) {
-                return new InnerMetaValue(recordMeta.get(name));
+                JsonNode node = recordMeta.get(name);
+                if (node instanceof ArrayNode) {
+                    List<InnerMetaValue> result = new ArrayList<>();
+                    node.forEach(jsonNode -> result.add(new InnerMetaValue(jsonNode)));
+                    return result;
+                }
+
+                return new InnerMetaValue(node);
             }
 
             switch (name) {
