@@ -19,7 +19,7 @@
                         newDataType="VARCHAR(6000)"/>
     </changeSet>
 
-    <changeSet author="lev.bavshin" id="1575551035272-3">
+    <changeSet author="lev.bavshin" id="1575551035272-4">
         <modifyDataType tableName="task_records"
                         columnName="last_task_comment"
                         newDataType="VARCHAR(6000)"/>
