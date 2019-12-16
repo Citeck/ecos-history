@@ -94,7 +94,7 @@ public class TaskRecordEntity extends AbstractAuditingEntity {
     private String formKey;
 
     @Basic
-    @Column(name = "last_task_comment", length = 1000)
+    @Column(name = "last_task_comment", length = 6000)
     private String lastTaskComment;
 
     @OneToMany(mappedBy = "task")

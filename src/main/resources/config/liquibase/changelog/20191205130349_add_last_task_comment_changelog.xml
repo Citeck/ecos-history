@@ -12,4 +12,16 @@
             <column name="last_task_comment" type="varchar(1000)"/>
         </addColumn>
     </changeSet>
+
+    <changeSet author="lev.bavshin" id="1575551035272-3">
+        <modifyDataType tableName="history_records"
+                        columnName="last_task_comment"
+                        newDataType="VARCHAR(6000)"/>
+    </changeSet>
+
+    <changeSet author="lev.bavshin" id="1575551035272-4">
+        <modifyDataType tableName="task_records"
+                        columnName="last_task_comment"
+                        newDataType="VARCHAR(6000)"/>
+    </changeSet>
 </databaseChangeLog>
