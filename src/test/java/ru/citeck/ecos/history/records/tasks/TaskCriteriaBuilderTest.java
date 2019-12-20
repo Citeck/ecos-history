@@ -97,7 +97,7 @@ public class TaskCriteriaBuilderTest {
         assertEquals(1, orderList.size());
 
         assertEquals("id", orderList.get(0).getProperty());
-        assertTrue(orderList.get(0).isAscending());
+        assertTrue(orderList.get(0).isDescending());
     }
 
 }
