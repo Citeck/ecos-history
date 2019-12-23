@@ -155,9 +155,12 @@ public class TaskCriteriaBuilder {
         for (SortBy sortBy : sortByList) {
             switch (sortBy.getAttribute()) {
                 case "cm:created":
+                case "createdBy"://TODO: used for correct working of mobile app with old version. Remove in future.
+                case "createdDate":
                     sortResultList.add(createOrder("createdDate", sortBy.isAscending()));
                     break;
                 case "cm:modified":
+                case "modifiedDate":
                     sortResultList.add(createOrder("lastModifiedDate", sortBy.isAscending()));
                     break;
                 default:
@@ -167,7 +170,7 @@ public class TaskCriteriaBuilder {
 
         if (CollectionUtils.isEmpty(sortResultList)) {
             log.info("No Sort parsed. Will be used default sorting by id");
-            sortResultList.add(createOrder("id", true));
+            sortResultList.add(createOrder("id", false));
         }
 
         return sortResultList;
