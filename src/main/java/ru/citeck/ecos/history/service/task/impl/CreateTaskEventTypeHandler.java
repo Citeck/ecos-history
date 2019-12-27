@@ -1,16 +1,16 @@
 package ru.citeck.ecos.history.service.task.impl;
 
-import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
+import ru.citeck.ecos.history.dto.DocumentInfo;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.task.AbstractTaskHistoryEventHandler;
+import ru.citeck.ecos.history.service.utils.TaskPopulateUtils;
 import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.RecordsService;
-import ru.citeck.ecos.records2.graphql.meta.annotation.MetaAtt;
 import ru.citeck.ecos.records2.spring.RemoteRecordsUtils;
 
 import java.text.ParseException;
@@ -39,17 +39,13 @@ public class CreateTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
             return;
         }
 
-        taskRecordEntity.setDocumentId(historyRecord.getDocumentId());
-        taskRecordEntity.setWorkflowId(historyRecord.getWorkflowInstanceId());
-        taskRecordEntity.setFormKey(historyRecord.getTaskFormKey());
-
-        taskRecordEntity.setAssignee(historyRecord.getInitiator());
-        taskRecordEntity.setAssigneeManager(requestParams.get(HistoryRecordService.TASK_ASSIGNEE_MANAGER));
+        TaskPopulateUtils.populateWorkflowProps(taskRecordEntity, historyRecord);
 
         taskRecordEntity.setStartEvent(historyRecord);
         taskRecordEntity.setStartEventDate(historyRecord.getCreationTime());
 
-        taskRecordEntity.setLastTaskComment(historyRecord.getLastTaskComment());
+        taskRecordEntity.setAssignee(historyRecord.getInitiator());
+        taskRecordEntity.setAssigneeManager(requestParams.get(HistoryRecordService.TASK_ASSIGNEE_MANAGER));
 
         String dueDate = requestParams.get(HistoryRecordService.TASK_DUE_DATE);
         if (dueDate != null) {
@@ -61,14 +57,9 @@ public class CreateTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
         }
 
         RecordRef documentRef = composeRecordRef(historyRecord.getDocumentId());
-        DocumentStatus documentMeta = RemoteRecordsUtils.runAsSystem(() ->
-            recordsService.getMeta(documentRef, DocumentStatus.class));
-
-        if (documentMeta != null) {
-            taskRecordEntity.setDocumentType(documentMeta.getDocumentType());
-            taskRecordEntity.setDocumentStatusName(documentMeta.getStatusName());
-            taskRecordEntity.setDocumentStatusTitle(documentMeta.statusTitleEn + "|" + documentMeta.statusTitleRu);
-        }
+        DocumentInfo documentMeta = RemoteRecordsUtils.runAsSystem(() ->
+            recordsService.getMeta(documentRef, DocumentInfo.class));
+        TaskPopulateUtils.populateDocumentProps(taskRecordEntity, documentMeta);
 
         taskRecordRepository.save(taskRecordEntity);
     }
@@ -81,23 +72,6 @@ public class CreateTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
     @Autowired
     public void setRecordsService(RecordsService recordsService) {
         this.recordsService = recordsService;
-    }
-
-    @Data
-    static class DocumentStatus {
-        private String id;
-
-        @MetaAtt("_type")
-        private String documentType;
-
-        @MetaAtt("icase:caseStatusAssoc.cm:name")
-        private String statusName;
-
-        @MetaAtt("icase:caseStatusAssoc.cm:title.ru")
-        private String statusTitleRu;
-
-        @MetaAtt("icase:caseStatusAssoc.cm:title.en")
-        private String statusTitleEn;
     }
 
 }

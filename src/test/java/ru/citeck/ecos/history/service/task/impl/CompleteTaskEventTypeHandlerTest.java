@@ -19,6 +19,7 @@ public class CompleteTaskEventTypeHandlerTest {
     private static final String WORKFLOW_TASK_ID = "activiti$3";
     private static final String DOCUMENT_ID = "ef28313f-0367-4803-afc7-98f40e7ad0d2";
     private static final String COMMENT = "comments";
+    private static final String LAST_TASK_COMMENT = "lastComments";
 
     @Test
     public void handle() {
@@ -43,6 +44,7 @@ public class CompleteTaskEventTypeHandlerTest {
         historyRecordEntity.setWorkflowInstanceId(WORKFLOW_TASK_ID);
         historyRecordEntity.setCreationTime(new Date());
         historyRecordEntity.setComments(COMMENT);
+        historyRecordEntity.setLastTaskComment(LAST_TASK_COMMENT);
 
         handler.handle(historyRecordEntity, Collections.emptyMap());
     }
@@ -54,5 +56,6 @@ public class CompleteTaskEventTypeHandlerTest {
         assertEquals(record.getWorkflowId(), WORKFLOW_TASK_ID);
         assertNotNull(record.getCompleteEventDate());
         assertEquals(record.getCompletionComment(), COMMENT);
+        assertEquals(record.getLastTaskComment(), LAST_TASK_COMMENT);
     }
 }

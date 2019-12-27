@@ -1,9 +1,9 @@
 package ru.citeck.ecos.history.service.task.impl;
 
-import org.junit.Assert;
 import org.junit.Test;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
+import ru.citeck.ecos.history.dto.DocumentInfo;
 import ru.citeck.ecos.history.repository.TaskRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.records2.RecordRef;
@@ -14,7 +14,8 @@ import java.util.Date;
 import java.util.HashMap;
 import java.util.Map;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
 import static org.mockito.Mockito.*;
 
 public class CreateTaskEventTypeHandlerTest {
@@ -27,6 +28,7 @@ public class CreateTaskEventTypeHandlerTest {
     private static final String DOCUMENT_ID = "ef28313f-0367-4803-afc7-98f40e7ad0d2";
     private static final String STATUS_DRAFT = "draft";
     private static final String DOCUMENT_TYPE = "contracts:agreement";
+    private static final String LAST_TASK_COMMENT = "lastComments";
 
     @Test
     public void handle() {
@@ -49,7 +51,7 @@ public class CreateTaskEventTypeHandlerTest {
         when(recordsService.getMeta(any(RecordRef.class), any()))
             .then(invocation -> {
                 RecordRef documentRef = invocation.getArgument(0);
-                CreateTaskEventTypeHandler.DocumentStatus result = new CreateTaskEventTypeHandler.DocumentStatus();
+                DocumentInfo result = new DocumentInfo();
                 result.setId(documentRef.toString());
                 result.setDocumentType(DOCUMENT_TYPE);
                 result.setStatusName(STATUS_DRAFT);
@@ -65,6 +67,7 @@ public class CreateTaskEventTypeHandlerTest {
         historyRecordEntity.setWorkflowInstanceId(WORKFLOW_TASK_ID);
         historyRecordEntity.setInitiator(INITIATOR);
         historyRecordEntity.setCreationTime(new Date());
+        historyRecordEntity.setLastTaskComment(LAST_TASK_COMMENT);
 
         Map<String, String> requestParams = new HashMap<>();
         requestParams.put(HistoryRecordService.TASK_ASSIGNEE_MANAGER, ASSIGNEE_MANAGER);
@@ -83,6 +86,7 @@ public class CreateTaskEventTypeHandlerTest {
         assertEquals(record.getDocumentType(), DOCUMENT_TYPE);
         assertEquals(record.getDocumentStatusName(), STATUS_DRAFT);
         assertEquals(record.getDocumentStatusTitle(), STATUS_DRAFT + "|" + STATUS_DRAFT);
+        assertEquals(record.getLastTaskComment(), LAST_TASK_COMMENT);
         assertNotNull(record.getStartEventDate());
     }
 
