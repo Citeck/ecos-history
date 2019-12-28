@@ -4,6 +4,7 @@ import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
 import ru.citeck.ecos.history.service.task.AbstractTaskHistoryEventHandler;
+import ru.citeck.ecos.history.service.utils.TaskPopulateUtils;
 
 import java.util.Map;
 
@@ -24,16 +25,12 @@ public class CompleteTaskEventTypeHandler extends AbstractTaskHistoryEventHandle
             return;
         }
 
-        taskRecordEntity.setDocumentId(historyRecord.getDocumentId());
-        taskRecordEntity.setWorkflowId(historyRecord.getWorkflowInstanceId());
-        taskRecordEntity.setFormKey(historyRecord.getTaskFormKey());
+        TaskPopulateUtils.populateWorkflowProps(taskRecordEntity, historyRecord);
 
         taskRecordEntity.setCompleteEvent(historyRecord);
         taskRecordEntity.setCompleteEventDate(historyRecord.getCreationTime());
 
         taskRecordEntity.setCompletionComment(historyRecord.getComments());
-
-        taskRecordEntity.setLastTaskComment(historyRecord.getLastTaskComment());
 
         taskRecordRepository.save(taskRecordEntity);
     }
