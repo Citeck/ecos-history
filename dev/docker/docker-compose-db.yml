@@ -2,7 +2,7 @@ version: '3'
 services:
     history-postgresql:
         ports:
-            - 5438:5432
+            - 5439:5432
         image: postgres:10.4
         environment:
             - POSTGRES_USER=history
