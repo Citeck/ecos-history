@@ -1,11 +1,13 @@
 package ru.citeck.ecos.history.service.task.impl;
 
 import org.junit.Test;
+import org.mockito.Mock;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
 import ru.citeck.ecos.history.dto.DocumentInfo;
 import ru.citeck.ecos.history.repository.TaskRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
+import ru.citeck.ecos.history.service.utils.TaskPopulateUtils;
 import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.RecordsService;
 import ru.citeck.ecos.records2.RecordsServiceImpl;
@@ -32,7 +34,9 @@ public class CreateTaskEventTypeHandlerTest {
 
     @Test
     public void handle() {
-        CreateTaskEventTypeHandler handler = new CreateTaskEventTypeHandler();
+        RecordsService recordsService = mock(RecordsServiceImpl.class);
+        TaskPopulateUtils taskPopulateUtils = new TaskPopulateUtils(recordsService);
+        CreateTaskEventTypeHandler handler = new CreateTaskEventTypeHandler(taskPopulateUtils);
 
         TaskRecordRepository repository = mock(TaskRecordRepository.class);
         when(repository.getByTaskId(anyString())).thenReturn(null);
@@ -47,7 +51,7 @@ public class CreateTaskEventTypeHandlerTest {
         });
         handler.setTaskRecordRepository(repository);
 
-        RecordsService recordsService = mock(RecordsServiceImpl.class);
+
         when(recordsService.getMeta(any(RecordRef.class), any()))
             .then(invocation -> {
                 RecordRef documentRef = invocation.getArgument(0);
@@ -59,7 +63,6 @@ public class CreateTaskEventTypeHandlerTest {
                 result.setStatusTitleEn(STATUS_DRAFT);
                 return result;
             });
-        handler.setRecordsService(recordsService);
 
         HistoryRecordEntity historyRecordEntity = new HistoryRecordEntity();
         historyRecordEntity.setTaskEventInstanceId(TASK_ID);

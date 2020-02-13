@@ -2,6 +2,7 @@ package ru.citeck.ecos.history.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,7 @@ import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
 
+@Slf4j
 @Service("historyRecordService")
 public class HistoryRecordServiceImpl implements HistoryRecordService {
 
@@ -55,8 +57,11 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     @Override
-    public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams) throws ParseException {
+    public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams)
+        throws ParseException {
         HistoryRecordEntity result = historyRecord != null ? historyRecord : new HistoryRecordEntity();
+
+        log.debug("requestParams:\n{}", requestParams);
 
         if (requestParams.containsKey(HISTORY_EVENT_ID)) {
             String historyEventId = requestParams.get(HISTORY_EVENT_ID);
@@ -152,8 +157,10 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             }
         }
 
-        String lastTaskComment = getLasComment(requestParams);
-        result.setLastTaskComment(lastTaskComment);
+        result.setLastTaskComment(getValueOrEmpty(requestParams, LAST_TASK_COMMENT));
+        result.setDocType(getValueOrEmpty(requestParams, DOC_TYPE));
+        result.setDocStatusName(getValueOrEmpty(requestParams, DOC_STATUS_NAME));
+        result.setDocStatusTitle(getValueOrEmpty(requestParams, DOC_STATUS_TITLE));
 
         historyRecordRepository.save(result);
 
@@ -162,13 +169,13 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         return result;
     }
 
-    private String getLasComment(Map<String, String> requestParams) {
-        if (!requestParams.containsKey(LAST_TASK_COMMENT)) {
-            return EMPTY_VALUE_KEY;
+    private String getValueOrEmpty(Map<String, String> requestParams, String valueKey) {
+        if (!requestParams.containsKey(valueKey)) {
+            return null;
         }
 
-        String lastTaskComment = requestParams.get(LAST_TASK_COMMENT);
-        return StringUtils.isNotBlank(lastTaskComment) ? lastTaskComment : EMPTY_VALUE_KEY;
+        String value = requestParams.get(valueKey);
+        return StringUtils.isNotBlank(value) ? value : "";
     }
 
     @Autowired

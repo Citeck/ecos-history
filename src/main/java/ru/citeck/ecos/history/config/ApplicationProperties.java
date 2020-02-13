@@ -22,6 +22,7 @@ public class ApplicationProperties {
 
     private RecordsProperties records;
     private String tryHeaderForUsername;
+    private boolean deferredActorsJobEnabled;
 
     @Getter
     @Setter

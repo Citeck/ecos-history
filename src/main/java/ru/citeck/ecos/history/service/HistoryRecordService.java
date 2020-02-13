@@ -32,9 +32,14 @@ public interface HistoryRecordService {
     String TASK_DUE_DATE = "taskDueDate";
     String TASK_ASSIGNEE_MANAGER = "assigneeManager";
     String TASK_FORM_KEY = "taskFormKey";
+    String DOC_TYPE = "docType";
+    String DOC_STATUS_NAME = "docStatusName";
+    String DOC_STATUS_TITLE = "docStatusTitle";
+    String TASK_ACTORS = "taskActors";
     String EMPTY_VALUE_KEY = "{empty}";
 
     List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException;
 
-    HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams) throws ParseException;
+    HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams)
+        throws ParseException;
 }

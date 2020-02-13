@@ -105,6 +105,18 @@ public class HistoryRecordEntity implements Serializable {
     private String taskFormKey;
     public static final String TASK_FORM_KEY = "taskFormKey";
 
+    @Column(name = "doc_type")
+    private String docType;
+    public static final String DOC_TYPE = "docType";
+
+    @Column(name = "doc_status_name")
+    private String docStatusName;
+    public static final String DOC_STATUS_NAME = "docStatusName";
+
+    @Column(name = "doc_status_title")
+    private String docStatusTitle;
+    public static final String DOC_STATUS_TITLE = "docStatusTitle";
+
     @Column(name = "last_task_comment", length = 6000)
     private String lastTaskComment;
     public static final String LAT_TASK_COMMENT = "lastTaskComment";

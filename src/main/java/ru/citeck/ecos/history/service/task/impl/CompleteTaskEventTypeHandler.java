@@ -13,6 +13,12 @@ public class CompleteTaskEventTypeHandler extends AbstractTaskHistoryEventHandle
 
     private static final String COMPLETE_TASK_TYPE = "task.complete";
 
+    private final TaskPopulateUtils taskPopulateUtils;
+
+    public CompleteTaskEventTypeHandler(TaskPopulateUtils taskPopulateUtils) {
+        this.taskPopulateUtils = taskPopulateUtils;
+    }
+
     @Override
     public String getEventType() {
         return COMPLETE_TASK_TYPE;
@@ -25,7 +31,7 @@ public class CompleteTaskEventTypeHandler extends AbstractTaskHistoryEventHandle
             return;
         }
 
-        TaskPopulateUtils.populateWorkflowProps(taskRecordEntity, historyRecord);
+        taskPopulateUtils.populateWorkflowProps(taskRecordEntity, historyRecord);
 
         taskRecordEntity.setCompleteEvent(historyRecord);
         taskRecordEntity.setCompleteEventDate(historyRecord.getCreationTime());
