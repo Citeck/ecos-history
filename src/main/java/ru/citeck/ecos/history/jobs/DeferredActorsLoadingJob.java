@@ -4,6 +4,7 @@ import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.IterableUtils;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.ActorRecordEntity;
@@ -28,6 +29,9 @@ public class DeferredActorsLoadingJob {
     private TaskRecordService taskRecordService;
     private ActorService actorService;
 
+    @Value("${ecos-history.deferred-actors-job-enabled}")
+    private boolean deferredActorsLoadingJobEnabled;
+
     @Autowired
     public DeferredActorsLoadingJob(DeferredActorsLoadingService deferredActorsLoadingService,
                                     TaskActorRecordService taskActorRecordService,
@@ -41,6 +45,10 @@ public class DeferredActorsLoadingJob {
 
     @Scheduled(initialDelay = 10_000, fixedDelay = 60_000)
     public void execute() {
+        if (!deferredActorsLoadingJobEnabled) {
+            return;
+        }
+
         List<DeferredActorsLoadingEntity> allDeferred = IterableUtils.toList(deferredActorsLoadingService.findAll());
         if (CollectionUtils.isEmpty(allDeferred)) {
             return;

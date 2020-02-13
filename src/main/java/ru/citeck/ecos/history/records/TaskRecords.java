@@ -40,6 +40,7 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 import static ru.citeck.ecos.history.service.HistoryRecordService.EMPTY_VALUE_KEY;
+import static ru.citeck.ecos.history.service.utils.TaskPopulateUtils.STATUS_TITLE_SEPARATOR;
 
 @Slf4j
 @Service
@@ -167,15 +168,19 @@ public class TaskRecords extends LocalRecordsDAO implements
                     continue;
                 }
 
+                if (ATT_DOC_STATUS_TITLE.equals(att) && StringUtils.isNotBlank(entity.getDocumentStatusTitle())) {
+                    continue;
+                }
+
                 String attrSchema = attributesMap.get(att);
                 if (ATTRIBUTES_TO_RECEIVING_FROM_ALFRESCO.contains(att)) {
-                    printDebugRemoteAttributeAccess(att, attrSchema, entity);
+                    printWarnRemoteAttributeAccess(att, attrSchema, entity);
                     contextData.attributesToRequest.put(att, attrSchema);
                     continue;
                 }
                 if (att.startsWith(ECM_DOCUMENT_FIELD_PREFIX)
                     && !facadeAtts.containsKey(facadeAttribute)) {
-                    printDebugRemoteAttributeAccess(att, attrSchema, entity);
+                    printWarnRemoteAttributeAccess(att, attrSchema, entity);
                     contextData.attributesToRequest.put(att, attrSchema);
                 }
             }
@@ -217,10 +222,15 @@ public class TaskRecords extends LocalRecordsDAO implements
                 case ATT_DOC_STATUS:
                     JsonNode statusStr = recordsService.getAttribute(RecordRef.create("", FacadeRecords.ID,
                         "workspace://SpacesStore/" + entity.getDocumentId()), "caseStatus{.str}");
-                    return statusStr != null && StringUtils.isNotBlank(statusStr.asText())
+                    String status = statusStr != null && StringUtils.isNotBlank(statusStr.asText())
                         ? statusStr.asText() : entity.getDocumentStatusName();
+                    return EMPTY_VALUE_KEY.equals(status) ? null : status;
                 case ATT_DOC_TYPE:
                     String documentType = entity.getDocumentType();
+                    if (EMPTY_VALUE_KEY.equals(documentType)) {
+                        return null;
+                    }
+
                     if (StringUtils.isNotBlank(documentType)) {
                         return documentType;
                     }
@@ -229,6 +239,23 @@ public class TaskRecords extends LocalRecordsDAO implements
                 case ATT_LAST_COMMENT:
                     String lastTaskComment = entity.getLastTaskComment();
                     return EMPTY_VALUE_KEY.equals(lastTaskComment) ? null : lastTaskComment;
+                case ATT_DOC_STATUS_TITLE:
+                    String statusTitle = entity.getDocumentStatusTitle();
+                    if (EMPTY_VALUE_KEY.equals(statusTitle)) {
+                        return null;
+                    }
+
+                    //TODO: remove hard coded returning RU status title
+                    String[] titles = StringUtils.split(statusTitle, STATUS_TITLE_SEPARATOR);
+                    if (titles.length == 0) {
+                        return null;
+                    }
+
+                    if (titles.length > 1) {
+                        return titles[1];
+                    }
+
+                    return titles[0];
             }
 
             String facadeAttr = fixLegacyAttNameForFacade(name);
@@ -271,6 +298,8 @@ public class TaskRecords extends LocalRecordsDAO implements
         private RecordMeta getDocData(RecordRef ref) {
             ContextData contextData = initializeAndGetContextData();
             if (MapUtils.isEmpty(contextData.result)) {
+                log.debug("Request attr from alfresco: {}", contextData.attributesToRequest);
+
                 //TODO: fix runAsSystem
                 RecordsResult<RecordMeta> attributes = RemoteRecordsUtils.runAsSystem(() ->
                     recordsService.getRawAttributes(contextData.taskRefs, contextData.attributesToRequest));
@@ -302,7 +331,7 @@ public class TaskRecords extends LocalRecordsDAO implements
         private Map<RecordRef, RecordMeta> result;
     }
 
-    private void printDebugRemoteAttributeAccess(String attr, String schema, TaskRecordEntity entity) {
+    private void printWarnRemoteAttributeAccess(String attr, String schema, TaskRecordEntity entity) {
         log.warn("Remote access attribute from alfresco - taskId:{}, docId:{}, key:{}, value:{}", entity.getTaskId(),
             entity.getDocumentId(), attr, schema);
     }

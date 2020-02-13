@@ -198,6 +198,7 @@ ecos-history:
                     username: admin
                     password: admin
     try-header-for-username: X-Alfresco-Remote-User
+    deferred-actors-job-enabled: true
 
 spring.rabbitmq:
     host: rabbitmq

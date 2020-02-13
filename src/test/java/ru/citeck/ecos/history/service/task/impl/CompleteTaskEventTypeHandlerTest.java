@@ -4,13 +4,19 @@ import org.junit.Test;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
 import ru.citeck.ecos.history.repository.TaskRecordRepository;
+import ru.citeck.ecos.history.service.utils.TaskPopulateUtils;
+import ru.citeck.ecos.records2.RecordsService;
+import ru.citeck.ecos.records2.RecordsServiceImpl;
 
 import java.util.Collections;
 import java.util.Date;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
-import static org.mockito.Mockito.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertNotNull;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyString;
+import static org.mockito.Mockito.mock;
+import static org.mockito.Mockito.when;
 
 public class CompleteTaskEventTypeHandlerTest {
 
@@ -23,7 +29,9 @@ public class CompleteTaskEventTypeHandlerTest {
 
     @Test
     public void handle() {
-        CompleteTaskEventTypeHandler handler = new CompleteTaskEventTypeHandler();
+        RecordsService recordsService = mock(RecordsServiceImpl.class);
+        TaskPopulateUtils taskPopulateUtils = new TaskPopulateUtils(recordsService);
+        CompleteTaskEventTypeHandler handler = new CompleteTaskEventTypeHandler(taskPopulateUtils);
 
         TaskRecordRepository repository = mock(TaskRecordRepository.class);
         when(repository.getByTaskId(anyString())).thenReturn(null);

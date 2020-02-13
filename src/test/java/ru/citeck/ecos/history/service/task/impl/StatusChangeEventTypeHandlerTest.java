@@ -4,7 +4,9 @@ import org.junit.Before;
 import org.junit.Test;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
+import ru.citeck.ecos.history.dto.DocumentInfo;
 import ru.citeck.ecos.history.repository.TaskRecordRepository;
+import ru.citeck.ecos.history.service.utils.TaskPopulateUtils;
 import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.RecordsService;
 import ru.citeck.ecos.records2.RecordsServiceImpl;
@@ -13,8 +15,9 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.*;
-import static org.mockito.ArgumentMatchers.*;
+import static org.junit.Assert.assertEquals;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
 
@@ -34,7 +37,9 @@ public class StatusChangeEventTypeHandlerTest {
 
     @Test
     public void handle() {
-        StatusChangeEventTypeHandler handler = new StatusChangeEventTypeHandler();
+        RecordsService recordsService = mock(RecordsServiceImpl.class);
+        TaskPopulateUtils taskPopulateUtils = new TaskPopulateUtils(recordsService);
+        StatusChangeEventTypeHandler handler = new StatusChangeEventTypeHandler(taskPopulateUtils);
 
         TaskRecordRepository repository = mock(TaskRecordRepository.class);
         when(repository.getByDocumentId(eq(DOCUMENT_ID))).then(invocation -> mockFindTasksByDocumentId());
@@ -46,17 +51,16 @@ public class StatusChangeEventTypeHandlerTest {
         });
         handler.setTaskRecordRepository(repository);
 
-        RecordsService recordsService = mock(RecordsServiceImpl.class);
+
         when(recordsService.getMeta(any(RecordRef.class), any())).then(invocation -> {
             RecordRef documentRef = invocation.getArgument(0);
-            StatusChangeEventTypeHandler.DocumentStatus result = new StatusChangeEventTypeHandler.DocumentStatus();
+            DocumentInfo result = new DocumentInfo();
             result.setId(documentRef.toString());
             result.setStatusName(STATUS_DRAFT);
             result.setStatusTitleRu(STATUS_DRAFT);
             result.setStatusTitleEn(STATUS_DRAFT);
             return result;
         });
-        handler.setRecordsService(recordsService);
 
         HistoryRecordEntity historyRecordEntity = new HistoryRecordEntity();
         historyRecordEntity.setDocumentId(DOCUMENT_ID);
