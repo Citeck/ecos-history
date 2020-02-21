@@ -164,11 +164,11 @@ public class TaskRecords extends LocalRecordsDAO implements
                     continue;
                 }
 
-                if (ATT_LAST_COMMENT.equals(att) && StringUtils.isNotBlank(entity.getLastTaskComment())) {
+                if (ATT_LAST_COMMENT.equals(att) && entity.getLastTaskComment() != null) {
                     continue;
                 }
 
-                if (ATT_DOC_STATUS_TITLE.equals(att) && StringUtils.isNotBlank(entity.getDocumentStatusTitle())) {
+                if (ATT_DOC_STATUS_TITLE.equals(att) && entity.getDocumentStatusTitle() != null) {
                     continue;
                 }
 

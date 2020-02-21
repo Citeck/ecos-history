@@ -52,13 +52,30 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoTaskAssignBecauseEmptyActorsDat() throws ParseException {
+    public void callToRemoteAlfrescoTaskAssignBecauseEmptyActorsData() throws ParseException {
         String taskId = "activiti&37373";
 
         Map<String, String> additionalParams = new HashMap<>();
         additionalParams.put(DOC_TYPE, "payment");
         additionalParams.put(DOC_STATUS_NAME, "draft");
         additionalParams.put(TASK_ACTORS, "");
+        additionalParams.put(TASK_EVENT_INSTANCE_ID, taskId);
+
+        saveTaskEvent("task.assign", additionalParams, null);
+
+        RecordRef recordRefTask = actorService.composeTaskRecordRef(taskId);
+
+        verify(recordsService).getMeta(recordRefTask, ActorsInfo.class);
+    }
+
+    @Test
+    public void callToRemoteAlfrescoTaskAssignBecauseEmptyListActorsData() throws ParseException {
+        String taskId = "activiti&67544332";
+
+        Map<String, String> additionalParams = new HashMap<>();
+        additionalParams.put(DOC_TYPE, "payment");
+        additionalParams.put(DOC_STATUS_NAME, "draft");
+        additionalParams.put(TASK_ACTORS, "[]");
         additionalParams.put(TASK_EVENT_INSTANCE_ID, taskId);
 
         saveTaskEvent("task.assign", additionalParams, null);

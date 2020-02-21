@@ -84,6 +84,11 @@ public class AssignTaskEventTypeHandler extends AbstractTaskHistoryEventHandler 
             String actorsData = requestParams.get(TASK_ACTORS);
             try {
                 result = parseActorsFromStr(actorsData);
+                if (CollectionUtils.isEmpty(result)) {
+                    log.warn("No actors coming from assign task event: {}. Trying resolve actors from remote alfresco",
+                        taskRecordEntity.getTaskId());
+                    remoteRequestIsRequired = true;
+                }
             } catch (Exception e) {
                 remoteRequestIsRequired = true;
                 log.error("Failed parse actors from String. Document: " + historyRecord.getDocumentId() + ", taskId: "
