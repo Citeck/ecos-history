@@ -1,6 +1,5 @@
 package ru.citeck.ecos.history.records.tasks;
 
-import com.fasterxml.jackson.databind.JsonNode;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.lang3.StringUtils;
@@ -12,6 +11,8 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
 import ru.citeck.ecos.history.repository.specifications.TaskSpecification;
+import ru.citeck.ecos.records2.objdata.DataValue;
+import ru.citeck.ecos.records2.objdata.ObjectData;
 import ru.citeck.ecos.records2.request.query.RecordsQuery;
 import ru.citeck.ecos.records2.request.query.SortBy;
 import ru.citeck.ecos.records2.request.query.page.SkipPage;
@@ -33,10 +34,10 @@ public class TaskCriteriaBuilder {
     }
 
     private List<Specification<TaskRecordEntity>> parseSpecifications(RecordsQuery recordsQuery) {
-        JsonNode query = recordsQuery.getQuery();
+        ObjectData query = recordsQuery.getQuery(ObjectData.class);
         List<Specification<TaskRecordEntity>> searchSpecifications = new ArrayList<>();
         if (query.has("actor")) {
-            JsonNode actorNode = query.get("actor");
+            DataValue actorNode = query.get("actor");
             if (actorNode.isArray()) {
                 List<String> actors = getArrayActors(actorNode);
                 searchSpecifications.add(TaskSpecification.hasActor(actors));
@@ -56,24 +57,21 @@ public class TaskCriteriaBuilder {
         }
 
         if (query.has("active")) {
-            JsonNode activeNode = query.get("active");
-            switch (activeNode.getNodeType()) {
-                case BOOLEAN:
-                    searchSpecifications.add(TaskSpecification.isActive(activeNode.asBoolean()));
-                    break;
-                case STRING:
-                    String rawActive = activeNode.asText();
-                    if (StringUtils.isNotBlank(rawActive)) {
-                        searchSpecifications.add(TaskSpecification.isActive(Boolean.parseBoolean(rawActive)));
-                    }
-                    break;
-                default:
-                    log.warn("Active not search criteria not parsed: " + activeNode.asText());
+            DataValue activeNode = query.get("active");
+            if (activeNode.isBoolean()) {
+                searchSpecifications.add(TaskSpecification.isActive(activeNode.asBoolean()));
+            } else if (activeNode.isTextual()) {
+                String rawActive = activeNode.asText();
+                if (StringUtils.isNotBlank(rawActive)) {
+                    searchSpecifications.add(TaskSpecification.isActive(Boolean.parseBoolean(rawActive)));
+                }
+            } else {
+                log.warn("Active not search criteria not parsed: " + activeNode.asText());
             }
         }
 
         if (query.has("docType")) {
-            JsonNode docTypeNode = query.get("docType");
+            DataValue docTypeNode = query.get("docType");
             String documentType = docTypeNode.asText();
             if (StringUtils.isNotBlank(documentType)) {
                 searchSpecifications.add(TaskSpecification.hasDocumentType(documentType));
@@ -81,7 +79,7 @@ public class TaskCriteriaBuilder {
         }
 
         if (query.has("docStatus")) {
-            JsonNode docStatusNode = query.get("docStatus");
+            DataValue docStatusNode = query.get("docStatus");
             String documentStatus = docStatusNode.asText();
             if (StringUtils.isNotBlank(documentStatus)) {
                 searchSpecifications.add(TaskSpecification.hasDocumentStatus(documentStatus));
@@ -104,9 +102,9 @@ public class TaskCriteriaBuilder {
         return searchSpecifications;
     }
 
-    private List<String> getArrayActors(JsonNode actorArrayNode) {
+    private List<String> getArrayActors(DataValue actorArrayNode) {
         List<String> result = new ArrayList<>();
-        for (JsonNode actorNode : actorArrayNode) {
+        for (DataValue actorNode : actorArrayNode) {
             String actor = actorNode.asText();
             if (StringUtils.isNotBlank(actor)) {
                 result.add(actor);

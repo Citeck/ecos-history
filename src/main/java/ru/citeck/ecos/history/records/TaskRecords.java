@@ -28,13 +28,14 @@ import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.graphql.meta.value.InnerMetaValue;
 import ru.citeck.ecos.records2.graphql.meta.value.MetaField;
 import ru.citeck.ecos.records2.graphql.meta.value.MetaValue;
+import ru.citeck.ecos.records2.objdata.DataValue;
 import ru.citeck.ecos.records2.request.query.RecordsQuery;
 import ru.citeck.ecos.records2.request.query.RecordsQueryResult;
 import ru.citeck.ecos.records2.request.result.RecordsResult;
 import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDAO;
 import ru.citeck.ecos.records2.source.dao.local.RecordsMetaLocalDAO;
 import ru.citeck.ecos.records2.source.dao.local.RecordsQueryWithMetaLocalDAO;
-import ru.citeck.ecos.records2.spring.RemoteRecordsUtils;
+import ru.citeck.ecos.records2.spring.utils.RemoteRecordsUtils;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -202,8 +203,8 @@ public class TaskRecords extends LocalRecordsDAO implements
             RecordMeta recordMeta = getDocData(getAlfrescoWfTaskRemoteRecordRef());
 
             if (recordMeta.has(name)) {
-                JsonNode node = recordMeta.get(name);
-                if (node instanceof ArrayNode) {
+                DataValue node = recordMeta.get(name);
+                if (node.isArray()) {
                     List<InnerMetaValue> result = new ArrayList<>();
                     node.forEach(jsonNode -> result.add(new InnerMetaValue(jsonNode)));
                     return result;
@@ -220,7 +221,7 @@ public class TaskRecords extends LocalRecordsDAO implements
                 case ATT_FORM_KEY:
                     return entity.getFormKey();
                 case ATT_DOC_STATUS:
-                    JsonNode statusStr = recordsService.getAttribute(RecordRef.create("", FacadeRecords.ID,
+                    DataValue statusStr = recordsService.getAttribute(RecordRef.create("", FacadeRecords.ID,
                         "workspace://SpacesStore/" + entity.getDocumentId()), "caseStatus{.str}");
                     String status = statusStr != null && StringUtils.isNotBlank(statusStr.asText())
                         ? statusStr.asText() : entity.getDocumentStatusName();

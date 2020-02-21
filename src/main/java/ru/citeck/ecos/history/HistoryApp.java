@@ -14,7 +14,7 @@ import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;
 import org.springframework.boot.context.properties.EnableConfigurationProperties;
 import org.springframework.cloud.client.discovery.EnableDiscoveryClient;
 import org.springframework.core.env.Environment;
-import ru.citeck.ecos.records2.spring.RecordsServiceFactoryConfig;
+import ru.citeck.ecos.records2.spring.config.RecordsServiceFactoryConfiguration;
 
 import javax.annotation.PostConstruct;
 import java.net.InetAddress;
@@ -24,7 +24,7 @@ import java.util.Collection;
 
 @SpringBootApplication(scanBasePackageClasses = {
     HistoryApp.class,
-    RecordsServiceFactoryConfig.class,
+    RecordsServiceFactoryConfiguration.class,
 })
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
 @EnableDiscoveryClient

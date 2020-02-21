@@ -9,7 +9,7 @@ import ru.citeck.ecos.history.dto.ActorsInfo;
 import ru.citeck.ecos.history.repository.ActorRecordRepository;
 import ru.citeck.ecos.history.service.ActorService;
 import ru.citeck.ecos.records2.RecordsService;
-import ru.citeck.ecos.records2.spring.RemoteRecordsUtils;
+import ru.citeck.ecos.records2.spring.utils.RemoteRecordsUtils;
 
 import java.util.HashSet;
 import java.util.Set;
