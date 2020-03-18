@@ -11,7 +11,7 @@ import ru.citeck.ecos.history.security.SecurityUtils;
 import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.RecordsService;
 import ru.citeck.ecos.records2.graphql.meta.annotation.MetaAtt;
-import ru.citeck.ecos.records2.spring.utils.RemoteRecordsUtils;
+import ru.citeck.ecos.records2.rest.RemoteRecordsUtils;
 
 import java.util.Collections;
 import java.util.List;
