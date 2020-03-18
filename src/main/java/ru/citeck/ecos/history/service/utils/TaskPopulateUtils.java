@@ -7,7 +7,7 @@ import ru.citeck.ecos.history.domain.TaskRecordEntity;
 import ru.citeck.ecos.history.dto.DocumentInfo;
 import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.RecordsService;
-import ru.citeck.ecos.records2.spring.utils.RemoteRecordsUtils;
+import ru.citeck.ecos.records2.rest.RemoteRecordsUtils;
 
 @Slf4j
 @Component
