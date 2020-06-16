@@ -12,6 +12,14 @@ import java.util.List;
 public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEntity, String> {
 
     /**
+     * Get all history records
+     * @return List of history records
+     */
+    @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
+        "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
+    List<HistoryRecordEntity> getAllRecords(Pageable pageable);
+
+    /**
      * Get all records by document id
      *
      * @param documentId Document id

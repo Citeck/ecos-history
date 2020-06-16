@@ -24,6 +24,12 @@ public class HistoryRecordsController {
     private HistoryRecordConverter historyRecordConverter;
     private HistoryRecordService historyRecordService;
 
+    @RequestMapping(method = RequestMethod.GET, value = "/all_records/page/{page}/limit/{limit}")
+    public Object getAllRecords(@PathVariable Integer page, @PathVariable Integer limit) {
+        List<HistoryRecordEntity> records = historyRecordRepository.getAllRecords(PageRequest.of(page, limit));
+        return historyRecordConverter.convertAll(records);
+    }
+
     @RequestMapping(method = RequestMethod.GET, value = "/by_document_id/{documentId}")
     public Object getAllRecordsByDocumentId(@PathVariable String documentId) {
         List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(documentId);
