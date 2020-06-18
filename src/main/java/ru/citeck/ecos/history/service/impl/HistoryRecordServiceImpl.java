@@ -85,7 +85,12 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         }
 
         if (requestParams.containsKey(COMMENTS)) {
-            result.setComments(requestParams.get(COMMENTS));
+            String comment = requestParams.get(COMMENTS);
+            if (StringUtils.isNotBlank(comment) && comment.length() > 6000) {
+                log.warn("Event comment is too long (" + comment.length() + ") and will be trimmed. Comment: " + comment);
+                comment = comment.substring(0, 5998) + "~";
+            }
+            result.setComments(comment);
         }
 
         if (requestParams.containsKey(VERSION)) {
