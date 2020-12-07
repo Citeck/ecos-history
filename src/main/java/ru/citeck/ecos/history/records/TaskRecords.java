@@ -7,6 +7,7 @@ import org.apache.commons.collections4.CollectionUtils;
 import org.apache.commons.collections4.MapUtils;
 import org.apache.commons.lang.StringUtils;
 import org.bson.Document;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -31,9 +32,10 @@ import ru.citeck.ecos.records2.request.query.RecordsQuery;
 import ru.citeck.ecos.records2.request.query.RecordsQueryResult;
 import ru.citeck.ecos.records2.request.result.RecordsResult;
 import ru.citeck.ecos.records2.rest.RemoteRecordsUtils;
-import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDAO;
-import ru.citeck.ecos.records2.source.dao.local.RecordsMetaLocalDAO;
-import ru.citeck.ecos.records2.source.dao.local.RecordsQueryWithMetaLocalDAO;
+import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDao;
+import ru.citeck.ecos.records2.source.dao.local.v2.LocalRecordsMetaDao;
+import ru.citeck.ecos.records2.source.dao.local.v2.LocalRecordsQueryWithMetaDao;
+import ru.citeck.ecos.records3.record.request.RequestContext;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -43,9 +45,9 @@ import static ru.citeck.ecos.history.service.utils.TaskPopulateUtils.STATUS_TITL
 
 @Slf4j
 @Service
-public class TaskRecords extends LocalRecordsDAO implements
-    RecordsQueryWithMetaLocalDAO<MetaValue>,
-    RecordsMetaLocalDAO<MetaValue> {
+public class TaskRecords extends LocalRecordsDao implements
+    LocalRecordsQueryWithMetaDao<MetaValue>,
+    LocalRecordsMetaDao<MetaValue> {
 
     private static final String ID = "tasks";
     private static final String TASK_RECORD_DATA_KEY = "taskRecordDataKey";
@@ -98,7 +100,9 @@ public class TaskRecords extends LocalRecordsDAO implements
     }
 
     @Override
-    public RecordsQueryResult<MetaValue> getMetaValues(RecordsQuery recordsQuery) {
+    public RecordsQueryResult<MetaValue> queryLocalRecords(@NotNull RecordsQuery recordsQuery,
+                                                           @NotNull MetaField field) {
+
         Specification<TaskRecordEntity> searchSpecification = taskCriteriaBuilder.buildSpecification(recordsQuery);
         if (searchSpecification == null) {
             return new RecordsQueryResult<>();
@@ -122,12 +126,13 @@ public class TaskRecords extends LocalRecordsDAO implements
     }
 
     @Override
-    public List<MetaValue> getMetaValues(List<RecordRef> list) {
-        if (CollectionUtils.isEmpty(list)) {
+    public List<MetaValue> getLocalRecordsMeta(@NotNull List<RecordRef> records, @NotNull MetaField metaField) {
+
+        if (CollectionUtils.isEmpty(records)) {
             return Collections.emptyList();
         }
 
-        List<String> taskIds = list.stream().map(RecordRef::getId).collect(Collectors.toList());
+        List<String> taskIds = records.stream().map(RecordRef::getId).collect(Collectors.toList());
         List<TaskRecordEntity> entities = taskRecordService.findTasksByTaskId(taskIds);
         return entities.stream().map(Task::new).collect(Collectors.toList());
     }
@@ -308,16 +313,16 @@ public class TaskRecords extends LocalRecordsDAO implements
         }
 
         private ContextData initializeAndGetContextData() {
-            QueryContext current = QueryContext.getCurrent();
+            RequestContext current = RequestContext.getCurrentNotNull();
             ContextData contextData;
-            if (current.hasData(TASK_RECORD_DATA_KEY)) {
-                contextData = current.getData(TASK_RECORD_DATA_KEY);
+            if (current.hasVar(TASK_RECORD_DATA_KEY)) {
+                contextData = current.getVar(TASK_RECORD_DATA_KEY);
             } else {
                 contextData = new ContextData();
                 contextData.attributesToRequest = new HashMap<>();
                 contextData.taskRefs = new HashSet<>();
                 contextData.result = new HashMap<>();
-                current.putData(TASK_RECORD_DATA_KEY, contextData);
+                current.putVar(TASK_RECORD_DATA_KEY, contextData);
             }
             return contextData;
         }

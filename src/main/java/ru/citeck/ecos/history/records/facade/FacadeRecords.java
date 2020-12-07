@@ -1,12 +1,14 @@
 package ru.citeck.ecos.history.records.facade;
 
 import org.apache.commons.lang.StringUtils;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.stereotype.Component;
 import ru.citeck.ecos.history.mongo.domain.Record;
 import ru.citeck.ecos.history.service.RecordsFacadeService;
 import ru.citeck.ecos.records2.RecordRef;
-import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDAO;
-import ru.citeck.ecos.records2.source.dao.local.RecordsMetaLocalDAO;
+import ru.citeck.ecos.records2.graphql.meta.value.MetaField;
+import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDao;
+import ru.citeck.ecos.records2.source.dao.local.v2.LocalRecordsMetaDao;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -15,7 +17,7 @@ import java.util.List;
  * @author Roman Makarskiy
  */
 @Component
-public class FacadeRecords extends LocalRecordsDAO implements RecordsMetaLocalDAO<FacadeRecordMeta> {
+public class FacadeRecords extends LocalRecordsDao implements LocalRecordsMetaDao<FacadeRecordMeta> {
 
     public static final String ID = "facade";
 
@@ -32,10 +34,11 @@ public class FacadeRecords extends LocalRecordsDAO implements RecordsMetaLocalDA
     }
 
     @Override
-    public List<FacadeRecordMeta> getMetaValues(List<RecordRef> list) {
+    public List<FacadeRecordMeta> getLocalRecordsMeta(@NotNull List<RecordRef> records, @NotNull MetaField metaField) {
+
         List<FacadeRecordMeta> result = new ArrayList<>();
 
-        for (RecordRef recordRef : list) {
+        for (RecordRef recordRef : records) {
             String id = recordRef.getId();
             if (StringUtils.isBlank(id)) {
                 continue;

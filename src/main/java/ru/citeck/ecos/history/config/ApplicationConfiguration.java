@@ -3,7 +3,7 @@ package ru.citeck.ecos.history.config;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.Configuration;
-import ru.citeck.ecos.records2.RecordsProperties;
+import ru.citeck.ecos.records3.RecordsProperties;
 
 @Configuration
 public class ApplicationConfiguration {
