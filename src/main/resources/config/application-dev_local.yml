@@ -1,4 +1,3 @@
-
 # force setup host and port of microservices to fix requests sending from this app
 
 alfresco:

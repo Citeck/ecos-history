@@ -1,4 +1,3 @@
-
 # fix for windows and macos to allow microservices in docker send requests to this app
 
 eureka:
