@@ -35,6 +35,7 @@ public class HistoryRecoverJob {
         "userId",
         "taskRole",
         "taskOutcome",
+        "taskDefinitionKey",
         "taskType",
         "fullTaskType",
         "initiator",

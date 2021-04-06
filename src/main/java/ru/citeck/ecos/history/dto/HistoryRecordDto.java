@@ -7,7 +7,7 @@ import java.io.Serializable;
 @Data
 public class HistoryRecordDto implements Serializable {
 
-    private static final long serialVersionUID = -8215328451338606217L;
+    private static final long serialVersionUID = -2176188346685254300L;
 
     private String uuid;
     private String historyEventId;
@@ -19,6 +19,7 @@ public class HistoryRecordDto implements Serializable {
     private Long creationTime;
     private String taskRole;
     private String taskOutcome;
+    private String taskDefinitionKey;
     private String taskType;
     private String documentId;
 }

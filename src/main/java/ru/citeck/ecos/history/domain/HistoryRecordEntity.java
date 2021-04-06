@@ -65,6 +65,10 @@ public class HistoryRecordEntity implements Serializable {
     private String taskOutcome;
     public static final String TASK_OUTCOME = "taskOutcome";
 
+    @Column(name = "task_definition_key")
+    private String taskDefinitionKey;
+    public static final String TASK_DEFINITION_KEY = "taskDefinitionKey";
+
     @Column(name = "task_type")
     private String taskType;
     public static final String TASK_TYPE = "taskType";
