@@ -5,4 +5,9 @@
             <column name="task_definition_key" type="varchar(255)"/>
         </addColumn>
     </changeSet>
+    <changeSet author="Aleksey.Zaytsev" id="1617639267000-2">
+        <addColumn tableName="history_records">
+            <column name="task_title" type="varchar(1000)"/>
+        </addColumn>
+    </changeSet>
 </databaseChangeLog>

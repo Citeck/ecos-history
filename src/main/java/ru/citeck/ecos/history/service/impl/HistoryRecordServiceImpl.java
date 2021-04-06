@@ -110,6 +110,10 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             result.setUserId(requestParams.get(USER_ID));
         }
 
+        if (requestParams.containsKey(TASK_TITLE)) {
+            result.setTaskTitle(requestParams.get(TASK_TITLE));
+        }
+
         if (requestParams.containsKey(TASK_ROLE)) {
             result.setTaskRole(requestParams.get(TASK_ROLE));
         }

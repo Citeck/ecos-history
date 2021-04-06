@@ -18,6 +18,7 @@ public interface HistoryRecordService {
     String CREATION_TIME = "creationTime";
     String USERNAME = "username";
     String USER_ID = "userId";
+    String TASK_TITLE = "taskTitle";
     String TASK_ROLE = "taskRole";
     String TASK_OUTCOME = "taskOutcome";
     String TASK_DEFINITION_KEY = "taskDefinitionKey";

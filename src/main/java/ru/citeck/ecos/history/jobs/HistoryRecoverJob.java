@@ -33,6 +33,7 @@ public class HistoryRecoverJob {
         "creationTime",
         "username",
         "userId",
+        "taskTitle",
         "taskRole",
         "taskOutcome",
         "taskDefinitionKey",
