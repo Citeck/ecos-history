@@ -27,8 +27,10 @@ public class HistoryRecordConverter implements Converter<HistoryRecordEntity, Hi
         Date creationTime = historyRecordEntity.getCreationTime();
         result.setCreationTime(creationTime != null ? creationTime.getTime() : 0L);
 
+        result.setTaskTitle(historyRecordEntity.getTaskTitle());
         result.setTaskRole(historyRecordEntity.getTaskRole());
         result.setTaskOutcome(historyRecordEntity.getTaskOutcome());
+        result.setTaskDefinitionKey(historyRecordEntity.getTaskDefinitionKey());
         result.setTaskType(historyRecordEntity.getFullTaskType());
         result.setDocumentId(historyRecordEntity.getDocumentId());
         return result;
