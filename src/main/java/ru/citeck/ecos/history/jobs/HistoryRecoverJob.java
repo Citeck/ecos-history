@@ -33,10 +33,8 @@ public class HistoryRecoverJob {
         "creationTime",
         "username",
         "userId",
-        "taskTitle",
         "taskRole",
         "taskOutcome",
-        "taskDefinitionKey",
         "taskType",
         "fullTaskType",
         "initiator",
@@ -45,7 +43,9 @@ public class HistoryRecoverJob {
         "taskEventInstanceId",
         "documentVersion",
         "propertyName",
-        "expectedPerformTime"
+        "expectedPerformTime",
+        "taskTitle",
+        "taskDefinitionKey"
     };
 
     @Value("${ecos-history.recover.sourceFolder}")
