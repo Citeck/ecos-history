@@ -43,7 +43,9 @@ public class HistoryRecoverJob {
         "taskEventInstanceId",
         "documentVersion",
         "propertyName",
-        "expectedPerformTime"
+        "expectedPerformTime",
+        "taskTitle",
+        "taskDefinitionKey"
     };
 
     @Value("${ecos-history.recover.sourceFolder}")

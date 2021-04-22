@@ -9,6 +9,7 @@
     <include file="config/liquibase/changelog/20191127091135_add_form_key_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20191205130349_add_last_task_comment_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20200211095728_add_fields_to_history_records_changelog.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20210405231427_add_task_definition_key_to_history_records_changelog.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
 </databaseChangeLog>
