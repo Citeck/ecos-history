@@ -1,10 +1,9 @@
 package ru.citeck.ecos.history.config;
 
-import com.github.mongobee.Mongobee;
+import com.github.cloudyrock.mongock.SpringMongock;
+import com.github.cloudyrock.mongock.SpringMongockBuilder;
 import com.mongodb.MongoClient;
 import io.github.jhipster.domain.util.JSR310DateConverters;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
@@ -13,7 +12,6 @@ import org.springframework.context.annotation.Import;
 import org.springframework.context.annotation.Profile;
 import org.springframework.core.convert.converter.Converter;
 import org.springframework.data.mongodb.config.EnableMongoAuditing;
-import org.springframework.data.mongodb.core.MongoTemplate;
 import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.event.ValidatingMongoEventListener;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
@@ -32,7 +30,7 @@ import java.util.List;
 @EnableMongoAuditing(auditorAwareRef = "springSecurityAuditorAware")
 public class DatabaseMongoConfiguration {
 
-    private final Logger log = LoggerFactory.getLogger(DatabaseMongoConfiguration.class);
+    private static final String MONGO_CHANGELOG_PACKAGE = "ru.citeck.ecos.history.mongo.dbmigrations";
 
     @Bean
     public ValidatingMongoEventListener validatingMongoEventListener() {
@@ -53,15 +51,11 @@ public class DatabaseMongoConfiguration {
     }
 
     @Bean
-    public Mongobee mongobee(MongoClient mongoClient, MongoTemplate mongoTemplate, MongoProperties mongoProperties) {
-        log.debug("Configuring Mongobee");
-        Mongobee mongobee = new Mongobee(mongoClient);
-        mongobee.setDbName(mongoProperties.getMongoClientDatabase());
-        mongobee.setMongoTemplate(mongoTemplate);
-        // package to scan for migrations
-        mongobee.setChangeLogsScanPackage("ru.citeck.ecos.history.mongo.dbmigrations");
-        mongobee.setEnabled(true);
-        return mongobee;
+    public SpringMongock mongock(MongoClient mongoClient, MongoProperties mongoProperties) {
+        String mongoDbName = mongoProperties.getMongoClientDatabase();
+        return new SpringMongockBuilder(mongoClient, mongoDbName, MONGO_CHANGELOG_PACKAGE)
+            .setLockQuickConfig()
+            .build();
     }
 
 }
