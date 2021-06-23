@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history.controllers;
 
+import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
@@ -36,8 +37,21 @@ public class HistoryRecordsController {
         return historyRecordConverter.convertAll(records);
     }
 
+    @PostMapping("/get_document_history")
+    public Object getAllRecordsByDocumentIdParam(@RequestBody String documentId) {
+        List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(documentId);
+        return historyRecordConverter.convertAll(records);
+    }
+
     @RequestMapping(method = RequestMethod.DELETE, value = "/by_document_id/{documentId}")
     public Object removeAllRecordsByDocumentId(@PathVariable String documentId) {
+        List<HistoryRecordEntity> allRecords = historyRecordRepository.getRecordsByDocumentId(documentId);
+        historyRecordRepository.deleteAll(allRecords);
+        return allRecords.size();
+    }
+
+    @PostMapping("/delete_document_history")
+    public Object removeAllRecordsByDocumentIdParam(@RequestBody String documentId) {
         List<HistoryRecordEntity> allRecords = historyRecordRepository.getRecordsByDocumentId(documentId);
         historyRecordRepository.deleteAll(allRecords);
         return allRecords.size();
@@ -107,6 +121,11 @@ public class HistoryRecordsController {
             }
         }
         return resultMap;
+    }
+
+    @Data
+    private static class DocumentDto {
+        private String documentId;
     }
 
     @Autowired
