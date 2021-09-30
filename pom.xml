@@ -11,7 +11,7 @@
     <parent>
         <groupId>ru.citeck.ecos</groupId>
         <artifactId>ecos-micro-base</artifactId>
-        <version>3.6.2</version>
+        <version>3.34.0</version>
     </parent>
 
     <repositories>
@@ -373,6 +373,16 @@
         </dependency>
 
         <dependency>
+            <groupId>ru.citeck.ecos.config</groupId>
+            <artifactId>ecos-config-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.citeck.ecos.model</groupId>
+            <artifactId>ecos-model-lib-spring</artifactId>
+        </dependency>
+
+        <dependency>
             <groupId>org.codehaus.groovy</groupId>
             <artifactId>groovy-all</artifactId>
         </dependency>
@@ -380,6 +390,28 @@
         <dependency>
             <groupId>ru.citeck.ecos.rabbitmq</groupId>
             <artifactId>ecos-rabbitmq-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.citeck.ecos.events</groupId>
+            <artifactId>ecos-events2-rabbitmq-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.citeck.ecos.zookeeper</groupId>
+            <artifactId>ecos-zookeeper-spring</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.citeck.ecos</groupId>
+            <artifactId>ecos-curator-framework</artifactId>
+        </dependency>
+
+        <dependency>
+            <groupId>ru.citeck.ecos</groupId>
+            <artifactId>ecos-curator-test</artifactId>
+            <version>${ecos.curator.version}</version>
+            <scope>test</scope>
         </dependency>
 
     </dependencies>

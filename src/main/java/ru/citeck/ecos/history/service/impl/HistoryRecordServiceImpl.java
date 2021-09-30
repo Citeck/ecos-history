@@ -4,6 +4,7 @@ import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang.StringUtils;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
@@ -13,7 +14,6 @@ import ru.citeck.ecos.history.service.TaskRecordService;
 
 import java.io.IOException;
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.time.ZoneId;
 import java.util.*;
 
@@ -22,11 +22,10 @@ import java.util.*;
 public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
-    private static final SimpleDateFormat dateFormat;
+    public static final FastDateFormat dateFormat;
 
     static {
-        dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
-        dateFormat.setTimeZone(TimeZone.getTimeZone(ZoneId.of("UTC")));
+        dateFormat = FastDateFormat.getInstance("dd.MM.yyyy HH:mm:ss", TimeZone.getTimeZone(ZoneId.of("UTC")));
     }
 
     private HistoryRecordRepository historyRecordRepository;

@@ -227,9 +227,7 @@ public class TaskHandlersCallToRemoteAlfTest {
 
     private void verifyRecordGetMetaNotCall() {
         verify(recordsService, times(0)).getMeta(any(RecordRef.class), any());
-        verify(recordsService, times(0)).getMeta(anyCollection(), anyString());
-        verify(recordsService, times(0)).getMeta(anyCollection(),
-            any(Class.class));
+        verify(recordsService, times(0)).getMeta(anyCollection(), any(Class.class));
     }
 
     private RecordRef saveTaskEvent(String type) throws ParseException {
