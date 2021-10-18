@@ -21,6 +21,7 @@ public interface HistoryRecordService {
     String TASK_TITLE = "taskTitle";
     String TASK_ROLE = "taskRole";
     String TASK_OUTCOME = "taskOutcome";
+    String TASK_OUTCOME_NAME = "taskOutcomeName";
     String TASK_DEFINITION_KEY = "taskDefinitionKey";
     String TASK_TYPE = "taskType";
     String FULL_TASK_TYPE = "fullTaskType";

@@ -45,7 +45,8 @@ public class HistoryRecoverJob {
         "propertyName",
         "expectedPerformTime",
         "taskTitle",
-        "taskDefinitionKey"
+        "taskDefinitionKey",
+        "taskOutcomeName"
     };
 
     @Value("${ecos-history.recover.sourceFolder}")
@@ -84,13 +85,12 @@ public class HistoryRecoverJob {
         try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
             for (String line; (line = reader.readLine()) != null; ) {
                 String[] values = line.split(DELIMETER, -1);
-                if (KEYS.length < values.length) {
-                    Map<String, String> requestParams = new HashMap<>();
-                    for (int i = 0; i < KEYS.length; i++) {
-                        requestParams.put(KEYS[i], values[i]);
-                    }
-                    historyRecordService.saveOrUpdateRecord(new HistoryRecordEntity(), requestParams);
+                int keysCount = Math.min(KEYS.length, values.length);
+                Map<String, String> requestParams = new HashMap<>();
+                for (int i = 0; i < keysCount; i++) {
+                    requestParams.put(KEYS[i], values[i]);
                 }
+                historyRecordService.saveOrUpdateRecord(new HistoryRecordEntity(), requestParams);
             }
         } catch (IOException | ParseException e) {
             e.printStackTrace();

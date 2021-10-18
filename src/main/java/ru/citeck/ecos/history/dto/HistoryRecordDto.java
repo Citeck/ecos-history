@@ -20,6 +20,7 @@ public class HistoryRecordDto implements Serializable {
     private String taskTitle;
     private String taskRole;
     private String taskOutcome;
+    private String taskOutcomeName;
     private String taskDefinitionKey;
     private String taskType;
     private String documentId;

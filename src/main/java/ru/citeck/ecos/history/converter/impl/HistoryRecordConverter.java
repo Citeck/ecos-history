@@ -30,6 +30,7 @@ public class HistoryRecordConverter implements Converter<HistoryRecordEntity, Hi
         result.setTaskTitle(historyRecordEntity.getTaskTitle());
         result.setTaskRole(historyRecordEntity.getTaskRole());
         result.setTaskOutcome(historyRecordEntity.getTaskOutcome());
+        result.setTaskOutcomeName(historyRecordEntity.getTaskOutcomeName());
         result.setTaskDefinitionKey(historyRecordEntity.getTaskDefinitionKey());
         result.setTaskType(historyRecordEntity.getFullTaskType());
         result.setDocumentId(historyRecordEntity.getDocumentId());
