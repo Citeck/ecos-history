@@ -3,14 +3,23 @@ package ru.citeck.ecos.history.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.extern.slf4j.Slf4j;
-import org.apache.commons.lang.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
+import org.jetbrains.annotations.NotNull;
+import org.jetbrains.annotations.Nullable;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.PageRequest;
+import org.springframework.data.domain.Sort;
+import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import org.springframework.transaction.annotation.Transactional;
+import ru.citeck.ecos.history.converter.impl.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
+import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.TaskRecordService;
+import org.apache.commons.lang3.StringUtils;
+import ru.citeck.ecos.records2.predicate.model.Predicate;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -23,6 +32,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final FastDateFormat dateFormat;
+    private HistoryRecordConverter historyRecordConverter;
 
     static {
         dateFormat = FastDateFormat.getInstance("dd.MM.yyyy HH:mm:ss", TimeZone.getTimeZone(ZoneId.of("UTC")));
@@ -31,6 +41,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     private HistoryRecordRepository historyRecordRepository;
     private TaskRecordService taskRecordService;
 
+    @Transactional
     @Override
     public List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException {
         if (jsonRecords == null) {
@@ -55,12 +66,13 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         return result;
     }
 
+    @Transactional
     @Override
-    public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams)
-        throws ParseException {
+    public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord,
+                                                  Map<String, String> requestParams) throws ParseException {
         HistoryRecordEntity result = historyRecord != null ? historyRecord : new HistoryRecordEntity();
 
-        log.debug("requestParams:\n{}", requestParams);
+        log.debug("Request parameters:\n{}", requestParams);
 
         if (requestParams.containsKey(HISTORY_EVENT_ID)) {
             String historyEventId = requestParams.get(HISTORY_EVENT_ID);
@@ -86,7 +98,8 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         if (requestParams.containsKey(COMMENTS)) {
             String comment = requestParams.get(COMMENTS);
             if (StringUtils.isNotBlank(comment) && comment.length() > 6000) {
-                log.warn("Event comment is too long (" + comment.length() + ") and will be trimmed. Comment: " + comment);
+                log.warn("Event comment is too long ({}" +
+                    ") and will be trimmed. Comment: {}", comment.length(), comment);
                 comment = comment.substring(0, 5998) + "~";
             }
             result.setComments(comment);
@@ -185,6 +198,58 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         return result;
     }
 
+    @Nullable
+    @Override
+    public HistoryRecordDto getHistoryRecordById(String id) {
+        if (StringUtils.isBlank(id)) {
+            return null;
+        }
+        return historyRecordRepository.findById(id)
+            .map(historyRecordConverter::convert)
+            .orElse(null);
+    }
+
+    @Override
+    public List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, Sort sort) {
+        if (maxItems == 0) {
+            return Collections.emptyList();
+        }
+        final PageRequest page = PageRequest.of(skipCount / maxItems, maxItems,
+            sort != null ? sort : Sort.by(Sort.Direction.DESC, CREATION_TIME));
+        //todo: uses of predicates
+        //Specification<HistoryRecordEntity> toSpecification(predicate)
+        List<HistoryRecordEntity> records = historyRecordRepository.getAllRecords(page);
+        return historyRecordConverter.convertAll(records);
+    }
+
+    @Transactional
+    @Override
+    public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordDto historyRecordDto) {
+        Map<String, String> propertyMap = historyRecordConverter.toMap(historyRecordDto);
+        String timeValue = propertyMap.get(HistoryRecordEntity.CREATION_TIME);
+        if (timeValue != null) {
+            propertyMap.put(HistoryRecordEntity.CREATION_TIME, dateFormat.format(Long.valueOf(timeValue).longValue()));
+        }
+        HistoryRecordEntity historyRecordEntity = null;
+        try {
+            historyRecordEntity = saveOrUpdateRecord(new HistoryRecordEntity(), propertyMap);
+        } catch (ParseException e) {
+            log.warn("Parse exception", e);
+            propertyMap.remove(CREATION_TIME);
+            try {
+                historyRecordEntity = saveOrUpdateRecord(new HistoryRecordEntity(), propertyMap);
+            } catch (ParseException exception) {
+            }
+        }
+        return historyRecordEntity;
+    }
+
+    @Transactional
+    @Override
+    public void delete(@NotNull Long id) {
+        historyRecordRepository.delete(id);
+    }
+
     private String getValueOrEmpty(Map<String, String> requestParams, String valueKey) {
         if (!requestParams.containsKey(valueKey)) {
             return null;
@@ -202,5 +267,10 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     @Autowired
     public void setTaskRecordService(TaskRecordService taskRecordService) {
         this.taskRecordService = taskRecordService;
+    }
+
+    @Autowired
+    public void setHistoryRecordConverter(HistoryRecordConverter historyRecordConverter) {
+        this.historyRecordConverter = historyRecordConverter;
     }
 }

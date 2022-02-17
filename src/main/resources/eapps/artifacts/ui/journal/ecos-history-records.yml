@@ -1,0 +1,19 @@
+---
+id: ecos-history-records
+name:
+  ru: История
+  en: History
+
+system: true
+
+actions:
+  - uiserv/action@delete
+  - uiserv/action@edit
+
+columns:
+
+  - id: creationTime
+  - id: eventType
+  - id: version
+  - id: taskRole
+  - id: comments

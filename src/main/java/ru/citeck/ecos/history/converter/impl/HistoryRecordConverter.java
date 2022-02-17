@@ -1,12 +1,17 @@
 package ru.citeck.ecos.history.converter.impl;
 
+import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.converter.Converter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 
-import java.util.Date;
+import java.lang.reflect.Field;
+import java.time.ZoneId;
+import java.util.*;
 
+@Slf4j
 @Service("historyRecordConverter")
 public class HistoryRecordConverter implements Converter<HistoryRecordEntity, HistoryRecordDto> {
 
@@ -35,5 +40,22 @@ public class HistoryRecordConverter implements Converter<HistoryRecordEntity, Hi
         result.setTaskType(historyRecordEntity.getFullTaskType());
         result.setDocumentId(historyRecordEntity.getDocumentId());
         return result;
+    }
+
+    public Map<String, String> toMap(HistoryRecordDto historyRecordDto){
+        HashMap<String, String> propertyMap = new HashMap<>();
+        Field[] fields = historyRecordDto.getClass().getDeclaredFields();
+        for (Field property : fields) {
+            property.setAccessible(true);
+            Object objectValue = null;
+            try {
+                objectValue = property.get(historyRecordDto);
+                propertyMap.put(property.getName(), objectValue!=null? String.valueOf(objectValue): null);
+            } catch (IllegalArgumentException | IllegalAccessException exception) {
+                log.error(String.format("Failed to get attribute '%s' for %s", property.getName(), historyRecordDto),
+                    exception);
+            }
+        }
+        return propertyMap;
     }
 }

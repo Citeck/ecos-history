@@ -1,6 +1,7 @@
 package ru.citeck.ecos.history.web.rest;
 
 import ru.citeck.ecos.history.HistoryApp;
+import ru.citeck.ecos.history.TestUtil;
 import ru.citeck.ecos.history.web.rest.vm.LoggerVM;
 import ch.qos.logback.classic.AsyncAppender;
 import ch.qos.logback.classic.LoggerContext;
