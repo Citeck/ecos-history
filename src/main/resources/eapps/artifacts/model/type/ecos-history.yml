@@ -1,5 +1,5 @@
 ---
-id: ecos-history-record
+id: history-record
 
 name:
   en: History record
@@ -8,8 +8,7 @@ name:
 system: true
 sourceId: history/history-record
 
-journalRef: uiserv/journal@ecos-history-records
-formRef: uiserv/form@ecos-history-record
+journalRef: uiserv/journal@history-records
 
 model:
   attributes:

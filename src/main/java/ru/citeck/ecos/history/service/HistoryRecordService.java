@@ -1,12 +1,12 @@
 package ru.citeck.ecos.history.service;
 
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Sort;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
 
+import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -51,12 +51,13 @@ public interface HistoryRecordService {
     HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord, Map<String, String> requestParams)
         throws ParseException;
 
-    HistoryRecordEntity saveOrUpdateRecord(HistoryRecordDto historyRecordDto);
+    HistoryRecordEntity saveOrUpdateRecord(HistoryRecordDto historyRecordDto) throws ParseException;
 
     @Nullable
     HistoryRecordDto getHistoryRecordById(String id);
 
-    List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, Sort sort);
+    @Nullable
+    HistoryRecordDto getHistoryRecordByEventId(String eventId);
 
-    void delete(@NotNull Long id);
+    List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, Sort sort);
 }

@@ -2,18 +2,16 @@ package ru.citeck.ecos.history.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
-import lombok.Data;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.FastDateFormat;
-import org.jetbrains.annotations.NotNull;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
-import ru.citeck.ecos.history.converter.impl.HistoryRecordConverter;
+import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
@@ -32,30 +30,32 @@ import java.util.*;
 import java.util.stream.Collectors;
 
 @Slf4j
+@RequiredArgsConstructor
 @Service("historyRecordService")
 public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
     public static final FastDateFormat dateFormat;
-    private HistoryRecordConverter historyRecordConverter;
 
     static {
         dateFormat = FastDateFormat.getInstance("dd.MM.yyyy HH:mm:ss", TimeZone.getTimeZone(ZoneId.of("UTC")));
     }
 
-    private HistoryRecordRepository historyRecordRepository;
-    private TaskRecordService taskRecordService;
+    private final HistoryRecordRepository historyRecordRepository;
+    private final TaskRecordService taskRecordService;
+
+    private final HistoryRecordConverter historyRecordConverter;
 
     @Transactional
     @Override
     public List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException {
+
         if (jsonRecords == null) {
             return null;
         }
 
         List<HistoryRecordEntity> result = new ArrayList<>();
-        List<String> recordsList = OBJECT_MAPPER.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {
-        });
+        List<String> recordsList = OBJECT_MAPPER.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {});
 
         for (String record : recordsList) {
             // TODO: arrays processing is break reading
@@ -212,12 +212,26 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         try {
             Long idValue = Long.valueOf(id);
             return historyRecordRepository.findById(idValue)
-                .map(historyRecordConverter::convert)
+                .map(historyRecordConverter::toDto)
                 .orElse(null);
         } catch (NumberFormatException e) {
             log.error("Failed to get history record by ID = {}", id, e);
             return null;
         }
+    }
+
+    @Nullable
+    @Override
+    public HistoryRecordDto getHistoryRecordByEventId(String eventId) {
+
+        if (StringUtils.isBlank(eventId)) {
+            return null;
+        }
+        HistoryRecordEntity entity = historyRecordRepository.getHistoryRecordByHistoryEventId(eventId);
+        if (entity == null) {
+            return null;
+        }
+        return historyRecordConverter.toDto(entity);
     }
 
     @Override
@@ -228,40 +242,21 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         final PageRequest page = PageRequest.of(skipCount / maxItems, maxItems,
             sort != null ? sort : Sort.by(Sort.Direction.DESC, CREATION_TIME));
         Specification<HistoryRecordEntity> entitySpecification = specificationFromPredicate(predicate);
-        List<HistoryRecordDto> records = historyRecordRepository.findAll(entitySpecification, page)
-            .stream().map(historyRecordConverter::convert)
+        return historyRecordRepository.findAll(entitySpecification, page)
+            .stream()
+            .map(historyRecordConverter::toDto)
             .collect(Collectors.toList());
-        //List<HistoryRecordEntity> records = historyRecordRepository.getAllRecords(page);
-        //return historyRecordConverter.convertAll(records);
-        return records;
     }
 
     @Transactional
     @Override
-    public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordDto historyRecordDto) {
+    public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordDto historyRecordDto) throws ParseException {
         Map<String, String> propertyMap = historyRecordConverter.toMap(historyRecordDto);
         String timeValue = propertyMap.get(HistoryRecordEntity.CREATION_TIME);
         if (timeValue != null) {
-            propertyMap.put(HistoryRecordEntity.CREATION_TIME, dateFormat.format(Long.valueOf(timeValue).longValue()));
+            propertyMap.put(HistoryRecordEntity.CREATION_TIME, dateFormat.format(Long.valueOf(timeValue)));
         }
-        HistoryRecordEntity historyRecordEntity = null;
-        try {
-            historyRecordEntity = saveOrUpdateRecord(new HistoryRecordEntity(), propertyMap);
-        } catch (ParseException e) {
-            log.warn("Parse exception", e);
-            propertyMap.remove(CREATION_TIME);
-            try {
-                historyRecordEntity = saveOrUpdateRecord(new HistoryRecordEntity(), propertyMap);
-            } catch (ParseException exception) {
-            }
-        }
-        return historyRecordEntity;
-    }
-
-    @Transactional
-    @Override
-    public void delete(@NotNull Long id) {
-        historyRecordRepository.delete(id);
+        return saveOrUpdateRecord(new HistoryRecordEntity(), propertyMap);
     }
 
     private String getValueOrEmpty(Map<String, String> requestParams, String valueKey) {
@@ -309,7 +304,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     private Specification<HistoryRecordEntity> fromValuePredicate(ValuePredicate valuePredicate) {
         //check datetime
-        if (valuePredicate.getAttribute() == null) {
+        if (StringUtils.isBlank(valuePredicate.getAttribute())) {
             return null;
         }
         String attributeName = StringUtils.trim(valuePredicate.getAttribute());
@@ -335,20 +330,5 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
                             case ValuePredicate.Type.LT:
                             case ValuePredicate.Type.LE: */
         return specification;
-    }
-
-    @Autowired
-    public void setHistoryRecordRepository(HistoryRecordRepository historyRecordRepository) {
-        this.historyRecordRepository = historyRecordRepository;
-    }
-
-    @Autowired
-    public void setTaskRecordService(TaskRecordService taskRecordService) {
-        this.taskRecordService = taskRecordService;
-    }
-
-    @Autowired
-    public void setHistoryRecordConverter(HistoryRecordConverter historyRecordConverter) {
-        this.historyRecordConverter = historyRecordConverter;
     }
 }

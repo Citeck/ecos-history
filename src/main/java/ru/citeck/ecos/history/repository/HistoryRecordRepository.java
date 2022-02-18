@@ -100,10 +100,4 @@ public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEnt
         @Param("endDate") Date endDate,
         Pageable pageable
     );
-
-    @Transactional
-    @Modifying
-    @Query("DELETE FROM " + HistoryRecordEntity.ENTITY_NAME +
-        " historyRecords  WHERE historyRecords.id=:id")
-    int delete(@Param("id") Long id);
 }

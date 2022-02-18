@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history.api.records;
 
+import lombok.SneakyThrows;
 import org.junit.Assert;
 import org.junit.Test;
 import org.junit.runner.RunWith;
@@ -16,7 +17,7 @@ import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.citeck.ecos.history.HistoryApp;
 import ru.citeck.ecos.history.TestUtil;
-import ru.citeck.ecos.history.converter.impl.HistoryRecordConverter;
+import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.service.HistoryRecordService;
@@ -148,32 +149,13 @@ public class HistoryRecordRecordsDaoTest {
             .andExpect(jsonPath("$.." + HistoryRecordEntity.COMMENTS + STR).value(comment));
     }
 
-    @Test
-    public void deleteHistoryRecord() throws Exception {
-        HistoryRecordEntity recordEntity = createTestHistoryRecord();
-        String jsonString = getJsonToSend(new JSONObject()
-            .put(RECORDS, new JSONArray()
-                .put(HistoryRecordTestData.getEmptyId() + recordEntity.getId()))
-            .toString(2));
-
-        mockMvc.perform(
-                MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_DELETE)
-                    .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                    .content(jsonString))
-            .andExpect(status().isOk());
-
-        mockMvc.perform(
-                MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                    .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                    .content(queryTestHistoryRecordJson(recordEntity.getId())))
-            .andDo(print());
-    }
-
+    @SneakyThrows
     private HistoryRecordEntity createTestHistoryRecord() {
         HistoryRecordDto recordDto = HistoryRecordTestData.getTestHistoryRecord();
         return service.saveOrUpdateRecord(recordDto);
     }
 
+    @SneakyThrows
     private List<HistoryRecordEntity> propagateTestHistoryRecord() {
         List<HistoryRecordEntity> entities = new ArrayList<>();
         HistoryRecordDto recordDto = HistoryRecordTestData.getTestHistoryRecord();
