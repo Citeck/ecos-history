@@ -24,6 +24,7 @@ import ru.citeck.ecos.records2.predicate.model.Predicate;
 import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
 
 import java.io.IOException;
+import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.util.*;
@@ -55,7 +56,8 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         }
 
         List<HistoryRecordEntity> result = new ArrayList<>();
-        List<String> recordsList = OBJECT_MAPPER.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {});
+        List<String> recordsList = OBJECT_MAPPER.readValue(jsonRecords, new TypeReference<ArrayList<String>>() {
+        });
 
         for (String record : recordsList) {
             // TODO: arrays processing is break reading
@@ -223,7 +225,6 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     @Nullable
     @Override
     public HistoryRecordDto getHistoryRecordByEventId(String eventId) {
-
         if (StringUtils.isBlank(eventId)) {
             return null;
         }
@@ -278,7 +279,11 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             ArrayList<Specification<HistoryRecordEntity>> specifications = new ArrayList<>();
             composedPredicate.getPredicates().forEach(subPredicate -> {
                 if (subPredicate instanceof ValuePredicate) {
-                    specifications.add(fromValuePredicate((ValuePredicate) subPredicate));
+                    Specification<HistoryRecordEntity> valueSpecification =
+                        fromValuePredicate((ValuePredicate) subPredicate);
+                    if (valueSpecification != null) {
+                        specifications.add(valueSpecification);
+                    }
                 } else if (subPredicate instanceof ComposedPredicate) {
                     specifications.add(specificationFromPredicate(subPredicate));
                 }
@@ -303,7 +308,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     private Specification<HistoryRecordEntity> fromValuePredicate(ValuePredicate valuePredicate) {
-        //check datetime
+        //ValuePredicate.Type.IN was not implemented
         if (StringUtils.isBlank(valuePredicate.getAttribute())) {
             return null;
         }
@@ -312,23 +317,56 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             return null;
         }
         Specification<HistoryRecordEntity> specification = null;
-        if (ValuePredicate.Type.EQ.equals(valuePredicate.getType())) {
-            specification = (root, query, builder) ->
-                builder.equal(root.get(attributeName),
-                    valuePredicate.getValue().asText());
-        } else if (ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType())
+        if (ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType())
             || ValuePredicate.Type.LIKE.equals(valuePredicate.getType())) {
             specification = (root, query, builder) ->
                 builder.like(builder.lower(root.get(attributeName)),
                     valuePredicate.getValue().asText().toLowerCase());
+        } else {
+            Comparable objectValue = getObjectValue(attributeName, valuePredicate.getValue().asText());
+            if (objectValue != null) {
+                if (ValuePredicate.Type.EQ.equals(valuePredicate.getType())) {
+                    specification = (root, query, builder) ->
+                        builder.equal(root.get(attributeName), objectValue);
+                } else if (ValuePredicate.Type.GT.equals(valuePredicate.getType())) {
+                    specification = (root, query, builder) ->
+                        builder.greaterThan(root.get(attributeName), objectValue);
+                } else if (ValuePredicate.Type.GE.equals(valuePredicate.getType())) {
+                    specification = (root, query, builder) ->
+                        builder.greaterThanOrEqualTo(root.get(attributeName), objectValue);
+                } else if (ValuePredicate.Type.LT.equals(valuePredicate.getType())) {
+                    specification = (root, query, builder) ->
+                        builder.lessThan(root.get(attributeName), objectValue);
+                } else if (ValuePredicate.Type.LE.equals(valuePredicate.getType())) {
+                    specification = (root, query, builder) ->
+                        builder.lessThanOrEqualTo(root.get(attributeName), objectValue);
+                }
+            }
         }
-        //todo: uses of predicates
-                        /* ends, starts == like
-                            case ValuePredicate.Type.IN:
-                            case ValuePredicate.Type.GT:
-                            case ValuePredicate.Type.GE:
-                            case ValuePredicate.Type.LT:
-                            case ValuePredicate.Type.LE: */
         return specification;
+    }
+
+    private Comparable getObjectValue(String attributeName, String attributeValue) {
+        try {
+            Field searchField = HistoryRecordEntity.class.getDeclaredField(attributeName);
+            if (searchField.getType() == String.class) {
+                return attributeValue;
+            } else if (searchField.getType() == Long.class) {
+                return Long.valueOf(attributeValue);
+            } else if (searchField.getType() == Date.class) {
+                Calendar calendar = Calendar.getInstance();
+                calendar.setTimeInMillis(Long.valueOf(attributeValue));
+                //saved values has no milliseconds part cause of dateFormat
+                calendar.set(Calendar.MILLISECOND, 0);
+                return calendar.getTime();
+            } else {
+                log.error("Unexpected attribute type {} for predicate", searchField.getType());
+            }
+        } catch (NumberFormatException e) {
+            log.error("Failed to convert attribute '{}' value ({}) to number", attributeName,
+                attributeValue, e);
+        } catch (NoSuchFieldException e) {
+        }
+        return null;
     }
 }

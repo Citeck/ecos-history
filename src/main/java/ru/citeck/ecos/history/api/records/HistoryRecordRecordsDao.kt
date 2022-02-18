@@ -39,7 +39,7 @@ class HistoryRecordRecordsDao(
     }
 
     override fun getRecToMutate(recordId: String): HistoryRecordDto {
-        val historyRecord = historyRecordService.getHistoryRecordByEventId(recordId)
+        val historyRecord = historyRecordService.getHistoryRecordById(recordId)
         return historyRecord?.let { HistoryRecordDto(it) } ?: HistoryRecordDto()
     }
 
@@ -52,7 +52,7 @@ class HistoryRecordRecordsDao(
         return if (recordId.isEmpty()) {
             null
         } else {
-            return historyRecordService.getHistoryRecordByEventId(recordId)
+            return historyRecordService.getHistoryRecordById(recordId)
                 ?.let { HistoryRecord(it) }
         }
     }

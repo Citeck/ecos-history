@@ -37,6 +37,6 @@ class HistoryRecordConverter {
 
     fun toMap(dto: HistoryRecordDto): Map<String, String> {
         return DataValue.create(dto)
-            .asMap(String::class.java, String::class.java)
+            .asMap(String::class.java, String::class.java).filter { entry ->  entry.value != null}
     }
 }

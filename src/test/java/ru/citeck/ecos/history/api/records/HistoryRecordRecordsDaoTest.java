@@ -83,6 +83,117 @@ public class HistoryRecordRecordsDaoTest {
     }
 
     @Test
+    public void queryEqualByCreationTime() throws Exception {
+        propagateTestHistoryRecord();
+        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.CREATION_TIME,
+            String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime()),
+            HistoryRecordTestData.PREDICATE_TYPE_EQUAL)));
+
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(1))
+            .andDo(print());
+    }
+
+    @Test
+    public void queryGtByCreationTime() throws Exception {
+        List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
+        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.CREATION_TIME,
+            String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime()), //.PROP_CREATETIME_VALUE),
+            HistoryRecordTestData.PREDICATE_TYPE_GREATER_THAN)));
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(3))
+            .andDo(print());
+    }
+
+    @Test
+    public void queryLtByCreationTime() throws Exception {
+        List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
+        int last = entities.size() - 1;
+        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.CREATION_TIME,
+            String.valueOf(entities.get(last).getCreationTime().getTime()),
+            HistoryRecordTestData.PREDICATE_TYPE_LESS_THAN)));
+
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(3))
+            .andDo(print());
+    }
+
+    @Test
+    public void queryGtByUsernameAndCreationTime() throws Exception {
+        propagateTestHistoryRecord();
+        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
+            getPredicateJson(HistoryRecordEntity.USERNAME,
+                HistoryRecordTestData.ADMIN,
+                HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
+            getPredicateJson(HistoryRecordEntity.CREATION_TIME,
+                String.valueOf(HistoryRecordTestData.PROP_CREATETIME_VALUE),
+                HistoryRecordTestData.PREDICATE_TYPE_GREATER_THAN));
+        String jsonString = getJsonToSend(getQueryJson(composed));
+
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(3))
+            .andDo(print());
+    }
+
+    @Test
+    public void queryOrByUsername() throws Exception {
+        propagateTestHistoryRecord();
+        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_OR,
+            getPredicateJson(HistoryRecordEntity.USERNAME,
+                HistoryRecordTestData.ADMIN,
+                HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
+            getPredicateJson(HistoryRecordEntity.USERNAME,
+                HistoryRecordTestData.getTestHistoryRecord().getUsername(),
+                HistoryRecordTestData.PREDICATE_TYPE_EQUAL));
+        String jsonString = getJsonToSend(getQueryJson(composed));
+
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(4))
+            .andDo(print());
+    }
+
+    @Test
+    public void queryPeriodByCreationTime() throws Exception {
+        List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
+        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
+            getPredicateJson(HistoryRecordEntity.CREATION_TIME,
+                String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime()),
+                HistoryRecordTestData.PREDICATE_TYPE_GREATER_THAN),
+            getPredicateJson(HistoryRecordEntity.CREATION_TIME,
+                String.valueOf(entities.get(entities.size() - 1).getCreationTime().getTime()),
+                HistoryRecordTestData.PREDICATE_TYPE_LESS_THAN));
+        String jsonString = getJsonToSend(getQueryJson(composed));
+
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(2))
+            .andDo(print());
+    }
+
+    @Test
     public void queryStartsByComment() throws Exception {
         propagateTestHistoryRecord();
         String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.COMMENTS,
@@ -145,6 +256,7 @@ public class HistoryRecordRecordsDaoTest {
                 .contentType(TestUtil.APPLICATION_JSON_UTF8)
                 .content(queryTestHistoryRecordJson(recordEntity.getId())));
         resultActions.andExpect(status().isOk())
+            .andDo(print())
             .andExpect(jsonPath("$." + RECORDS).isNotEmpty())
             .andExpect(jsonPath("$.." + HistoryRecordEntity.COMMENTS + STR).value(comment));
     }
@@ -160,8 +272,9 @@ public class HistoryRecordRecordsDaoTest {
         List<HistoryRecordEntity> entities = new ArrayList<>();
         HistoryRecordDto recordDto = HistoryRecordTestData.getTestHistoryRecord();
         entities.add(service.saveOrUpdateRecord(recordDto));
-        for (int idx = 0; idx < 3; idx++) {
+        for (int idx = 1; idx < 4; idx++) {
             HistoryRecordDto dto = HistoryRecordTestData.getNewHistoryRecord();
+            dto.setCreationTime(System.currentTimeMillis() + 10000 * idx);
             dto.setEventType(HistoryRecordTestData.RECORD_CHANGED_EVENT_TYPE);
             dto.setComments("Some test comment for history record " + String.valueOf(idx));
             dto.setUsername(HistoryRecordTestData.ADMIN);
