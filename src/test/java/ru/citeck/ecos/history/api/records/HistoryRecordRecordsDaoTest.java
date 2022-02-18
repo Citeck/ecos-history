@@ -14,7 +14,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
-import ru.citeck.ecos.events2.type.RecordCreatedEvent;
 import ru.citeck.ecos.history.HistoryApp;
 import ru.citeck.ecos.history.TestUtil;
 import ru.citeck.ecos.history.converter.impl.HistoryRecordConverter;
@@ -67,19 +66,55 @@ public class HistoryRecordRecordsDaoTest {
     }
 
     @Test
-    public void queryByUsername() throws Exception {
-        //можно сделать параметаризированный (пользователь - количество)
-        List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
+    public void queryEqualByUsername() throws Exception {
+        propagateTestHistoryRecord();
         String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.USERNAME,
             HistoryRecordTestData.getTestHistoryRecord().getUsername(),
             HistoryRecordTestData.PREDICATE_TYPE_EQUAL)));
 
         ResultActions resultActions = mockMvc.perform(
-                MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                    .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                    .content(jsonString));
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
         resultActions.andExpect(status().isOk())
             .andExpect(jsonPath("$.totalCount").value(1))
+            .andDo(print());
+    }
+
+    @Test
+    public void queryStartsByComment() throws Exception {
+        propagateTestHistoryRecord();
+        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.COMMENTS,
+            "Some",
+            HistoryRecordTestData.PREDICATE_TYPE_STARTS)));
+
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(3))
+            .andDo(print());
+    }
+
+    @Test
+    public void queryEqualByUsernameAndEventType() throws Exception {
+        propagateTestHistoryRecord();
+        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
+            getPredicateJson(HistoryRecordEntity.USERNAME,
+                HistoryRecordTestData.ADMIN,
+                HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
+            getPredicateJson(HistoryRecordEntity.EVENT_TYPE,
+                HistoryRecordTestData.RECORD_CHANGED_EVENT_TYPE,
+                HistoryRecordTestData.PREDICATE_TYPE_EQUAL));
+        String jsonString = getJsonToSend(getQueryJson(composed));
+
+        ResultActions resultActions = mockMvc.perform(
+            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
+                .contentType(TestUtil.APPLICATION_JSON_UTF8)
+                .content(jsonString));
+        resultActions.andExpect(status().isOk())
+            .andExpect(jsonPath("$.totalCount").value(3))
             .andDo(print());
     }
 
@@ -90,7 +125,8 @@ public class HistoryRecordRecordsDaoTest {
 
         String jsonString = getJsonToSend(new JSONObject()
             .put(RECORDS, new JSONArray().put(
-                new JSONObject().put(HistoryRecordTestData.PROP_ID, HistoryRecordTestData.getEmptyId() + recordEntity.getId())
+                new JSONObject().put(HistoryRecordTestData.PROP_ID,
+                        HistoryRecordTestData.getEmptyId() + recordEntity.getId())
                     .put(ATTRIBUTES, new JSONObject()
                         .put(HistoryRecordEntity.COMMENTS, comment))
             )).toString(2));
@@ -131,7 +167,6 @@ public class HistoryRecordRecordsDaoTest {
                     .contentType(TestUtil.APPLICATION_JSON_UTF8)
                     .content(queryTestHistoryRecordJson(recordEntity.getId())))
             .andDo(print());
-        //.andExpect(jsonPath("$.." + BoardTestData.PROP_NAME + STR).value(IsNull.nullValue()));
     }
 
     private HistoryRecordEntity createTestHistoryRecord() {
@@ -147,7 +182,7 @@ public class HistoryRecordRecordsDaoTest {
             HistoryRecordDto dto = HistoryRecordTestData.getNewHistoryRecord();
             dto.setEventType(HistoryRecordTestData.RECORD_CHANGED_EVENT_TYPE);
             dto.setComments("Some test comment for history record " + String.valueOf(idx));
-            dto.setUsername("admin");
+            dto.setUsername(HistoryRecordTestData.ADMIN);
             dto.setHistoryEventId(String.valueOf(idx));
             entities.add(service.saveOrUpdateRecord(dto));
         }
@@ -157,9 +192,19 @@ public class HistoryRecordRecordsDaoTest {
 
     private static JSONObject getPredicateJson(String attributeName, String attributeValue,
                                                String precicateType) throws Exception {
-        //{"att":"_type","val":"emodel/type@journal","t":"eq"}
-        return new JSONObject().put("att", attributeName).put("val", attributeValue)
-            .put("t", precicateType);
+        return new JSONObject().put("att", attributeName)
+            .put(HistoryRecordTestData.PREDICATE_VAL, attributeValue)
+            .put(HistoryRecordTestData.PREDICATE_TYPE, precicateType);
+    }
+
+    private static JSONObject getComposedPredicateJson(String precicateType, JSONObject... predicates)
+        throws Exception {
+        JSONArray jsonArray = new JSONArray();
+        for (JSONObject predicate : predicates) {
+            jsonArray.put(predicate);
+        }
+        return new JSONObject().put(HistoryRecordTestData.PREDICATE_TYPE, precicateType)
+            .put(HistoryRecordTestData.PREDICATE_VAL, jsonArray);
     }
 
     private static String getQueryJson(JSONObject predicate) throws Exception {
@@ -203,10 +248,6 @@ public class HistoryRecordRecordsDaoTest {
         return result;
     }
 
-    /*    private void deleteAll() {
-            repository.deleteAll();
-            repository.flush();
-        }*/
     private static String getJsonToSend(String json) {
         return json.replace("\\/", "/");
     }
