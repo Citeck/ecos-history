@@ -2,6 +2,7 @@ package ru.citeck.ecos.history.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import lombok.Data;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jetbrains.annotations.NotNull;
@@ -19,12 +20,16 @@ import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.TaskRecordService;
 import org.apache.commons.lang3.StringUtils;
+import ru.citeck.ecos.records2.predicate.model.AndPredicate;
+import ru.citeck.ecos.records2.predicate.model.ComposedPredicate;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
+import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
 
 import java.io.IOException;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @Service("historyRecordService")
@@ -191,7 +196,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         result.setDocStatusName(getValueOrEmpty(requestParams, DOC_STATUS_NAME));
         result.setDocStatusTitle(getValueOrEmpty(requestParams, DOC_STATUS_TITLE));
 
-        historyRecordRepository.save(result);
+        result = historyRecordRepository.save(result);
 
         taskRecordService.handleTaskFromHistoryRecord(result, requestParams);
 
@@ -204,9 +209,15 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         if (StringUtils.isBlank(id)) {
             return null;
         }
-        return historyRecordRepository.findById(id)
-            .map(historyRecordConverter::convert)
-            .orElse(null);
+        try {
+            Long idValue = Long.valueOf(id);
+            return historyRecordRepository.findById(idValue)
+                .map(historyRecordConverter::convert)
+                .orElse(null);
+        } catch (NumberFormatException e) {
+            log.error("Failed to get history record by ID = {}", id, e);
+            return null;
+        }
     }
 
     @Override
@@ -216,10 +227,13 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         }
         final PageRequest page = PageRequest.of(skipCount / maxItems, maxItems,
             sort != null ? sort : Sort.by(Sort.Direction.DESC, CREATION_TIME));
-        //todo: uses of predicates
-        //Specification<HistoryRecordEntity> toSpecification(predicate)
-        List<HistoryRecordEntity> records = historyRecordRepository.getAllRecords(page);
-        return historyRecordConverter.convertAll(records);
+        Specification<HistoryRecordEntity> entitySpecification = specificationFromPredicate(predicate);
+        List<HistoryRecordDto> records = historyRecordRepository.findAll(entitySpecification, page)
+            .stream().map(historyRecordConverter::convert)
+            .collect(Collectors.toList());
+        //List<HistoryRecordEntity> records = historyRecordRepository.getAllRecords(page);
+        //return historyRecordConverter.convertAll(records);
+        return records;
     }
 
     @Transactional
@@ -257,6 +271,70 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
         String value = requestParams.get(valueKey);
         return StringUtils.isNotBlank(value) ? value : "";
+    }
+
+    private Specification<HistoryRecordEntity> specificationFromPredicate(Predicate predicate) {
+        if (predicate == null) {
+            return null;
+        }
+        Specification<HistoryRecordEntity> result = null;
+        if (predicate instanceof ComposedPredicate) {
+            ComposedPredicate composedPredicate = (ComposedPredicate) predicate;
+            ArrayList<Specification<HistoryRecordEntity>> specifications = new ArrayList<>();
+            composedPredicate.getPredicates().forEach(subPredicate -> {
+                if (subPredicate instanceof ValuePredicate) {
+                    specifications.add(fromValuePredicate((ValuePredicate) subPredicate));
+                } else if (subPredicate instanceof ComposedPredicate) {
+                    specifications.add(specificationFromPredicate(subPredicate));
+                }
+            });
+
+            if (!specifications.isEmpty()) {
+                result = specifications.get(0);
+                if (specifications.size() > 1) {
+                    for (int idx = 1; idx < specifications.size(); idx++) {
+                        result = (composedPredicate instanceof AndPredicate) ?
+                            result.and(specifications.get(idx)) :
+                            result.or(specifications.get(idx));
+                    }
+                }
+            }
+            return result;
+        } else if (predicate instanceof ValuePredicate) {
+            return fromValuePredicate((ValuePredicate) predicate);
+        }
+        log.warn("Unexpected predicate class: {}", predicate.getClass());
+        return null;
+    }
+
+    private Specification<HistoryRecordEntity> fromValuePredicate(ValuePredicate valuePredicate) {
+        //check datetime
+        if (valuePredicate.getAttribute() == null) {
+            return null;
+        }
+        String attributeName = StringUtils.trim(valuePredicate.getAttribute());
+        if (!HistoryRecordEntity.isAttributeNameValid(attributeName)) {
+            return null;
+        }
+        Specification<HistoryRecordEntity> specification = null;
+        if (ValuePredicate.Type.EQ.equals(valuePredicate.getType())) {
+            specification = (root, query, builder) ->
+                builder.equal(root.get(attributeName),
+                    valuePredicate.getValue().asText());
+        } else if (ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType())
+            || ValuePredicate.Type.LIKE.equals(valuePredicate.getType())) {
+            specification = (root, query, builder) ->
+                builder.like(builder.lower(root.get(attributeName)),
+                    valuePredicate.getValue().asText().toLowerCase());
+        }
+        //todo: uses of predicates
+                        /* ends, starts == like
+                            case ValuePredicate.Type.IN:
+                            case ValuePredicate.Type.GT:
+                            case ValuePredicate.Type.GE:
+                            case ValuePredicate.Type.LT:
+                            case ValuePredicate.Type.LE: */
+        return specification;
     }
 
     @Autowired

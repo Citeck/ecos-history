@@ -1,9 +1,6 @@
 package ru.citeck.ecos.history.api.records;
 
-import ru.citeck.ecos.events2.type.RecordCreatedEvent;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
-import ru.citeck.ecos.records2.RecordRef;
-
 
 public class HistoryRecordTestData {
 
@@ -11,15 +8,19 @@ public class HistoryRecordTestData {
     public static String HISTORY_RECORD_ID = "test-uuid";
     public static String PROP_DOC_ID = "test-doc";
     public static String PROP_ID = "id";
-    public static String PROP_COLUMNS = "columns";
+    public static String RECORD_CREATED_EVENT_TYPE = "record-created";
+    public static String RECORD_CHANGED_EVENT_TYPE = "record-changed";
+    public static String PREDICATE_TYPE_EQUAL = "eq";
+    public static String PREDICATE_TYPE_LIKE = "like";
+    public static String PREDICATE_TYPE_ENDS = "ends";
+    public static String PREDICATE_TYPE_GREATER = "gt";
 
     public static final HistoryRecordDto testHistoryRecordDto = new HistoryRecordDto();
-    public static final RecordRef testTypeRef = RecordRef.create("emodel", "type", "testType");
 
     static {
         testHistoryRecordDto.setUuid(HISTORY_RECORD_ID);
         testHistoryRecordDto.setCreationTime(System.currentTimeMillis());
-        testHistoryRecordDto.setEventType(RecordCreatedEvent.TYPE);
+        testHistoryRecordDto.setEventType(RECORD_CREATED_EVENT_TYPE);
         testHistoryRecordDto.setHistoryEventId("testEventId");
         testHistoryRecordDto.setComments("Test history record.");
         testHistoryRecordDto.setUsername("testUsername");

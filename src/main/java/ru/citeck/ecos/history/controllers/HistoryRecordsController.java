@@ -103,11 +103,17 @@ public class HistoryRecordsController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/update_record/{recordId}")
     public HistoryRecordEntity updateHistoryRecord(HttpServletRequest request, @PathVariable String recordId) throws ParseException {
-        HistoryRecordEntity recordEntity = historyRecordRepository.findById(recordId).orElse(null);
-        if (recordEntity == null) {
-            throw new RuntimeException("No history record with uuid \"" + recordId + "\" has been found");
-        } else {
-            return historyRecordService.saveOrUpdateRecord(recordEntity, transformMap(request.getParameterMap()));
+        String errorMsg = "No history record with uuid \"" + recordId + "\" has been found";
+        try {
+            Long idValue = Long.valueOf(recordId);
+            HistoryRecordEntity recordEntity = historyRecordRepository.findById(idValue).orElse(null);
+            if (recordEntity == null) {
+                throw new RuntimeException(errorMsg);
+            } else {
+                return historyRecordService.saveOrUpdateRecord(recordEntity, transformMap(request.getParameterMap()));
+            }
+        } catch (NumberFormatException e){
+            throw new RuntimeException(errorMsg, e);
         }
     }
 

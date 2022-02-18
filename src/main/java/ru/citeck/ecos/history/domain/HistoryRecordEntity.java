@@ -4,7 +4,9 @@ import lombok.Data;
 
 import javax.persistence.*;
 import java.io.Serializable;
+import java.util.Arrays;
 import java.util.Date;
+import java.util.List;
 
 @Data
 @Entity(name = HistoryRecordEntity.ENTITY_NAME)
@@ -132,4 +134,21 @@ public class HistoryRecordEntity implements Serializable {
     @Column(name = "last_task_comment", length = 6000)
     private String lastTaskComment;
     public static final String LAT_TASK_COMMENT = "lastTaskComment";
+
+    private static List<String> attributeNames;
+
+    public static boolean isAttributeNameValid(String attributeName) {
+        if (attributeNames == null) {
+            attributeNames = Arrays.asList(HISTORY_EVENT_ID, DOCUMENT_ID, EVENT_TYPE, COMMENTS, VERSION,
+                CREATION_TIME, USERNAME, USER_ID, TASK_TITLE, TASK_ROLE, TASK_TITLE, TASK_OUTCOME,
+                TASK_DEFINITION_KEY, TASK_FORM_KEY, TASK_EVENT_INSTANCE_ID, TASK_OUTCOME_NAME, FULL_TASK_TYPE,
+                INITIATOR, WORKFLOW_INSTANCE_ID, WORKFLOW_DESCRIPTION, DOC_STATUS_NAME, DOC_STATUS_TITLE,
+                DOC_TYPE, DOCUMENT_VERSION, LAT_TASK_COMMENT, PROPERTY_NAME, EXPECTED_PERFORM_TIME,
+                ENTITY_NAME);
+        }
+        if (attributeNames.contains(attributeName)){
+            return true;
+        }
+        return false;
+    }
 }
