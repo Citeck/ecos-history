@@ -76,8 +76,7 @@ class HistoryRecordRecordsDao(
 
         val result = RecsQueryRes<HistoryRecord>()
         result.setRecords(historyRecordDtoList.map { HistoryRecord(it) })
-        //todo result.setTotalCount()
-
+        result.setTotalCount(historyRecordService.getCount(predicate))
         return result
     }
 

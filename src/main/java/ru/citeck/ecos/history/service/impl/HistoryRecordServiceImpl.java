@@ -18,6 +18,7 @@ import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.TaskRecordService;
 import org.apache.commons.lang3.StringUtils;
+import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.predicate.model.AndPredicate;
 import ru.citeck.ecos.records2.predicate.model.ComposedPredicate;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
@@ -26,7 +27,11 @@ import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
+import java.time.DateTimeException;
+import java.time.Instant;
 import java.time.ZoneId;
+import java.time.format.DateTimeFormatter;
+import java.time.temporal.ChronoUnit;
 import java.util.*;
 import java.util.stream.Collectors;
 
@@ -278,14 +283,14 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             ComposedPredicate composedPredicate = (ComposedPredicate) predicate;
             ArrayList<Specification<HistoryRecordEntity>> specifications = new ArrayList<>();
             composedPredicate.getPredicates().forEach(subPredicate -> {
+                Specification<HistoryRecordEntity> subSpecification = null;
                 if (subPredicate instanceof ValuePredicate) {
-                    Specification<HistoryRecordEntity> valueSpecification =
-                        fromValuePredicate((ValuePredicate) subPredicate);
-                    if (valueSpecification != null) {
-                        specifications.add(valueSpecification);
-                    }
+                    subSpecification = fromValuePredicate((ValuePredicate) subPredicate);
                 } else if (subPredicate instanceof ComposedPredicate) {
-                    specifications.add(specificationFromPredicate(subPredicate));
+                    subSpecification = specificationFromPredicate(subPredicate);
+                }
+                if (subSpecification != null) {
+                    specifications.add(subSpecification);
                 }
             });
 
@@ -307,21 +312,40 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         return null;
     }
 
+    @Override
+    public long getCount() {
+        return historyRecordRepository.count();
+    }
+
+    @Override
+    public long getCount(Predicate predicate) {
+        Specification<HistoryRecordEntity> specification = specificationFromPredicate(predicate);
+        return specification != null ? historyRecordRepository.count(specification) : getCount();
+    }
+
     private Specification<HistoryRecordEntity> fromValuePredicate(ValuePredicate valuePredicate) {
         //ValuePredicate.Type.IN was not implemented
         if (StringUtils.isBlank(valuePredicate.getAttribute())) {
             return null;
         }
-        String attributeName = StringUtils.trim(valuePredicate.getAttribute());
+        String attributeName = HistoryRecordEntity.replaceNameValid(StringUtils.trim(valuePredicate.getAttribute()));
         if (!HistoryRecordEntity.isAttributeNameValid(attributeName)) {
             return null;
         }
+
         Specification<HistoryRecordEntity> specification = null;
         if (ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType())
             || ValuePredicate.Type.LIKE.equals(valuePredicate.getType())) {
+            RecordRef recordRef = RecordRef.valueOf(valuePredicate.getValue().asText());
+            String tmpValue = RecordRef.isEmpty(recordRef) ?
+                valuePredicate.getValue().asText() :
+                recordRef.getId();
+            String attributeValue =
+                ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType()) ?
+                    "%" + tmpValue.toLowerCase() + "%" :
+                    tmpValue.toLowerCase();
             specification = (root, query, builder) ->
-                builder.like(builder.lower(root.get(attributeName)),
-                    valuePredicate.getValue().asText().toLowerCase());
+                builder.like(builder.lower(root.get(attributeName)), attributeValue);
         } else {
             Comparable objectValue = getObjectValue(attributeName, valuePredicate.getValue().asText());
             if (objectValue != null) {
@@ -354,11 +378,23 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             } else if (searchField.getType() == Long.class) {
                 return Long.valueOf(attributeValue);
             } else if (searchField.getType() == Date.class) {
-                Calendar calendar = Calendar.getInstance();
-                calendar.setTimeInMillis(Long.valueOf(attributeValue));
                 //saved values has no milliseconds part cause of dateFormat
-                calendar.set(Calendar.MILLISECOND, 0);
-                return calendar.getTime();
+                try {
+                    Calendar calendar = Calendar.getInstance();
+                    calendar.setTimeInMillis(Long.valueOf(attributeValue));
+                    calendar.set(Calendar.MILLISECOND, 0);
+                    return calendar.getTime();
+                } catch (NumberFormatException formatException) {
+                    try {
+                        Instant valueObject =
+                            Instant.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(attributeValue));
+                        valueObject = valueObject.truncatedTo(ChronoUnit.SECONDS);
+                        return Date.from(valueObject);
+                    } catch (DateTimeException e) {
+                        log.error("Failed to convert attribute '{}' value ({}) to date", attributeName,
+                            attributeValue, e);
+                    }
+                }
             } else {
                 log.error("Unexpected attribute type {} for predicate", searchField.getType());
             }
@@ -368,5 +404,9 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         } catch (NoSuchFieldException e) {
         }
         return null;
+    }
+
+    static class PredicateMap {
+
     }
 }

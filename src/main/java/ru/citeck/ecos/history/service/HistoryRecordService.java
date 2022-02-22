@@ -6,7 +6,6 @@ import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
 
-import javax.validation.constraints.Null;
 import java.io.IOException;
 import java.text.ParseException;
 import java.util.List;
@@ -60,4 +59,8 @@ public interface HistoryRecordService {
     HistoryRecordDto getHistoryRecordByEventId(String eventId);
 
     List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, Sort sort);
+
+    long getCount();
+
+    long getCount(Predicate predicate);
 }

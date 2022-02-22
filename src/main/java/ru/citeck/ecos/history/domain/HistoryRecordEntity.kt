@@ -45,6 +45,8 @@ class HistoryRecordEntity : Serializable {
         const val DOC_STATUS_TITLE = "docStatusTitle"
         const val LAT_TASK_COMMENT = "lastTaskComment"
 
+        const val DOCUMENT = "document"
+
         private var attributeNames: List<String> = listOf(
             HISTORY_EVENT_ID, DOCUMENT_ID, EVENT_TYPE, COMMENTS, VERSION,
             CREATION_TIME, USERNAME, USER_ID, TASK_TITLE, TASK_ROLE, TASK_TITLE, TASK_OUTCOME,
@@ -57,6 +59,14 @@ class HistoryRecordEntity : Serializable {
         @JvmStatic
         fun isAttributeNameValid(attributeName: String): Boolean {
             return attributeNames.contains(attributeName)
+        }
+
+        @JvmStatic
+        fun replaceNameValid(attributeName: String): String {
+            if (DOCUMENT.equals(attributeName)) {
+                return DOCUMENT_ID;
+            }
+            return attributeName
         }
     }
 
