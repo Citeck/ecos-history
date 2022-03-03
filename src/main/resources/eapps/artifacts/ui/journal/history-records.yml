@@ -1,0 +1,43 @@
+---
+id: history-records
+name:
+  ru: История
+  en: History
+
+system: true
+sourceId: history/history-record
+
+columns:
+
+  - id: creationTime
+    name:
+      ru: Время события
+      en: Event time
+    type: DATETIME
+  - id: eventType
+    name:
+      ru: Тип события
+      en: Event type
+  - id: document
+    name:
+      ru: Сущность
+      en: Entity
+    type: ASSOC
+    formatter:
+      type: assoc
+  - id: comments
+    name:
+      ru: Описание
+      en: Description
+  - id: username
+    name:
+      ru: Пользователь
+      en: User
+  - id: taskTitle
+    name:
+      ru: Имя задачи
+      en: Task title
+  - id: taskOutcomeName
+    name:
+      ru: Результат задачи
+      en: Task outcome
