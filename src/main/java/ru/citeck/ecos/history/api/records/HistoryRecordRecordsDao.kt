@@ -4,11 +4,15 @@ import lombok.extern.slf4j.Slf4j
 import mu.KotlinLogging
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
+import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.history.dto.HistoryRecordDto
 import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records2.predicate.PredicateService
+import ru.citeck.ecos.records2.predicate.PredicateUtils
+import ru.citeck.ecos.records2.predicate.model.AttributePredicate
 import ru.citeck.ecos.records2.predicate.model.Predicate
+import ru.citeck.ecos.records2.predicate.model.ValuePredicate
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
 import ru.citeck.ecos.records3.record.dao.AbstractRecordsDao
 import ru.citeck.ecos.records3.record.dao.atts.RecordAttsDao
@@ -39,7 +43,7 @@ class HistoryRecordRecordsDao(
     }
 
     override fun getRecToMutate(recordId: String): HistoryRecordDto {
-        val historyRecord = historyRecordService.getHistoryRecordById(recordId)
+        val historyRecord = historyRecordService.getHistoryRecordByEventId(recordId)
         return historyRecord?.let { HistoryRecordDto(it) } ?: HistoryRecordDto()
     }
 
@@ -52,7 +56,7 @@ class HistoryRecordRecordsDao(
         return if (recordId.isEmpty()) {
             null
         } else {
-            return historyRecordService.getHistoryRecordById(recordId)
+            return historyRecordService.getHistoryRecordByEventId(recordId)
                 ?.let { HistoryRecord(it) }
         }
     }
@@ -71,13 +75,59 @@ class HistoryRecordRecordsDao(
         } else {
             maxItems
         }
-        val predicate = recsQuery.getQuery(Predicate::class.java)
+        var predicate = recsQuery.getQuery(Predicate::class.java)
+        predicate = PredicateUtils.mapAttributePredicates(predicate, {
+            preProcessAttPredicate(it)
+        }, true, true)
+
         val historyRecordDtoList = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
 
         val result = RecsQueryRes<HistoryRecord>()
         result.setRecords(historyRecordDtoList.map { HistoryRecord(it) })
         result.setTotalCount(historyRecordService.getCount(predicate))
         return result
+    }
+
+    private fun preProcessAttPredicate(predicate: AttributePredicate): Predicate? {
+        if (predicate !is ValuePredicate) {
+            return predicate
+        }
+
+        val attribute = predicate.getAttribute()
+        if (attribute == "document") {
+            val value = preProcessTxtValuePredicate(predicate.getValue()) {
+                it.replaceFirst("alfresco/@workspace://SpacesStore/", "")
+            }
+            return if (value.isNull()) {
+                null
+            } else {
+                val copy = predicate.copy<ValuePredicate>()
+                copy.setVal(value)
+                copy
+            }
+        }
+
+        return predicate
+    }
+
+    private fun preProcessTxtValuePredicate(value: DataValue, action: (String) -> String?): DataValue {
+        if (value.isTextual()) {
+            return action.invoke(value.asText())?.let { DataValue.createStr(it) } ?: DataValue.NULL
+        }
+        if (value.isArray()) {
+            val res = DataValue.createArr()
+            for (arrValue in value) {
+                val elem = preProcessTxtValuePredicate(arrValue, action)
+                if (!elem.isNull()) {
+                    res.add(elem)
+                }
+            }
+            if (res.size() == 0) {
+                return DataValue.NULL
+            }
+            return res
+        }
+        return DataValue.NULL
     }
 
     private fun getSpringDataSort(sort: List<SortBy>): Sort? {
@@ -109,6 +159,11 @@ class HistoryRecordRecordsDao(
             return dto.historyEventId
         }
 
+        fun getEventType(): EventType {
+            val type = dto.eventType ?: ""
+            return EventType(type)
+        }
+
         fun getCreationTime(): Instant? {
             return dto.creationTime?.let { Instant.ofEpochMilli(it) }
         }
@@ -118,8 +173,31 @@ class HistoryRecordRecordsDao(
             var ref = RecordRef.valueOf(docId)
             if (ref.appName.isBlank()) {
                 ref = ref.withAppName("alfresco")
+                    .withId("workspace://SpacesStore/${ref.id}")
             }
             return ref
+        }
+    }
+
+    data class EventType(val id: String) {
+
+        fun getDisplayName(): String {
+            return when (id) {
+                "node.created" -> "Created"
+                "node.updated" -> "Updated"
+                "task.create" -> "Task created"
+                "task.assign" -> "Task assigned"
+                "task.complete" -> "Task completed"
+                "workflow.start" -> "Workflow started"
+                "workflow.end" -> "Workflow ended"
+                "workflow.end.cancelled" -> "Workflow cancelled"
+                "assoc.added" -> "Added"
+                "assoc.removed" -> "Removed"
+                "assoc.contains" -> "Document"
+                "assoc.updated" -> "Updated"
+                "status.changed" -> "Status changed"
+                else -> id
+            }
         }
     }
 }

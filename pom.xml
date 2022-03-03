@@ -737,11 +737,11 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-undertow</artifactId>
                 </dependency>
-                <dependency>
+<!--                <dependency>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-devtools</artifactId>
                     <optional>true</optional>
-                </dependency>
+                </dependency>-->
             </dependencies>
             <build>
                 <plugins>
@@ -828,11 +828,11 @@
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-starter-undertow</artifactId>
                 </dependency>
-                <dependency>
+<!--                <dependency>
                     <groupId>org.springframework.boot</groupId>
                     <artifactId>spring-boot-devtools</artifactId>
                     <optional>true</optional>
-                </dependency>
+                </dependency>-->
             </dependencies>
             <build>
                 <plugins>
