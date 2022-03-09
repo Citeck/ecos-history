@@ -1,7 +1,7 @@
 package ru.citeck.ecos.history.converter
 
 import org.springframework.stereotype.Component
-import ru.citeck.ecos.commons.data.DataValue
+import ru.citeck.ecos.commons.json.Json
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.dto.HistoryRecordDto
 
@@ -36,7 +36,15 @@ class HistoryRecordConverter {
     }
 
     fun toMap(dto: HistoryRecordDto): Map<String, String> {
-        return DataValue.create(dto)
-            .asMap(String::class.java, String::class.java).filter { entry ->  entry.value != null}
+        val mapType = Json.mapper.getMapType(String::class.java, String::class.java)
+        val resultWithNull = Json.mapper.convert<Map<String, String?>>(dto, mapType)
+            ?: error("Error while dto-to-map conversion. Dto: $dto")
+        val result = HashMap<String, String>()
+        for ((k, v) in resultWithNull) {
+            if (v != null) {
+                result[k] = v
+            }
+        }
+        return result
     }
 }
