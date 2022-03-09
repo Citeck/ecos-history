@@ -4,7 +4,7 @@ import lombok.Data;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
-import ru.citeck.ecos.history.converter.impl.HistoryRecordConverter;
+import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
@@ -28,19 +28,19 @@ public class HistoryRecordsController {
     @RequestMapping(method = RequestMethod.GET, value = "/all_records/page/{page}/limit/{limit}")
     public Object getAllRecords(@PathVariable Integer page, @PathVariable Integer limit) {
         List<HistoryRecordEntity> records = historyRecordRepository.getAllRecords(PageRequest.of(page, limit));
-        return historyRecordConverter.convertAll(records);
+        return historyRecordConverter.toDto(records);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/by_document_id/{documentId}")
     public Object getAllRecordsByDocumentId(@PathVariable String documentId) {
         List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(documentId);
-        return historyRecordConverter.convertAll(records);
+        return historyRecordConverter.toDto(records);
     }
 
     @PostMapping("/get_document_history")
     public Object getAllRecordsByDocumentIdParam(@RequestBody String documentId) {
         List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(documentId);
-        return historyRecordConverter.convertAll(records);
+        return historyRecordConverter.toDto(records);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/by_document_id/{documentId}")
@@ -61,7 +61,7 @@ public class HistoryRecordsController {
     public Object getAllRecordsByUsername(@PathVariable String username, @PathVariable Integer limit) {
         List<HistoryRecordEntity> records = historyRecordRepository
             .getAllHistoryRecordsByUsername(username, PageRequest.of(0, limit));
-        return historyRecordConverter.convertAll(records);
+        return historyRecordConverter.toDto(records);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/by_username/{username}/start_date/{startDate}/limit/{limit}")
@@ -72,7 +72,7 @@ public class HistoryRecordsController {
 
         List<HistoryRecordEntity> records = historyRecordRepository.getAllHistoryRecordsByUsernameWithStartDate(
             username, start, PageRequest.of(0, limit));
-        return historyRecordConverter.convertAll(records);
+        return historyRecordConverter.toDto(records);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/by_username/{username}/start_date/{startDate}/end_date/{endDate}/limit/{limit}")
@@ -85,7 +85,7 @@ public class HistoryRecordsController {
 
         List<HistoryRecordEntity> records = historyRecordRepository.getAllHistoryRecordsByUsernameWithStartEndDate(
             username, start, end, PageRequest.of(0, limit));
-        return historyRecordConverter.convertAll(records);
+        return historyRecordConverter.toDto(records);
     }
 
     @RequestMapping(method = RequestMethod.POST, value = "/insert_record")
@@ -103,11 +103,17 @@ public class HistoryRecordsController {
 
     @RequestMapping(method = RequestMethod.POST, value = "/update_record/{recordId}")
     public HistoryRecordEntity updateHistoryRecord(HttpServletRequest request, @PathVariable String recordId) throws ParseException {
-        HistoryRecordEntity recordEntity = historyRecordRepository.findById(recordId).orElse(null);
-        if (recordEntity == null) {
-            throw new RuntimeException("No history record with uuid \"" + recordId + "\" has been found");
-        } else {
-            return historyRecordService.saveOrUpdateRecord(recordEntity, transformMap(request.getParameterMap()));
+        String errorMsg = "No history record with uuid \"" + recordId + "\" has been found";
+        try {
+            Long idValue = Long.valueOf(recordId);
+            HistoryRecordEntity recordEntity = historyRecordRepository.findById(idValue).orElse(null);
+            if (recordEntity == null) {
+                throw new RuntimeException(errorMsg);
+            } else {
+                return historyRecordService.saveOrUpdateRecord(recordEntity, transformMap(request.getParameterMap()));
+            }
+        } catch (NumberFormatException e){
+            throw new RuntimeException(errorMsg, e);
         }
     }
 
