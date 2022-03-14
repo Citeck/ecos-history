@@ -2,6 +2,7 @@ package ru.citeck.ecos.history.service.impl
 
 import org.apache.commons.lang3.time.FastDateFormat
 import org.springframework.stereotype.Component
+import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.events2.type.RecordChangedEvent
@@ -30,6 +31,8 @@ class EcosEventsListener(
             "dd.MM.yyyy",
             TimeZone.getTimeZone(ZoneId.of("UTC"))
         )
+
+        private val EMPTY_VALUE_STR = "—"
     }
 
     @PostConstruct
@@ -85,44 +88,156 @@ class EcosEventsListener(
 
                 val record = hashMapOf<String, String>()
 
-                val valueToStr: (List<String>?, AttributeType) -> String = { value, type ->
-
-                    val notEmptyValues: List<String> = if (value == null || value.isEmpty()) {
-                        emptyList()
-                    } else {
-                        value.filter { it.isNotBlank() }
-                    }
-
-                    if (notEmptyValues.isEmpty()) {
-                        "—"
-                    } else {
-                        notEmptyValues.joinToString(", ") {
-                            when (type) {
-                                AttributeType.DATETIME -> formatTime(Instant.parse(it))
-                                AttributeType.DATE -> DATE_FORMAT.format(Instant.parse(it))
-                                else -> it
-                            }
-                        }
-                    }
-                }
+                record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
+                record[HistoryRecordService.EVENT_TYPE] = "node.updated"
+                record[HistoryRecordService.USER_ID] = event.user
+                record[HistoryRecordService.USERNAME] = event.user
+                record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
 
                 for (changed in event.changed) {
-
-                    record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
-                    record[HistoryRecordService.EVENT_TYPE] = "node.updated"
-                    record[HistoryRecordService.USER_ID] = event.user
-                    record[HistoryRecordService.USERNAME] = event.user
-                    record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
-
-                    record[HistoryRecordService.COMMENTS] =
-                        "${changed.attName.getClosest(RU_LOCALE)}: " +
-                            valueToStr(changed.before, changed.attType) +
-                            " -> " +
-                            valueToStr(changed.after, changed.attType)
-
-                    historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
+                    val comments = getComments(changed)
+                    for (comment in comments) {
+                        record[HistoryRecordService.COMMENTS] = comment
+                        historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
+                    }
                 }
             }
+        }
+    }
+
+    private fun getComments(changed: ChangedValue): List<String> {
+
+        val fieldName = changed.attName.getClosest(RU_LOCALE).ifBlank { "unknown" }
+
+        if (changed.attType == AttributeType.JSON) {
+
+            val isEmptyBefore = isEmpty(changed.before)
+            val isEmptyAfter = isEmpty(changed.after)
+
+            if (isEmptyBefore && isEmptyBefore != isEmptyAfter) {
+                val msg = "$fieldName: " + if (isEmptyBefore) {
+                    "Добавлен"
+                } else {
+                    "Удален"
+                }
+                return listOf(msg)
+            } else if (isEmptyBefore && isEmptyAfter) {
+                return emptyList()
+            }
+
+            val beforeStrArr = changed.before ?: emptyList()
+            val afterStrArr = changed.after ?: emptyList()
+
+            for (i in 0 until beforeStrArr.size.coerceAtLeast(afterStrArr.size)) {
+
+                val beforeStrValue: String = beforeStrArr.getOrNull(i) ?: "{}"
+                val afterStrValue: String = afterStrArr.getOrNull(i) ?: "{}"
+
+                val valueBefore = convertArraysToObjects(DataValue.create(beforeStrValue))
+                val valueAfter = convertArraysToObjects(DataValue.create(afterStrValue))
+
+                val comments = arrayListOf<String>()
+                collectJsonChangedEvents(fieldName, valueBefore, valueAfter, comments)
+                return comments
+            }
+        }
+
+        val valueToStr: (List<String>?, AttributeType) -> String = { value, type ->
+
+            val notEmptyValues: List<String> = if (value == null || value.isEmpty()) {
+                emptyList()
+            } else {
+                value.filter { it.isNotBlank() }
+            }
+
+            if (notEmptyValues.isEmpty()) {
+                EMPTY_VALUE_STR
+            } else {
+                notEmptyValues.joinToString(", ") {
+                    when (type) {
+                        AttributeType.DATETIME -> formatTime(Instant.parse(it))
+                        AttributeType.DATE -> DATE_FORMAT.format(Instant.parse(it))
+                        else -> it
+                    }
+                }
+            }
+        }
+
+        return listOf(
+            "$fieldName: " + valueToStr(changed.before, changed.attType) +
+                " -> " +
+                valueToStr(changed.after, changed.attType)
+        )
+    }
+
+    private fun isEmpty(value: Any?): Boolean {
+        return value == null
+            || value is Collection<*> && (value.isEmpty() || value.all { isEmpty(it) })
+            || value is Map<*, *> && value.isEmpty()
+            || value is String && value.isEmpty()
+            || value is DataValue && (
+                value.isNull()
+                || ((value.isArray() || value.isObject()) && value.size() == 0)
+                || value.isTextual() && value.asText().isEmpty()
+            )
+    }
+
+    private fun convertArraysToObjects(value: DataValue): DataValue {
+        return if (value.isArray()) {
+            val data = DataValue.createObj()
+            for (element in value) {
+                val id = element.get("id").asText().ifEmpty {
+                    element.get("key").asText()
+                }
+                if (id.isNotBlank()) {
+                    data.set(id, convertArraysToObjects(element))
+                }
+            }
+            if (data.size() == 0) {
+                value
+            } else {
+                data
+            }
+        } else if (value.isObject()) {
+            val data = DataValue.createObj()
+            value.forEach { k, v ->
+                data.set(k, convertArraysToObjects(v))
+            }
+            data
+        } else {
+            value
+        }
+    }
+
+    private fun collectJsonChangedEvents(
+        path: String,
+        before: DataValue,
+        after: DataValue,
+        events: MutableList<String>
+    ) {
+        if (after.isObject()) {
+            val keys = before.fieldNamesList().toMutableSet()
+            keys.addAll(after.fieldNamesList())
+            val added = mutableListOf<DataValue>()
+            val removed = mutableListOf<String>()
+            for (key in keys) {
+                if (!before.has(key)) {
+                    added.add(after.get(key))
+                    continue
+                } else if (!after.has(key)) {
+                    removed.add(key)
+                    continue
+                }
+                collectJsonChangedEvents("$path.$key", before.get(key), after.get(key), events)
+            }
+            if (removed.isNotEmpty()) {
+                events.add("$path удалено: $removed")
+            }
+            if (added.isNotEmpty()) {
+                events.add("$path добавлено: $added")
+            }
+        } else if (before != after) {
+            events.add("$path: $before -> $after")
         }
     }
 
