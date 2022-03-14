@@ -107,7 +107,7 @@ class EcosEventsListener(
 
     private fun getComments(changed: ChangedValue): List<String> {
 
-        val fieldName = changed.attName.getClosest(RU_LOCALE).ifBlank { "unknown" }
+        val fieldName = changed.attName.getClosest(RU_LOCALE).ifBlank { changed.attId }
 
         if (changed.attType == AttributeType.JSON) {
 
