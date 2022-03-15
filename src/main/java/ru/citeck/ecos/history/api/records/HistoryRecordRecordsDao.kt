@@ -13,6 +13,7 @@ import ru.citeck.ecos.records2.predicate.PredicateUtils
 import ru.citeck.ecos.records2.predicate.model.AttributePredicate
 import ru.citeck.ecos.records2.predicate.model.Predicate
 import ru.citeck.ecos.records2.predicate.model.ValuePredicate
+import ru.citeck.ecos.records2.predicate.model.VoidPredicate
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
 import ru.citeck.ecos.records3.record.dao.AbstractRecordsDao
 import ru.citeck.ecos.records3.record.dao.atts.RecordAttsDao
@@ -76,9 +77,12 @@ class HistoryRecordRecordsDao(
             maxItems
         }
         var predicate = recsQuery.getQuery(Predicate::class.java)
-        predicate = PredicateUtils.mapAttributePredicates(predicate, {
-            preProcessAttPredicate(it)
-        }, true, true)
+        predicate = PredicateUtils.mapAttributePredicates(
+            predicate,
+            { preProcessAttPredicate(it) },
+            onlyAnd = true,
+            optimize = true
+        ) ?: VoidPredicate.INSTANCE
 
         val historyRecordDtoList = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
 

@@ -11,6 +11,7 @@ import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.citeck.ecos.commons.json.Json;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
@@ -202,6 +203,10 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         result.setDocType(getValueOrEmpty(requestParams, DOC_TYPE));
         result.setDocStatusName(getValueOrEmpty(requestParams, DOC_STATUS_NAME));
         result.setDocStatusTitle(getValueOrEmpty(requestParams, DOC_STATUS_TITLE));
+
+        if (log.isInfoEnabled()) {
+            log.info(Json.getMapper().toString(historyRecordConverter.toDto(result)));
+        }
 
         result = historyRecordRepository.save(result);
 
