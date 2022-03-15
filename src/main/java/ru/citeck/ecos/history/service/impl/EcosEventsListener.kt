@@ -193,7 +193,7 @@ class EcosEventsListener(
                     data.set(id, convertArraysToObjects(element))
                 }
             }
-            if (data.size() == 0) {
+            if (data.size() != value.size()) {
                 value
             } else {
                 data
@@ -218,11 +218,11 @@ class EcosEventsListener(
         if (after.isObject()) {
             val keys = before.fieldNamesList().toMutableSet()
             keys.addAll(after.fieldNamesList())
-            val added = mutableListOf<DataValue>()
+            val added = mutableMapOf<String, DataValue>()
             val removed = mutableListOf<String>()
             for (key in keys) {
                 if (!before.has(key)) {
-                    added.add(after.get(key))
+                    added[key] = after.get(key)
                     continue
                 } else if (!after.has(key)) {
                     removed.add(key)
@@ -234,7 +234,9 @@ class EcosEventsListener(
                 events.add("$path удалено: $removed")
             }
             if (added.isNotEmpty()) {
-                events.add("$path добавлено: $added")
+                added.forEach { (key, value) ->
+                    events.add("$path добавлено: $key = $value")
+                }
             }
         } else if (before != after) {
             events.add("$path: $before -> $after")
