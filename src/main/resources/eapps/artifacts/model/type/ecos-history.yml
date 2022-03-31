@@ -1,0 +1,35 @@
+---
+id: history-record
+
+name:
+  en: History record
+  ru: Запись истории
+
+system: true
+sourceId: history/history-record
+
+journalRef: uiserv/journal@history-records
+
+model:
+  attributes:
+  - id: creationTime
+    name:
+      ru: Дата
+      en: Date
+    type: DATE
+  - id: eventType
+    name:
+      ru: Событие
+      en: Event
+  - id: version
+    name:
+      ru: Версия
+      en: Version
+  - id: taskRole
+    name:
+      ru: Роль
+      en: Role
+  - id: comments
+    name:
+      ru: Комментарий
+      en: Comment

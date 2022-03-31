@@ -1,4 +1,4 @@
-package ru.citeck.ecos.history.web.rest;
+package ru.citeck.ecos.history;
 
 import com.fasterxml.jackson.annotation.JsonInclude;
 import com.fasterxml.jackson.databind.ObjectMapper;
@@ -21,6 +21,10 @@ import static org.assertj.core.api.Assertions.assertThat;
  * Utility class for testing REST controllers.
  */
 public final class TestUtil {
+
+    public static final String URL_RECORDS_MUTATE = "/api/records/mutate";
+    public static final String URL_RECORDS_QUERY = "/api/records/query";
+    public static final String URL_RECORDS_DELETE = "/api/records/delete";
 
     private static final ObjectMapper mapper = createObjectMapper();
 

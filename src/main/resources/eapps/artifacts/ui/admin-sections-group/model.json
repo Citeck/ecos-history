@@ -1,0 +1,16 @@
+{
+  "id": "history",
+  "name": {
+    "en": "History",
+    "ru": "История"
+  },
+  "order": 100,
+  "sections": [
+    {
+      "type": "JOURNAL",
+      "config": {
+        "journalId": "history-records"
+      }
+    }
+  ]
+}
