@@ -5,6 +5,7 @@ import mu.KotlinLogging
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
+import ru.citeck.ecos.records3.record.request.RequestContext
 import ru.citeck.ecos.history.dto.HistoryRecordDto
 import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.records2.RecordRef
@@ -23,6 +24,7 @@ import ru.citeck.ecos.records3.record.dao.query.dto.query.RecordsQuery
 import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy
 import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes
 import java.time.Instant
+import java.util.*
 
 @Slf4j
 @Component
@@ -181,26 +183,33 @@ class HistoryRecordRecordsDao(
             }
             return ref
         }
+
+        fun getUserRef(): RecordRef {
+            val userId = dto.username
+            return RecordRef.create("emodel", "person", userId)
+        }
     }
 
     data class EventType(val id: String) {
 
+        private val BUNDLE_NAME = "i18n.document-history"
+        private val bundleMap = hashMapOf<Locale, ResourceBundle>()
+
+        fun getBundle(locale: Locale): ResourceBundle {
+            if (bundleMap.containsKey(locale)) {
+                return bundleMap.get(locale)!!
+            }
+            val bundle = ResourceBundle.getBundle(BUNDLE_NAME, locale)
+            bundleMap.put(locale, bundle)
+            return bundle
+        }
+
         fun getDisplayName(): String {
-            return when (id) {
-                "node.created" -> "Created"
-                "node.updated" -> "Updated"
-                "task.create" -> "Task created"
-                "task.assign" -> "Task assigned"
-                "task.complete" -> "Task completed"
-                "workflow.start" -> "Workflow started"
-                "workflow.end" -> "Workflow ended"
-                "workflow.end.cancelled" -> "Workflow cancelled"
-                "assoc.added" -> "Added"
-                "assoc.removed" -> "Removed"
-                "assoc.contains" -> "Document"
-                "assoc.updated" -> "Updated"
-                "status.changed" -> "Status changed"
-                else -> id
+            try {
+                val result = getBundle(RequestContext.getLocale()).getString(id)
+                return result ?: id
+            } catch (e: Exception) {
+                return id
             }
         }
     }

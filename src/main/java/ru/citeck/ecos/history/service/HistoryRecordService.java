@@ -42,7 +42,8 @@ public interface HistoryRecordService {
     String DOC_TYPE = "docType";
     String DOC_STATUS_NAME = "docStatusName";
     String DOC_STATUS_TITLE = "docStatusTitle";
-    String TASK_ACTORS = "taskActors";
+    //ru.citeck.ecos.utils.WorkflowConstants.VAR_TASK_ORIGINAL_OWNER
+    String TASK_OWNER = "taskOriginalOwner";
     String EMPTY_VALUE_KEY = "{empty}";
 
     List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException;

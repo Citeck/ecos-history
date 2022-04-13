@@ -27,6 +27,7 @@ class HistoryRecordConverter {
         result.taskDefinitionKey = entity.taskDefinitionKey
         result.taskType = entity.fullTaskType
         result.documentId = entity.documentId
+        //result.taskOriginalOwner = entity.taskOriginalOwner
 
         return result
     }
