@@ -2,10 +2,10 @@ package ru.citeck.ecos.history.api.records
 
 import lombok.extern.slf4j.Slf4j
 import mu.KotlinLogging
+import org.apache.commons.lang.StringUtils
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
-import ru.citeck.ecos.records3.record.request.RequestContext
 import ru.citeck.ecos.history.dto.HistoryRecordDto
 import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.records2.RecordRef
@@ -15,6 +15,7 @@ import ru.citeck.ecos.records2.predicate.model.AttributePredicate
 import ru.citeck.ecos.records2.predicate.model.Predicate
 import ru.citeck.ecos.records2.predicate.model.ValuePredicate
 import ru.citeck.ecos.records2.predicate.model.VoidPredicate
+import ru.citeck.ecos.records3.RecordsService
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
 import ru.citeck.ecos.records3.record.dao.AbstractRecordsDao
 import ru.citeck.ecos.records3.record.dao.atts.RecordAttsDao
@@ -23,6 +24,7 @@ import ru.citeck.ecos.records3.record.dao.query.RecordsQueryDao
 import ru.citeck.ecos.records3.record.dao.query.dto.query.RecordsQuery
 import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy
 import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes
+import ru.citeck.ecos.records3.record.request.RequestContext
 import java.time.Instant
 import java.util.*
 
@@ -60,7 +62,7 @@ class HistoryRecordRecordsDao(
             null
         } else {
             return historyRecordService.getHistoryRecordByEventId(recordId)
-                ?.let { HistoryRecord(it) }
+                ?.let { HistoryRecord(recordsService, it) }
         }
     }
 
@@ -89,7 +91,7 @@ class HistoryRecordRecordsDao(
         val historyRecordDtoList = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
 
         val result = RecsQueryRes<HistoryRecord>()
-        result.setRecords(historyRecordDtoList.map { HistoryRecord(it) })
+        result.setRecords(historyRecordDtoList.map { HistoryRecord(recordsService, it) })
         result.setTotalCount(historyRecordService.getCount(predicate))
         return result
     }
@@ -158,6 +160,7 @@ class HistoryRecordRecordsDao(
     override fun getId() = ID
 
     class HistoryRecord(
+        val recordsService: RecordsService,
         @AttName("...")
         val dto: HistoryRecordDto
     ) {
@@ -182,6 +185,37 @@ class HistoryRecordRecordsDao(
                     .withId("workspace://SpacesStore/${ref.id}")
             }
             return ref
+        }
+
+        fun getTaskOutcomeName(): String? {
+            val i18nPrefix = "alfresco/i18n-value@"
+            val outcome = dto.taskOutcome
+            if (StringUtils.isBlank(outcome)){
+                return null
+            }
+            val taskDefinitionKey = dto.taskDefinitionKey
+            if (StringUtils.isNotBlank(taskDefinitionKey)) {
+                val key = "flowable.form.button.$taskDefinitionKey.$outcome.label"
+                val ref = RecordRef.valueOf(i18nPrefix + key)
+                val title: String = recordsService.getAtt(ref, "?disp").asText()
+                if (StringUtils.isNotBlank(title)) {
+                    return title
+                }
+            }
+            val taskType = dto.taskType
+            if (StringUtils.isNotBlank(taskType)) {
+                //todo: dynamic replacement of task type prefix
+                val correctType: String = taskType!!.replace("\\{.*\\}".toRegex(), "ctrwf_")
+                val key = "workflowtask.$correctType.outcome.$outcome"
+                val ref = RecordRef.valueOf(i18nPrefix + key)
+                val title: String = recordsService.getAtt(ref, "?disp").asText()
+                if (StringUtils.isNotBlank(title)) {
+                    return title
+                }
+            }
+            val ref = RecordRef.valueOf(i18nPrefix + "workflowtask.outcome.$outcome")
+            val title: String = recordsService.getAtt(ref, "?disp").asText()
+            return if (StringUtils.isNotBlank(title)) title else outcome!!
         }
 
         fun getUserRef(): RecordRef {

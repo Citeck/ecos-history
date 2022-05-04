@@ -24,7 +24,6 @@ class HistoryRecordDto : Serializable {
     var taskOutcomeName: String? = null
     var taskDefinitionKey: String? = null
     var taskType: String? = null
-    //var taskOriginalOwner: String? = null
     var documentId: String? = null
 
     constructor() {}
@@ -44,7 +43,6 @@ class HistoryRecordDto : Serializable {
         taskOutcomeName = other.taskOutcomeName
         taskDefinitionKey = other.taskDefinitionKey
         taskType = other.taskType
-        //taskOriginalOwner = other.taskOriginalOwner
         documentId = other.documentId
     }
 }

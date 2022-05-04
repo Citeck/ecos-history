@@ -36,13 +36,6 @@ columns:
     type: ASSOC
     formatter:
       type: assoc
-  - id: taskOriginalOwner
-    name:
-      ru: От имени
-      en: On behalf of
-    type: ASSOC
-    formatter:
-      type: assoc
   - id: taskRole
     name:
       ru: Роль

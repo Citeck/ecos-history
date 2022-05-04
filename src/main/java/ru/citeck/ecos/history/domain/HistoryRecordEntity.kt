@@ -31,7 +31,6 @@ class HistoryRecordEntity : Serializable {
         const val TASK_OUTCOME_NAME = "taskOutcomeName"
         const val TASK_DEFINITION_KEY = "taskDefinitionKey"
         const val TASK_TYPE = "taskType"
-        const val TASK_OWNER = "taskOriginalOwner"
         const val FULL_TASK_TYPE = "fullTaskType"
         const val INITIATOR = "initiator"
         const val WORKFLOW_INSTANCE_ID = "workflowInstanceId"
@@ -54,7 +53,7 @@ class HistoryRecordEntity : Serializable {
             TASK_DEFINITION_KEY, TASK_TYPE, TASK_FORM_KEY, TASK_EVENT_INSTANCE_ID, TASK_OUTCOME_NAME, FULL_TASK_TYPE,
             INITIATOR, WORKFLOW_INSTANCE_ID, WORKFLOW_DESCRIPTION, DOC_STATUS_NAME, DOC_STATUS_TITLE,
             DOC_TYPE, DOCUMENT_VERSION, LAT_TASK_COMMENT, PROPERTY_NAME, EXPECTED_PERFORM_TIME,
-            ENTITY_NAME, TASK_OWNER
+            ENTITY_NAME
         )
 
         @JvmStatic
