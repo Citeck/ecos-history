@@ -47,7 +47,7 @@ spring:
       database: history
   datasource:
     type: com.zaxxer.hikari.HikariDataSource
-    url: jdbc:postgresql://localhost:5439/history
+    url: jdbc:postgresql://localhost:5442/history
     username: history
     password:
     hikari:
