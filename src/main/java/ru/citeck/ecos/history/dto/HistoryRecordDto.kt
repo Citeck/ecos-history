@@ -1,7 +1,6 @@
 package ru.citeck.ecos.history.dto
 
 import lombok.Data
-import ru.citeck.ecos.history.dto.HistoryRecordDto
 import java.io.Serializable
 
 @Data
