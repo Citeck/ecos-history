@@ -4,7 +4,6 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import ru.citeck.ecos.records3.RecordsProperties;
 
 /**
  * Properties specific to History.
@@ -20,8 +19,6 @@ public class ApplicationProperties {
     private final Event event = new Event();
     private final Alfresco alfresco = new Alfresco();
 
-    private RecordsProperties records;
-    private String tryHeaderForUsername;
     private boolean deferredActorsJobEnabled;
 
     @Getter
@@ -49,5 +46,4 @@ public class ApplicationProperties {
         private String sourceFolder;
         private String errorsFolder;
     }
-
 }

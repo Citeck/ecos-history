@@ -11,7 +11,7 @@ class HistoryRecordDto : Serializable {
     }
 
     var uuid: String? = null
-    var historyEventId: String = ""
+    var historyEventId: String? = null
     var comments: String? = null
     var version: String? = null
     var username: String? = null

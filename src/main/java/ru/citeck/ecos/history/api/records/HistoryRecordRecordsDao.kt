@@ -148,11 +148,13 @@ class HistoryRecordRecordsDao(
         for (dto in historyRecords) {
             val outcome = dto.taskOutcome
             if (!outcome.isNullOrBlank() && (dto.taskOutcomeName.isNullOrBlank() || dto.taskOutcomeName == "{}")) {
-                outcomesToRequest.computeIfAbsent(OutcomeRequestData(
-                    dto.taskType,
-                    dto.taskDefinitionKey,
-                    outcome
-                )) { ArrayList() }.add(dto)
+                outcomesToRequest.computeIfAbsent(
+                    OutcomeRequestData(
+                        dto.taskType,
+                        dto.taskDefinitionKey,
+                        outcome
+                    )
+                ) { ArrayList() }.add(dto)
             }
             if (outcomesToRequest.isNotEmpty()) {
                 val outcomesToReqList = outcomesToRequest.keys.toList()
@@ -193,11 +195,14 @@ class HistoryRecordRecordsDao(
             return emptyList()
         }
 
-        val records = recordsService.query(RecordsQuery.create {
-            withSourceId(HISTORY_ALF_SOURCE_ID)
-            withQuery(AlfHistoryQuery(true, document.id))
-            withLanguage(AlfHistoryQuery.LANG)
-        }, AlfHistoryRecordAtts::class.java).getRecords()
+        val records = recordsService.query(
+            RecordsQuery.create {
+                withSourceId(HISTORY_ALF_SOURCE_ID)
+                withQuery(AlfHistoryQuery(true, document.id))
+                withLanguage(AlfHistoryQuery.LANG)
+            },
+            AlfHistoryRecordAtts::class.java
+        ).getRecords()
 
         val result: MutableList<HistoryRecordDto> = ArrayList()
         val allowedTypes = predicateDto.eventType ?: emptySet()
@@ -288,7 +293,7 @@ class HistoryRecordRecordsDao(
         val dto: HistoryRecordDto
     ) {
         fun getId(): String {
-            return dto.historyEventId
+            return dto.historyEventId ?: ""
         }
 
         fun getEventType(): EventType {

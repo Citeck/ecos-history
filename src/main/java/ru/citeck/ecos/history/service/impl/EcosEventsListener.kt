@@ -171,14 +171,14 @@ class EcosEventsListener(
     }
 
     private fun isEmpty(value: Any?): Boolean {
-        return value == null
-            || value is Collection<*> && (value.isEmpty() || value.all { isEmpty(it) })
-            || value is Map<*, *> && value.isEmpty()
-            || value is String && value.isEmpty()
-            || value is DataValue && (
-                value.isNull()
-                || ((value.isArray() || value.isObject()) && value.size() == 0)
-                || value.isTextual() && value.asText().isEmpty()
+        return value == null ||
+            value is Collection<*> && (value.isEmpty() || value.all { isEmpty(it) }) ||
+            value is Map<*, *> && value.isEmpty() ||
+            value is String && value.isEmpty() ||
+            value is DataValue && (
+            value.isNull() ||
+                ((value.isArray() || value.isObject()) && value.size() == 0) ||
+                value.isTextual() && value.asText().isEmpty()
             )
     }
 

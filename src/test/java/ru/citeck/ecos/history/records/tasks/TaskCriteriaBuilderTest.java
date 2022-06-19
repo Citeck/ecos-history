@@ -1,10 +1,9 @@
 package ru.citeck.ecos.history.records.tasks;
 
 import com.google.common.collect.Lists;
-import org.apache.commons.collections4.IterableUtils;
 import org.apache.commons.collections4.IteratorUtils;
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import org.mockito.Mockito;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
@@ -14,20 +13,15 @@ import ru.citeck.ecos.records2.request.query.page.SkipPage;
 
 import java.util.List;
 
-import static org.junit.Assert.*;
+import static org.junit.jupiter.api.Assertions.*;
 
 public class TaskCriteriaBuilderTest {
 
-    private CacheableCurrentActorsProvider provider;
     private TaskCriteriaBuilder criteriaBuilder;
 
-    @Before
+    @BeforeEach
     public void setUp() throws Exception {
-        provider = Mockito.mock(CacheableCurrentActorsProvider.class);
-        Mockito.when(provider.getCurrentUserAuthorities()).thenReturn(Lists.newArrayList("admin"));
-
         criteriaBuilder = new TaskCriteriaBuilder();
-        criteriaBuilder.setCurrentActorsProvider(provider);
     }
 
     @Test
@@ -99,5 +93,4 @@ public class TaskCriteriaBuilderTest {
         assertEquals("id", orderList.get(0).getProperty());
         assertTrue(orderList.get(0).isDescending());
     }
-
 }

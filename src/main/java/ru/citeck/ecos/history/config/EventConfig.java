@@ -16,7 +16,6 @@ import java.nio.charset.StandardCharsets;
 /**
  * @author Roman Makarskiy
  */
-
 @Profile("facade")
 @Slf4j
 @Configuration
@@ -76,5 +75,4 @@ public class EventConfig {
             }
         };
     }
-
 }

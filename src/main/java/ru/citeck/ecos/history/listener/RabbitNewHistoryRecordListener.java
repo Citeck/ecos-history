@@ -2,37 +2,70 @@ package ru.citeck.ecos.history.listener;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.rabbitmq.client.Delivery;
+import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
-import org.springframework.amqp.rabbit.annotation.RabbitListener;
-import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
+import ru.citeck.ecos.rabbitmq.RabbitMqConn;
+import ru.citeck.ecos.rabbitmq.RabbitMqConnProvider;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
+import java.nio.charset.StandardCharsets;
 import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import static ru.citeck.ecos.history.config.RabbitMqConfig.*;
-
+@RequiredArgsConstructor
 @Service("rabbitNewHistoryRecordListener")
 @ConditionalOnClass({EnableRabbit.class})
 public class RabbitNewHistoryRecordListener {
 
+    public static final String SEND_NEW_RECORD_QUEUE = "send_new_record_queue";
+    public static final String SEND_NEW_RECORDS_QUEUE = "send_new_records_queue";
+    public static final String DELETE_RECORDS_BY_DOCUMENT = "delete_records_by_document_queue";
+
     private static final ObjectMapper OBJECT_MAPPER = new ObjectMapper();
 
-    private HistoryRecordService historyRecordService;
-    private HistoryRecordRepository historyRecordRepository;
+    private final HistoryRecordService historyRecordService;
+    private final HistoryRecordRepository historyRecordRepository;
+    private final RabbitMqConnProvider rabbitMqConnProv;
+
+    @PostConstruct
+    public void init() {
+        RabbitMqConn connection = rabbitMqConnProv.getConnection();
+        if (connection == null) {
+            throw new RuntimeException("RabbitMQ connection is not found");
+        }
+        connection.doWithNewChannel(channel ->
+            channel.addAckedConsumer(SEND_NEW_RECORD_QUEUE, Delivery.class, (msg, headers) -> {
+                channel.declareQueue(SEND_NEW_RECORD_QUEUE, true);
+                sendNewRecordListener(new String(msg.getContent().getBody(), StandardCharsets.UTF_8));
+            })
+        );
+        connection.doWithNewChannel(channel ->
+            channel.addAckedConsumer(SEND_NEW_RECORDS_QUEUE, Delivery.class, (msg, headers) -> {
+                channel.declareQueue(SEND_NEW_RECORDS_QUEUE, true);
+                sendNewRecordsListener(new String(msg.getContent().getBody(), StandardCharsets.UTF_8));
+            })
+        );
+        connection.doWithNewChannel(channel ->
+            channel.addAckedConsumer(DELETE_RECORDS_BY_DOCUMENT, Delivery.class, (msg, headers) -> {
+                channel.declareQueue(DELETE_RECORDS_BY_DOCUMENT, true);
+                deleteRecordsByDocumentListener(new String(msg.getContent().getBody(), StandardCharsets.UTF_8));
+            })
+        );
+    }
 
     /**
      * @param message Message (json-object)
      */
-    @RabbitListener(queues = SEND_NEW_RECORD_QUEUE)
-    public void sendNewRecordListener(String message) throws IOException, ParseException {
+    public synchronized void sendNewRecordListener(String message) throws IOException, ParseException {
         Map<String, String> resultMap = OBJECT_MAPPER.readValue(message, new TypeReference<HashMap<String, String>>() {
         });
         historyRecordService.saveOrUpdateRecord(new HistoryRecordEntity(), resultMap);
@@ -41,27 +74,15 @@ public class RabbitNewHistoryRecordListener {
     /**
      * @param message Message (json-object)
      */
-    @RabbitListener(queues = SEND_NEW_RECORDS_QUEUE)
-    public void sendNewRecordsListener(String message) throws IOException, ParseException {
+    public synchronized void sendNewRecordsListener(String message) throws IOException, ParseException {
         historyRecordService.saveOrUpdateRecords(message);
     }
 
     /**
      * @param message Document uuid
      */
-    @RabbitListener(queues = DELETE_RECORDS_BY_DOCUMENT)
-    public void deleteRecordsByDocumentListener(String message) {
+    public synchronized void deleteRecordsByDocumentListener(String message) {
         List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(message);
         historyRecordRepository.deleteAll(records);
-    }
-
-    @Autowired
-    public void setHistoryRecordService(HistoryRecordService historyRecordService) {
-        this.historyRecordService = historyRecordService;
-    }
-
-    @Autowired
-    public void setHistoryRecordRepository(HistoryRecordRepository historyRecordRepository) {
-        this.historyRecordRepository = historyRecordRepository;
     }
 }

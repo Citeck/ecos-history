@@ -1,20 +1,16 @@
 package ru.citeck.ecos.history.api.records;
 
 import lombok.SneakyThrows;
-import org.junit.Assert;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.configurationprocessor.json.JSONArray;
-import org.springframework.boot.configurationprocessor.json.JSONException;
-import org.springframework.boot.configurationprocessor.json.JSONObject;
 import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.context.junit4.SpringRunner;
 import org.springframework.test.web.servlet.MockMvc;
 import org.springframework.test.web.servlet.ResultActions;
 import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
+import ru.citeck.ecos.commons.data.DataValue;
 import ru.citeck.ecos.history.HistoryApp;
 import ru.citeck.ecos.history.TestUtil;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
@@ -22,19 +18,21 @@ import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.records2.predicate.PredicateService;
+import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
 import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(EcosSpringExtension.class)
 @SpringBootTest(classes = HistoryApp.class)
 @AutoConfigureMockMvc
-@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_EACH_TEST_METHOD)
+@DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class HistoryRecordRecordsDaoTest {
 
     static String QUERY = "query";
@@ -52,11 +50,12 @@ public class HistoryRecordRecordsDaoTest {
 
     @Test
     public void createHistoryRecord() throws Exception {
-        String jsonString = getJsonToSend(new JSONObject()
-            .put(RECORDS, new JSONArray().put(
-                new JSONObject().put(HistoryRecordTestData.PROP_ID, HistoryRecordTestData.getEmptyId())
-                    .put(ATTRIBUTES, getHistoryRecordAttributes(HistoryRecordTestData.getTestHistoryRecord()))
-            )).toString(2));
+        String jsonString = getJsonToSend(DataValue.createObj()
+            .set(RECORDS, DataValue.createArr().add(
+                DataValue.createObj()
+                    .set(HistoryRecordTestData.PROP_ID, HistoryRecordTestData.getEmptyId())
+                    .set(ATTRIBUTES, getHistoryRecordAttributes(HistoryRecordTestData.getTestHistoryRecord()))
+            )).toString());
 
         final ResultActions resultActions =
             mockMvc.perform(MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_MUTATE)
@@ -133,7 +132,7 @@ public class HistoryRecordRecordsDaoTest {
     @Test
     public void queryGtByUsernameAndCreationTime() throws Exception {
         propagateTestHistoryRecord();
-        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
+        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
             getPredicateJson(HistoryRecordEntity.USERNAME,
                 HistoryRecordTestData.ADMIN,
                 HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
@@ -154,7 +153,7 @@ public class HistoryRecordRecordsDaoTest {
     @Test
     public void queryOrByUsername() throws Exception {
         propagateTestHistoryRecord();
-        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_OR,
+        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_OR,
             getPredicateJson(HistoryRecordEntity.USERNAME,
                 HistoryRecordTestData.ADMIN,
                 HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
@@ -175,7 +174,7 @@ public class HistoryRecordRecordsDaoTest {
     @Test
     public void queryPeriodByCreationTime() throws Exception {
         List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
-        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
+        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
             getPredicateJson(HistoryRecordEntity.CREATION_TIME,
                 String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime()),
                 HistoryRecordTestData.PREDICATE_TYPE_GREATER_THAN),
@@ -212,7 +211,7 @@ public class HistoryRecordRecordsDaoTest {
     @Test
     public void queryEqualByUsernameAndEventType() throws Exception {
         propagateTestHistoryRecord();
-        JSONObject composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
+        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
             getPredicateJson(HistoryRecordEntity.USERNAME,
                 HistoryRecordTestData.ADMIN,
                 HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
@@ -235,13 +234,19 @@ public class HistoryRecordRecordsDaoTest {
         HistoryRecordEntity recordEntity = createTestHistoryRecord();
         String comment = "Updated test comment";
 
-        String jsonString = getJsonToSend(new JSONObject()
-            .put(RECORDS, new JSONArray().put(
-                new JSONObject().put(HistoryRecordTestData.PROP_ID,
-                        HistoryRecordTestData.getEmptyId() + recordEntity.getId())
-                    .put(ATTRIBUTES, new JSONObject()
-                        .put(HistoryRecordEntity.COMMENTS, comment))
-            )).toString(2));
+        String jsonString = getJsonToSend(DataValue.createObj()
+            .set(RECORDS, DataValue.createArr().add(
+                DataValue.createObj().set(
+                    "id", HistoryRecordTestData.getEmptyId() + recordEntity.getId()
+                ).set(ATTRIBUTES, DataValue.createObj()
+                    .set("historyEventId", recordEntity.getId())
+                    .set("documentId", "test/doc@123")
+                    .set("creationTime", System.currentTimeMillis())
+                    .set("eventType", "created")
+                    .set("userId", "admin")
+                    .set("username", "admin")
+                    .set(HistoryRecordEntity.COMMENTS, comment))
+            )).toString());
 
         ResultActions resultActions = mockMvc.perform(
             MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_MUTATE)
@@ -281,64 +286,61 @@ public class HistoryRecordRecordsDaoTest {
             dto.setHistoryEventId(String.valueOf(idx));
             entities.add(service.saveOrUpdateRecord(dto));
         }
-        Assert.assertEquals(4, entities.size());
+        assertEquals(4, entities.size());
         return entities;
     }
 
-    private static JSONObject getPredicateJson(String attributeName, String attributeValue,
-                                               String precicateType) throws Exception {
-        return new JSONObject().put("att", attributeName)
-            .put(HistoryRecordTestData.PREDICATE_VAL, attributeValue)
-            .put(HistoryRecordTestData.PREDICATE_TYPE, precicateType);
+    private static DataValue getPredicateJson(String attributeName, String attributeValue,
+                                              String precicateType) throws Exception {
+        return DataValue.createObj().set("att", attributeName)
+            .set(HistoryRecordTestData.PREDICATE_VAL, attributeValue)
+            .set(HistoryRecordTestData.PREDICATE_TYPE, precicateType);
     }
 
-    private static JSONObject getComposedPredicateJson(String precicateType, JSONObject... predicates)
+    private static DataValue getComposedPredicateJson(String precicateType, DataValue... predicates)
         throws Exception {
-        JSONArray jsonArray = new JSONArray();
-        for (JSONObject predicate : predicates) {
-            jsonArray.put(predicate);
+        DataValue jsonArray = DataValue.createArr();
+        for (DataValue predicate : predicates) {
+            jsonArray.add(predicate);
         }
-        return new JSONObject().put(HistoryRecordTestData.PREDICATE_TYPE, precicateType)
-            .put(HistoryRecordTestData.PREDICATE_VAL, jsonArray);
+        return DataValue.createObj().set(HistoryRecordTestData.PREDICATE_TYPE, precicateType)
+            .set(HistoryRecordTestData.PREDICATE_VAL, jsonArray);
     }
 
-    private static String getQueryJson(JSONObject predicate) throws Exception {
-        String jsonString = new JSONObject()
-            .put(QUERY,
-                new JSONObject().put("sourceId", HistoryRecordRecordsDao.ID)
-                    .put(LANGUAGE, PredicateService.LANGUAGE_PREDICATE)
-                    .put(QUERY, predicate)
-                    .put(ATTRIBUTES, getAttributesJsonArray()))
-            .toString(2);
+    private static String getQueryJson(DataValue predicate) throws Exception {
+        String jsonString = DataValue.createObj()
+            .set(QUERY,
+                DataValue.createObj().set("sourceId", HistoryRecordRecordsDao.ID)
+                    .set(LANGUAGE, PredicateService.LANGUAGE_PREDICATE)
+                    .set(QUERY, predicate)
+                    .set(ATTRIBUTES, getAttributesJsonArray()))
+            .toString();
         return jsonString;
     }
 
     private static String queryTestHistoryRecordJson(Long localRecordId) throws Exception {
-        return getJsonToSend(new JSONObject()
-            .put(RECORDS, new JSONArray().put(HistoryRecordTestData.getEmptyId() +
+        return getJsonToSend(DataValue.createObj()
+            .set(RECORDS, DataValue.createArr().add(HistoryRecordTestData.getEmptyId() +
                 (localRecordId != null ? localRecordId.toString() : "")))
-            .put(ATTRIBUTES, getAttributesJsonArray())
-            .toString(2));
+            .set(ATTRIBUTES, getAttributesJsonArray())
+            .toString());
     }
 
-    private static JSONArray getAttributesJsonArray() throws Exception {
-        return new JSONArray()
-            .put(HistoryRecordTestData.PROP_ID + STR)
-            .put(HistoryRecordEntity.USERNAME + STR)
-            .put(HistoryRecordEntity.CREATION_TIME)// + "|fmt(\"yyyy__MM__dd HH:mm\")")
-            .put(HistoryRecordEntity.COMMENTS + STR)
-            .put(HistoryRecordEntity.EVENT_TYPE + STR)
-            .put(HistoryRecordEntity.DOCUMENT_ID + STR);
+    private static DataValue getAttributesJsonArray() throws Exception {
+        return DataValue.createArr()
+            .add(HistoryRecordTestData.PROP_ID + STR)
+            .add(HistoryRecordEntity.USERNAME + STR)
+            .add(HistoryRecordEntity.CREATION_TIME)// + "|fmt(\"yyyy__MM__dd HH:mm\")")
+            .add(HistoryRecordEntity.COMMENTS + STR)
+            .add(HistoryRecordEntity.EVENT_TYPE + STR)
+            .add(HistoryRecordEntity.DOCUMENT_ID + STR);
     }
 
-    private JSONObject getHistoryRecordAttributes(HistoryRecordDto dto) {
+    private DataValue getHistoryRecordAttributes(HistoryRecordDto dto) {
         Map<String, String> attrMap = historyRecordConverter.toMap(dto);
-        JSONObject result = new JSONObject();
-        attrMap.entrySet().stream().forEach(entry -> {
-            try {
-                result.put(entry.getKey(), entry.getValue());
-            } catch (JSONException e) {
-            }
+        DataValue result = DataValue.createObj();
+        attrMap.entrySet().forEach(entry -> {
+            result.set(entry.getKey(), entry.getValue());
         });
         return result;
     }
