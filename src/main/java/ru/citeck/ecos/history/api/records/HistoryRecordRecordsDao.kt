@@ -73,7 +73,7 @@ class HistoryRecordRecordsDao(
 
     override fun saveMutatedRec(record: HistoryRecordDto): String {
         val entity = historyRecordService.saveOrUpdateRecord(record)
-        return entity.id.toString()
+        return entity.historyEventId
     }
 
     override fun getRecordAtts(recordId: String): HistoryRecord? {

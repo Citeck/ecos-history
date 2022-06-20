@@ -369,6 +369,9 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
                 } else if (ValuePredicate.Type.LE.equals(valuePredicate.getType())) {
                     specification = (root, query, builder) ->
                         builder.lessThanOrEqualTo(root.get(attributeName), objectValue);
+                } else if (ValuePredicate.Type.IN.equals(valuePredicate.getType())) {
+                    specification = (root, query, builder) ->
+                        builder.isTrue(root.get(attributeName).in(valuePredicate.getValue().asStrList()));
                 }
             }
         }
