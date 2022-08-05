@@ -1,7 +1,6 @@
 package ru.citeck.ecos.history.dto
 
 import lombok.Data
-import ru.citeck.ecos.history.dto.HistoryRecordDto
 import java.io.Serializable
 
 @Data
@@ -12,7 +11,7 @@ class HistoryRecordDto : Serializable {
     }
 
     var uuid: String? = null
-    var historyEventId: String = ""
+    var historyEventId: String? = null
     var comments: String? = null
     var version: String? = null
     var username: String? = null

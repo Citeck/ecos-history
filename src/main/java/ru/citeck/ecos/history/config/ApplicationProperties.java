@@ -4,13 +4,13 @@ import lombok.Data;
 import lombok.Getter;
 import lombok.Setter;
 import org.springframework.boot.context.properties.ConfigurationProperties;
-import ru.citeck.ecos.records3.RecordsProperties;
+
+import java.util.Map;
 
 /**
  * Properties specific to History.
  * <p>
  * Properties are configured in the {@code application.yml} file.
- * See {@link io.github.jhipster.config.JHipsterProperties} for a good example.
  */
 @Data
 @ConfigurationProperties(prefix = "ecos-history", ignoreUnknownFields = false)
@@ -20,8 +20,13 @@ public class ApplicationProperties {
     private final Event event = new Event();
     private final Alfresco alfresco = new Alfresco();
 
-    private RecordsProperties records;
+    // legacy properties. Should not be used
+    @Deprecated
+    private Map<String, Object> records;
+    @Deprecated
     private String tryHeaderForUsername;
+    /* ====================================*/
+
     private boolean deferredActorsJobEnabled;
 
     @Getter
@@ -32,7 +37,6 @@ public class ApplicationProperties {
         private int port = HistoryDefault.Event.PORT;
         private String username = HistoryDefault.Event.USERNAME;
         private String password = HistoryDefault.Event.PASSWORD;
-
     }
 
     @Getter
@@ -49,5 +53,4 @@ public class ApplicationProperties {
         private String sourceFolder;
         private String errorsFolder;
     }
-
 }

@@ -1,0 +1,66 @@
+---
+id: history-records-widget
+name:
+  ru: История событий
+  en: Events history
+
+sourceId: history/history-record
+
+predicate:
+  t: in
+  a: eventType
+  v:
+    - email.sent
+    - node.created
+    - node.updated
+    - assoc.updated
+    - task.complete
+    - user.action
+    - status.changed
+    - esign.signed
+    - approval.cancelled
+    - role.changed
+
+columns:
+  - id: creationTime
+    name:
+      en: Date
+      ru: Дата
+    type: DATETIME
+    formatter:
+      type: datetime
+      config:
+         format: 'DD.MM.YYYY HH:mm:ss'
+  - id: eventType
+    name:
+      ru: Событие
+      en: Event
+  - id: version
+    name:
+      ru: Версия
+      en: Version
+  - id: userRef
+    name:
+      en: Person
+      ru: Участник
+    type: ASSOC
+  - id: owner
+    name:
+      ru: От имени
+      en: On behalf of
+  - id: taskRole
+    name:
+      ru: Роль
+      en: Role
+  - id: taskTitle
+    name:
+      ru: Задача
+      en: Task
+  - id: taskOutcomeName
+    name:
+      ru: Результат
+      en: Outcome
+  - id: comments
+    name:
+      en: Comment
+      ru: Комментарий

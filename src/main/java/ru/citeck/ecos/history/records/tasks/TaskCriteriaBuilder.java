@@ -9,6 +9,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
+import ru.citeck.ecos.context.lib.auth.AuthContext;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
 import ru.citeck.ecos.history.repository.specifications.TaskSpecification;
 import ru.citeck.ecos.commons.data.DataValue;
@@ -27,8 +28,6 @@ public class TaskCriteriaBuilder {
 
     private static final String CURRENT_USER = "$CURRENT";
 
-    private CacheableCurrentActorsProvider currentActorsProvider;
-
     public Specification<TaskRecordEntity> buildSpecification(RecordsQuery recordsQuery) {
         return composeSpecifications(parseSpecifications(recordsQuery));
     }
@@ -44,7 +43,7 @@ public class TaskCriteriaBuilder {
             } else if (actorNode.isTextual()) {
                 String actor = actorNode.asText();
                 if (CURRENT_USER.equals(actor)) {
-                    List<String> currentUserAuthorities = currentActorsProvider.getCurrentUserAuthorities();
+                    List<String> currentUserAuthorities = AuthContext.getCurrentUserWithAuthorities();
                     if (CollectionUtils.isEmpty(currentUserAuthorities)) {
                         log.warn("For request not founded current user authorities");
                     } else {
@@ -180,10 +179,5 @@ public class TaskCriteriaBuilder {
         } else {
             return Sort.Order.desc(attribute);
         }
-    }
-
-    @Autowired
-    public void setCurrentActorsProvider(CacheableCurrentActorsProvider currentActorsProvider) {
-        this.currentActorsProvider = currentActorsProvider;
     }
 }

@@ -64,7 +64,7 @@ class HistoryRecordEntity : Serializable {
         @JvmStatic
         fun replaceNameValid(attributeName: String): String {
             if (DOCUMENT.equals(attributeName)) {
-                return DOCUMENT_ID;
+                return DOCUMENT_ID
             }
             return attributeName
         }
@@ -106,6 +106,7 @@ class HistoryRecordEntity : Serializable {
     var taskOutcomeName: String? = null
     var taskDefinitionKey: String? = null
     var taskType: String? = null
+    // var taskActors: String? = null
     var fullTaskType: String? = null
     var initiator: String? = null
     var workflowInstanceId: String? = null

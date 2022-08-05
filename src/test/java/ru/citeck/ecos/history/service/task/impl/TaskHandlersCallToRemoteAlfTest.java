@@ -1,8 +1,8 @@
 package ru.citeck.ecos.history.service.task.impl;
 
 import org.apache.commons.lang.StringUtils;
-import org.junit.Test;
-import org.junit.runner.RunWith;
+import org.junit.jupiter.api.Test;
+import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
@@ -16,6 +16,7 @@ import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.utils.TaskPopulateUtils;
 import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.RecordsService;
+import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension;
 
 import java.text.ParseException;
 import java.util.HashMap;
@@ -27,7 +28,7 @@ import static org.mockito.Mockito.*;
 import static ru.citeck.ecos.history.service.HistoryRecordService.*;
 import static ru.citeck.ecos.history.service.task.impl.HandlersTestUtils.generateTaskBaseParams;
 
-@RunWith(SpringRunner.class)
+@ExtendWith(EcosSpringExtension.class)
 @SpringBootTest(classes = HistoryApp.class)
 public class TaskHandlersCallToRemoteAlfTest {
 

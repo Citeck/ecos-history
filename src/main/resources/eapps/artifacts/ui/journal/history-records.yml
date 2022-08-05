@@ -18,6 +18,10 @@ columns:
     name:
       ru: Тип события
       en: Event type
+  - id: version
+    name:
+      ru: Версия
+      en: Version
   - id: document
     name:
       ru: Сущность
@@ -25,14 +29,17 @@ columns:
     type: ASSOC
     formatter:
       type: assoc
-  - id: comments
+  - id: userRef
     name:
-      ru: Описание
-      en: Description
-  - id: username
+      en: Person
+      ru: Участник
+    type: ASSOC
+    formatter:
+      type: assoc
+  - id: taskRole
     name:
-      ru: Пользователь
-      en: User
+      ru: Роль
+      en: Role
   - id: taskTitle
     name:
       ru: Имя задачи
@@ -41,3 +48,7 @@ columns:
     name:
       ru: Результат задачи
       en: Task outcome
+  - id: comments
+    name:
+      ru: Комментарий
+      en: Comment

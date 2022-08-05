@@ -3,7 +3,6 @@ package ru.citeck.ecos.history.config;
 import com.github.cloudyrock.mongock.SpringMongock;
 import com.github.cloudyrock.mongock.SpringMongockBuilder;
 import com.mongodb.MongoClient;
-import io.github.jhipster.domain.util.JSR310DateConverters;
 import org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration;
 import org.springframework.boot.autoconfigure.mongo.MongoProperties;
 import org.springframework.context.annotation.Bean;
@@ -16,6 +15,7 @@ import org.springframework.data.mongodb.core.convert.MongoCustomConversions;
 import org.springframework.data.mongodb.core.mapping.event.ValidatingMongoEventListener;
 import org.springframework.data.mongodb.repository.config.EnableMongoRepositories;
 import org.springframework.validation.beanvalidation.LocalValidatorFactoryBean;
+import ru.citeck.ecos.webapp.lib.spring.context.utils.JSR310DateConverters;
 
 import java.util.ArrayList;
 import java.util.List;

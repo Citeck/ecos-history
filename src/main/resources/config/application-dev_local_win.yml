@@ -1,6 +1,0 @@
-# fix for windows and macos to allow microservices in docker send requests to this app
-
-eureka:
-  instance:
-    hostname: host.docker.internal
-    ip-address: host.docker.internal

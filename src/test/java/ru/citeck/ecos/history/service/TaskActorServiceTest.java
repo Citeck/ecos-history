@@ -1,6 +1,6 @@
 package ru.citeck.ecos.history.service;
 
-import org.junit.Test;
+import org.junit.jupiter.api.Test;
 import ru.citeck.ecos.history.domain.ActorRecordEntity;
 import ru.citeck.ecos.history.domain.TaskActorRecordEntity;
 import ru.citeck.ecos.history.domain.TaskActorRecordEntityId;
@@ -10,7 +10,8 @@ import ru.citeck.ecos.history.service.impl.TaskActorRecordServiceImpl;
 
 import java.util.Optional;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.Mockito.mock;
 import static org.mockito.Mockito.when;
@@ -35,7 +36,7 @@ public class TaskActorServiceTest {
         assertEquals(taskActor.getId(), existingId);
     }
 
-    @Test(expected = IllegalArgumentException.class)
+    @Test
     public void findOrCreateActorByNotExistingName() {
         TaskActorRecordServiceImpl taskActorRecordService = new TaskActorRecordServiceImpl();
         taskActorRecordService.setTaskActorRecordRepository(setupRepositoryForSearchByExistingName());
@@ -46,7 +47,9 @@ public class TaskActorServiceTest {
         ActorRecordEntity actor = new ActorRecordEntity();
         actor.setId(notExistingId.getActorRecordsId());
 
-        taskActorRecordService.findOrCreateByEntities(task, actor);
+        assertThrows(IllegalArgumentException.class, () ->
+            taskActorRecordService.findOrCreateByEntities(task, actor)
+        );
     }
 
     private TaskActorRecordRepository setupRepositoryForSearchByExistingName() {

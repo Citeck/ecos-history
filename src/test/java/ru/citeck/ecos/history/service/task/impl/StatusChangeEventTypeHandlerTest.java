@@ -1,7 +1,7 @@
 package ru.citeck.ecos.history.service.task.impl;
 
-import org.junit.Before;
-import org.junit.Test;
+import org.junit.jupiter.api.BeforeEach;
+import org.junit.jupiter.api.Test;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
 import ru.citeck.ecos.history.dto.DocumentInfo;
@@ -15,7 +15,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
-import static org.junit.Assert.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.mockito.ArgumentMatchers.any;
 import static org.mockito.ArgumentMatchers.eq;
 import static org.mockito.Mockito.mock;
@@ -30,7 +30,7 @@ public class StatusChangeEventTypeHandlerTest {
 
     private int saveCount;
 
-    @Before
+    @BeforeEach
     public void setUp() {
         saveCount = 0;
     }
@@ -84,5 +84,4 @@ public class StatusChangeEventTypeHandlerTest {
         assertEquals(record.getDocumentStatusName(), STATUS_DRAFT);
         assertEquals(record.getDocumentStatusTitle(), STATUS_DRAFT + "|" + STATUS_DRAFT);
     }
-
 }
