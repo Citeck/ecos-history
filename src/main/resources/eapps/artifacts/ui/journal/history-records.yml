@@ -6,6 +6,7 @@ name:
 
 system: true
 sourceId: history/history-record
+properties: {}
 
 columns:
 

@@ -4,6 +4,7 @@ name:
   ru: История событий
   en: Events history
 
+system: true
 sourceId: history/history-record
 
 predicate:
