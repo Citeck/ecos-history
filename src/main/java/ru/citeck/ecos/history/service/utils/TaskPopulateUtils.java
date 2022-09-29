@@ -24,7 +24,7 @@ public class TaskPopulateUtils {
     }
 
     public void populateWorkflowProps(TaskRecordEntity taskRecordEntity,
-                                             HistoryRecordEntity historyRecordEntity) {
+                                      HistoryRecordEntity historyRecordEntity) {
 
         taskRecordEntity.setDocumentId(historyRecordEntity.getDocumentId());
         taskRecordEntity.setWorkflowId(historyRecordEntity.getWorkflowInstanceId());
@@ -38,7 +38,7 @@ public class TaskPopulateUtils {
     }
 
     public void fillDocProps(TaskRecordEntity taskRecordEntity, HistoryRecordEntity historyRecord,
-                                    DocumentInfo documentInfo) {
+                             DocumentInfo documentInfo) {
         taskRecordEntity.setDocumentType(historyRecord.getDocType() != null
             ? historyRecord.getDocType()
             : documentInfo.getDocumentType());
@@ -65,7 +65,9 @@ public class TaskPopulateUtils {
     }
 
     private static boolean receivedDataFromLegacyAlfrescoSource(HistoryRecordEntity historyRecord) {
-        return historyRecord.getDocStatusName() == null || historyRecord.getDocType() == null;
+        RecordRef docRef = RecordRef.valueOf(historyRecord.getDocumentId());
+        return docRef.appName.isEmpty() && docRef.getSourceId().isEmpty()
+            && (historyRecord.getDocStatusName() == null || historyRecord.getDocType() == null);
     }
 
     public static RecordRef composeRecordRef(String documentId) {
