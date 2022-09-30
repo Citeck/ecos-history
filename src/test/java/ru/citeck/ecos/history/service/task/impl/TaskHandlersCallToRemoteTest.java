@@ -30,7 +30,7 @@ import static ru.citeck.ecos.history.service.task.impl.HandlersTestUtils.generat
 
 @ExtendWith(EcosSpringExtension.class)
 @SpringBootTest(classes = HistoryApp.class)
-public class TaskHandlersCallToRemoteAlfTest {
+public class TaskHandlersCallToRemoteTest {
 
     @MockBean
     private RecordsService recordsService;
