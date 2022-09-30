@@ -18,6 +18,7 @@ class HistoryRecordsDaoTest {
 
     @Autowired
     lateinit var records: RecordsService
+
     @Autowired
     lateinit var repo: HistoryRecordRepository
 

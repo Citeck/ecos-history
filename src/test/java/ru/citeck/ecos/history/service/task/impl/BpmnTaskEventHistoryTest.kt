@@ -30,7 +30,6 @@ import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension
 @SpringBootTest(classes = [HistoryApp::class])
 class BpmnTaskEventHistoryTest {
 
-
     @Value("\${spring.application.name}")
     private lateinit var appName: String
 
@@ -50,7 +49,6 @@ class BpmnTaskEventHistoryTest {
     companion object {
         private val documentRecord = DocumentRecord()
         private val documentRef = RecordRef.valueOf("data/doc@1")
-
 
         private val taskRef = RecordRef.valueOf("proc/task@1")
         private val procInstanceRef = RecordRef.valueOf("proc/procInstaceId@1")
@@ -95,7 +93,6 @@ class BpmnTaskEventHistoryTest {
                 .build()
         )
 
-
         userTaskCreateEmitter = eventsService.getEmitter(
             EmitterConfig.create<UserTaskEvent> {
                 source = appName
@@ -119,7 +116,6 @@ class BpmnTaskEventHistoryTest {
                 eventClass = UserTaskEvent::class.java
             }
         )
-
     }
 
     @Test
@@ -147,7 +143,6 @@ class BpmnTaskEventHistoryTest {
 
         val allHistory = historyRecordRepository.findAll()
 
-
         assertThat(allHistory).hasSize(2)
     }
 
@@ -171,7 +166,6 @@ class BpmnTaskEventHistoryTest {
         compareCommonPayload(event, actualEntity, HISTORY_EVENT_TASK_CREATE)
 
         assertThat(actualEntity.username).isEqualTo(runAsUser)
-
     }
 
     @Test
@@ -225,7 +219,6 @@ class BpmnTaskEventHistoryTest {
         compareCommonPayload(event, actualEntity, HISTORY_EVENT_TASK_ASSIGN)
 
         assertThat(actualEntity.username).isEqualTo(event.assignee)
-
     }
 
     private fun compareCommonPayload(expected: UserTaskEvent, actual: HistoryRecordEntity, type: String) {
@@ -244,12 +237,10 @@ class BpmnTaskEventHistoryTest {
         }
     }
 
-
     @AfterEach
     fun clean() {
         historyRecordRepository.deleteAll()
     }
-
 }
 
 class DocumentRecord(

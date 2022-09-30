@@ -110,9 +110,7 @@ class EcosUserTaskHistoryEventsListener(
     private fun formatTime(time: Instant): String {
         return HistoryRecordServiceImpl.dateFormat.format(Date.from(time))
     }
-
 }
-
 
 data class UserTaskEvent(
     var taskId: RecordRef,

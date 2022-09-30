@@ -106,6 +106,7 @@ class HistoryRecordEntity : Serializable {
     var taskOutcomeName: String? = null
     var taskDefinitionKey: String? = null
     var taskType: String? = null
+
     // var taskActors: String? = null
     var fullTaskType: String? = null
     var initiator: String? = null

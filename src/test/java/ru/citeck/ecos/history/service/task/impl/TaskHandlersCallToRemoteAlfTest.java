@@ -6,7 +6,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.boot.test.mock.mockito.MockBean;
-import org.springframework.test.context.junit4.SpringRunner;
 import ru.citeck.ecos.history.HistoryApp;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.ActorsInfo;
@@ -23,7 +22,8 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.UUID;
 
-import static org.mockito.ArgumentMatchers.*;
+import static org.mockito.ArgumentMatchers.any;
+import static org.mockito.ArgumentMatchers.anyCollection;
 import static org.mockito.Mockito.*;
 import static ru.citeck.ecos.history.service.HistoryRecordService.*;
 import static ru.citeck.ecos.history.service.task.impl.HandlersTestUtils.generateTaskBaseParams;
@@ -42,7 +42,7 @@ public class TaskHandlersCallToRemoteAlfTest {
     private ActorService actorService;
 
     @Test
-    public void callToRemoteAlfrescoTaskAssign() throws ParseException {
+    public void callToRemoteTaskAssign() throws ParseException {
         Map<String, String> additionalParams = new HashMap<>();
         additionalParams.put(TASK_ACTORS, "[{\"id\":\"workspace://SpacesStore/some-node-ref-48484\"," +
             "\"authorityName\":\"GROUP_clerks\",\"userName\":null,\"firstName\":null,\"lastName\":null," +
@@ -53,7 +53,41 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoTaskAssignBecauseEmptyActorsData() throws ParseException {
+    public void callToRemoteAlfrescoTaskRefTest() throws ParseException {
+        String taskId = "activiti&37373";
+
+        Map<String, String> additionalParams = new HashMap<>();
+        additionalParams.put(DOC_TYPE, "payment");
+        additionalParams.put(DOC_STATUS_NAME, "draft");
+        additionalParams.put(TASK_ACTORS, "");
+        additionalParams.put(TASK_EVENT_INSTANCE_ID, taskId);
+
+        saveTaskEvent("task.assign", additionalParams, null);
+
+        RecordRef recordRefTask = RecordRef.valueOf("alfresco/wftask@" + taskId);
+
+        verify(recordsService).getMeta(recordRefTask, ActorsInfo.class);
+    }
+
+    @Test
+    public void callToRemoteTaskRefTest() throws ParseException {
+        String taskId = "eproc/task@123";
+
+        Map<String, String> additionalParams = new HashMap<>();
+        additionalParams.put(DOC_TYPE, "payment");
+        additionalParams.put(DOC_STATUS_NAME, "draft");
+        additionalParams.put(TASK_ACTORS, "");
+        additionalParams.put(TASK_EVENT_INSTANCE_ID, taskId);
+
+        saveTaskEvent("task.assign", additionalParams, null);
+
+        RecordRef recordRefTask = RecordRef.valueOf(taskId);
+
+        verify(recordsService).getMeta(recordRefTask, ActorsInfo.class);
+    }
+
+    @Test
+    public void callToRemoteTaskAssignBecauseEmptyActorsData() throws ParseException {
         String taskId = "activiti&37373";
 
         Map<String, String> additionalParams = new HashMap<>();
@@ -70,7 +104,7 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoTaskAssignBecauseEmptyListActorsData() throws ParseException {
+    public void callToRemoteTaskAssignBecauseEmptyListActorsData() throws ParseException {
         String taskId = "activiti&67544332";
 
         Map<String, String> additionalParams = new HashMap<>();
@@ -87,7 +121,7 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoTaskAssignBecauseInvalidActorsData() throws ParseException {
+    public void callToRemoteTaskAssignBecauseInvalidActorsData() throws ParseException {
         String taskId = "activiti&8003";
 
         Map<String, String> additionalParams = new HashMap<>();
@@ -104,7 +138,7 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoTaskAssignBecauseNullActorsData() throws ParseException {
+    public void callToRemoteTaskAssignBecauseNullActorsData() throws ParseException {
         String taskId = "activiti&8003";
 
         Map<String, String> additionalParams = new HashMap<>();
@@ -121,7 +155,7 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoTaskAssignAllDataMissing() throws ParseException {
+    public void callToRemoteTaskAssignAllDataMissing() throws ParseException {
         String taskId = "activiti&4009";
 
         Map<String, String> additionalParams = new HashMap<>();
@@ -136,13 +170,13 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoTaskCreate() throws ParseException {
+    public void callToRemoteTaskCreate() throws ParseException {
         RecordRef recordRefCreate = saveTaskEvent("task.create");
         verify(recordsService).getMeta(recordRefCreate, DocumentInfo.class);
     }
 
     @Test
-    public void callToRemoteAlfrescoStatusChangedWithOneTask() throws ParseException {
+    public void callToRemoteStatusChangedWithOneTask() throws ParseException {
         String contractDocId = "contract-document-23";
 
         RecordRef documentRecordRef = saveTaskEvent("task.create", contractDocId);
@@ -154,7 +188,7 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void callToRemoteAlfrescoStatusChangedWithMultipleTasks() throws ParseException {
+    public void callToRemoteStatusChangedWithMultipleTasks() throws ParseException {
         String contractDocId = "contract-document-876";
 
         RecordRef documentRecordRef = saveTaskEvent("task.create", contractDocId);
@@ -170,13 +204,13 @@ public class TaskHandlersCallToRemoteAlfTest {
 
 
     @Test
-    public void notCallToRemoteAlfrescoTaskCreate() throws ParseException {
+    public void notcallToRemoteTaskCreate() throws ParseException {
         saveTaskEventWithFilledData("task.create");
         verifyRecordGetMetaNotCall();
     }
 
     @Test
-    public void notCallToRemoteAlfrescoTaskAssign() throws ParseException {
+    public void notcallToRemoteTaskAssign() throws ParseException {
         Map<String, String> additionalParams = new HashMap<>();
         additionalParams.put(DOC_TYPE, "payment");
         additionalParams.put(DOC_STATUS_NAME, "draft");
@@ -189,31 +223,31 @@ public class TaskHandlersCallToRemoteAlfTest {
     }
 
     @Test
-    public void notCallToRemoteAlfrescoTaskComplete() throws ParseException {
+    public void notcallToRemoteTaskComplete() throws ParseException {
         saveTaskEventWithFilledData("task.complete");
         verifyRecordGetMetaNotCall();
     }
 
     @Test
-    public void notCallToRemoteAlfrescoWfEndCancelled() throws ParseException {
+    public void notcallToRemoteWfEndCancelled() throws ParseException {
         saveTaskEventWithFilledData("workflow.end.cancelled");
         verifyRecordGetMetaNotCall();
     }
 
     @Test
-    public void notCallToRemoteAlfrescoWfEnd() throws ParseException {
+    public void notcallToRemoteWfEnd() throws ParseException {
         saveTaskEventWithFilledData("workflow.end");
         verifyRecordGetMetaNotCall();
     }
 
     @Test
-    public void notCallToRemoteAlfrescoStatusStatusChangedOneTask() throws ParseException {
+    public void notcallToRemoteStatusStatusChangedOneTask() throws ParseException {
         saveTaskEventWithFilledData("status.changed");
         verifyRecordGetMetaNotCall();
     }
 
     @Test
-    public void notCallToRemoteAlfrescoStatusStatusChangedMultipleTask() throws ParseException {
+    public void notcallToRemoteStatusStatusChangedMultipleTask() throws ParseException {
         String documentId = "document-1376";
 
         saveTaskEventWithFilledData("task.create", documentId);
