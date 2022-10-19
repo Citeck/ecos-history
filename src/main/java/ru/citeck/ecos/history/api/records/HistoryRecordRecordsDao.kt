@@ -302,6 +302,10 @@ class HistoryRecordRecordsDao(
             return EventType(type)
         }
 
+        fun getComments(): MLText {
+            return Json.mapper.read(dto.comments, MLText::class.java) ?: MLText()
+        }
+
         fun getTaskTitle(): MLText {
             return Json.mapper.read(dto.taskTitle, MLText::class.java) ?: MLText()
         }

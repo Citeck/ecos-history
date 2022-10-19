@@ -9,6 +9,7 @@ import ru.citeck.ecos.events2.type.RecordChangedEvent
 import ru.citeck.ecos.events2.type.RecordCreatedEvent
 import ru.citeck.ecos.events2.type.RecordStatusChangedEvent
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
+import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeType
 import ru.citeck.ecos.records2.RecordRef
@@ -52,7 +53,7 @@ class EcosEventsListener(
                 record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
                 record[HistoryRecordService.DOC_STATUS_NAME] = event.after.id
                 record[HistoryRecordService.DOC_STATUS_TITLE] = event.after.name.getClosest(RU_LOCALE)
-                record[HistoryRecordService.EVENT_TYPE] = "status.changed"
+                record[HistoryRecordService.EVENT_TYPE] = HistoryEventType.STATUS_CHANGED.value
                 record[HistoryRecordService.USER_ID] = event.user
                 record[HistoryRecordService.USERNAME] = event.user
                 record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
@@ -72,7 +73,7 @@ class EcosEventsListener(
                 val record = hashMapOf<String, String>()
 
                 record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
-                record[HistoryRecordService.EVENT_TYPE] = "node.created"
+                record[HistoryRecordService.EVENT_TYPE] = HistoryEventType.NODE_CREATED.value
                 record[HistoryRecordService.USER_ID] = event.user
                 record[HistoryRecordService.USERNAME] = event.user
                 record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
@@ -89,7 +90,7 @@ class EcosEventsListener(
                 val record = hashMapOf<String, String>()
 
                 record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
-                record[HistoryRecordService.EVENT_TYPE] = "node.updated"
+                record[HistoryRecordService.EVENT_TYPE] = HistoryEventType.NODE_UPDATED.value
                 record[HistoryRecordService.USER_ID] = event.user
                 record[HistoryRecordService.USERNAME] = event.user
                 record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)

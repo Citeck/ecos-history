@@ -19,6 +19,7 @@ import ru.citeck.ecos.history.HistoryApp
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.dto.TaskRole
 import ru.citeck.ecos.history.repository.HistoryRecordRepository
+import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.impl.*
 import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records2.source.dao.local.RecordsDaoBuilder
@@ -57,13 +58,14 @@ class BpmnTaskEventHistoryTest {
             LocaleUtils.toLocale("en") to "Task name",
             LocaleUtils.toLocale("ru") to "Название задачи"
         )
-        private val runAsUser = "ivan"
-        private val outcome = "done"
+
+        private const val runAsUser = "ivan"
+        private const val outcome = "done"
         private val outcomeName = MLText(
             LocaleUtils.toLocale("en") to "Done",
             LocaleUtils.toLocale("ru") to "Выполнено"
         )
-        private val commnet = "Task is done!"
+        private const val comment = "Task is done!"
         private val roles = listOf(
             TaskRole(
                 "role1",
@@ -163,7 +165,7 @@ class BpmnTaskEventHistoryTest {
 
         val actualEntity = historyRecordRepository.findAll().first()
 
-        compareCommonPayload(event, actualEntity, HISTORY_EVENT_TASK_CREATE)
+        compareCommonPayload(event, actualEntity, HistoryEventType.TASK_CREATED.value)
 
         assertThat(actualEntity.username).isEqualTo(runAsUser)
     }
@@ -180,7 +182,7 @@ class BpmnTaskEventHistoryTest {
             outcome = outcome,
             outcomeName = outcomeName,
             roles = roles,
-            comment = commnet
+            comment = comment
         )
 
         AuthContext.runAs(runAsUser) {
@@ -189,13 +191,13 @@ class BpmnTaskEventHistoryTest {
 
         val actualEntity = historyRecordRepository.findAll().first()
 
-        compareCommonPayload(event, actualEntity, HISTORY_EVENT_TASK_COMPLETE)
+        compareCommonPayload(event, actualEntity, HistoryEventType.TASK_COMPLETE.value)
 
         assertThat(actualEntity.username).isEqualTo(runAsUser)
         assertThat(actualEntity.taskOutcome).isEqualTo(outcome)
         assertThat(actualEntity.taskOutcomeName).isEqualTo(outcomeName.toString())
         assertThat(actualEntity.taskRole).isEqualTo(Json.mapper.toString(roles))
-        assertThat(actualEntity.comments).isEqualTo(commnet)
+        assertThat(actualEntity.comments).isEqualTo(comment)
     }
 
     @Test
@@ -216,7 +218,7 @@ class BpmnTaskEventHistoryTest {
 
         val actualEntity = historyRecordRepository.findAll().first()
 
-        compareCommonPayload(event, actualEntity, HISTORY_EVENT_TASK_ASSIGN)
+        compareCommonPayload(event, actualEntity, HistoryEventType.TASK_ASSIGN.value)
 
         assertThat(actualEntity.username).isEqualTo(event.assignee)
     }

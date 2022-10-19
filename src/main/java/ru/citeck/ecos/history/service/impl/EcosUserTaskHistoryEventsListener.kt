@@ -7,6 +7,7 @@ import ru.citeck.ecos.commons.json.Json
 import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.dto.TaskRole
+import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
@@ -17,16 +18,12 @@ const val BPMN_EVENT_USER_TASK_CREATE = "bpmn-user-task-create"
 const val BPMN_EVENT_USER_TASK_COMPLETE = "bpmn-user-task-complete"
 const val BPMN_EVENT_USER_TASK_ASSIGN = "bpmn-user-task-assign"
 
-const val HISTORY_EVENT_TASK_CREATE = "task.create"
-const val HISTORY_EVENT_TASK_COMPLETE = "task.complete"
-const val HISTORY_EVENT_TASK_ASSIGN = "task.assign"
-
 /**
  * @author Roman Makarskiy
  */
 @Component
 class EcosUserTaskHistoryEventsListener(
-    private val eventsService: EventsService,
+    eventsService: EventsService,
     private val historyRecordService: HistoryRecordService
 ) {
 
@@ -42,7 +39,7 @@ class EcosUserTaskHistoryEventsListener(
 
                 log.debug { "History Task Create Event: $event" }
 
-                val record = getGeneralHistoryRecord(event, HISTORY_EVENT_TASK_CREATE)
+                val record = getGeneralHistoryRecord(event, HistoryEventType.TASK_CREATED.value)
                 record[HistoryRecordService.USERNAME] = event.user ?: ""
 
                 log.debug { "History Task Create Event Record: $record" }
@@ -58,7 +55,7 @@ class EcosUserTaskHistoryEventsListener(
 
                 log.debug { "History Task Complete Event: $event" }
 
-                val record = getGeneralHistoryRecord(event, HISTORY_EVENT_TASK_COMPLETE)
+                val record = getGeneralHistoryRecord(event, HistoryEventType.TASK_COMPLETE.value)
                 record[HistoryRecordService.USERNAME] = event.user ?: ""
                 record[HistoryRecordService.TASK_OUTCOME] = event.outcome ?: ""
                 record[HistoryRecordService.TASK_OUTCOME_NAME] = event.outcomeName.toString()
@@ -78,7 +75,7 @@ class EcosUserTaskHistoryEventsListener(
 
                 log.debug { "History Task Assign Event: $event" }
 
-                val record = getGeneralHistoryRecord(event, HISTORY_EVENT_TASK_ASSIGN)
+                val record = getGeneralHistoryRecord(event, HistoryEventType.TASK_ASSIGN.value)
                 record[HistoryRecordService.USERNAME] = event.assignee ?: ""
 
                 log.debug { "History Task Assign Event Record: $record" }
