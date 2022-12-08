@@ -53,6 +53,7 @@ columns:
     name:
       ru: Роль
       en: Role
+    multiple: true
   - id: taskTitle
     name:
       ru: Задача

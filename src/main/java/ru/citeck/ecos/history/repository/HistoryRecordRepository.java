@@ -1,19 +1,12 @@
 package ru.citeck.ecos.history.repository;
 
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageImpl;
 import org.springframework.data.domain.Pageable;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
-import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.CrudRepository;
 import org.springframework.data.repository.query.Param;
-import org.springframework.lang.Nullable;
-import org.springframework.transaction.annotation.Transactional;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 
-import javax.persistence.TypedQuery;
 import java.util.Date;
 import java.util.List;
 

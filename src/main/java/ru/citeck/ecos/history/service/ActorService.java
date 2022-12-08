@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history.service;
 
+import org.apache.commons.lang3.StringUtils;
 import ru.citeck.ecos.history.domain.ActorRecordEntity;
 import ru.citeck.ecos.records2.RecordRef;
 
@@ -12,7 +13,17 @@ public interface ActorService {
     Set<String> queryActorsFromRemote(String taskId);
 
     default RecordRef composeTaskRecordRef(String taskId) {
-        return RecordRef.create("alfresco", "wftask", taskId);
+        RecordRef taskRef = RecordRef.valueOf(taskId);
+
+        if (StringUtils.isBlank(taskRef.appName)) {
+            taskRef = taskRef.withAppName("alfresco");
+        }
+
+        if (StringUtils.isBlank(taskRef.sourceId)) {
+            taskRef = taskRef.withSourceId("wftask");
+        }
+
+        return taskRef;
     }
 
 }

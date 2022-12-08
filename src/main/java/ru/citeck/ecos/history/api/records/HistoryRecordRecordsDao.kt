@@ -10,6 +10,7 @@ import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.commons.json.Json
 import ru.citeck.ecos.history.dto.HistoryRecordDto
+import ru.citeck.ecos.history.dto.TaskRole
 import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records2.predicate.PredicateService
@@ -299,6 +300,26 @@ class HistoryRecordRecordsDao(
         fun getEventType(): EventType {
             val type = dto.eventType ?: ""
             return EventType(type)
+        }
+
+        fun getComments(): MLText {
+            return Json.mapper.read(dto.comments, MLText::class.java) ?: MLText()
+        }
+
+        fun getTaskTitle(): MLText {
+            return Json.mapper.read(dto.taskTitle, MLText::class.java) ?: MLText()
+        }
+
+        fun getTaskRole(): List<MLText> {
+            return dto.taskRole?.let { roleData ->
+                if (roleData.startsWith("[")) {
+                    return Json.mapper.readList(dto.taskRole, TaskRole::class.java).map {
+                        it.name
+                    }
+                } else {
+                    return listOf(MLText(roleData))
+                }
+            } ?: emptyList()
         }
 
         fun getCreationTime(): Instant? {

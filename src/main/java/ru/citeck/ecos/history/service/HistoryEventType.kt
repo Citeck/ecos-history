@@ -1,0 +1,11 @@
+package ru.citeck.ecos.history.service
+
+enum class HistoryEventType(val value: String) {
+    NODE_CREATED("node.created"),
+    NODE_UPDATED("node.updated"),
+    NODE_DELETED("node.deleted"),
+    STATUS_CHANGED("status.changed"),
+    TASK_CREATED("task.created"),
+    TASK_COMPLETE("task.complete"),
+    TASK_ASSIGN("task.assign")
+}
