@@ -105,10 +105,12 @@ class ProcDefEventHistoryTest {
 
         comparePayload(event, actualEntity)
 
-        assertThat(actualEntity.comments).isEqualTo(MLText(
-            I18nContext.RUSSIAN to "Версия обновлена -> $version",
-            I18nContext.ENGLISH to "Version is updated -> $version"
-        ).toString())
+        assertThat(actualEntity.comments).isEqualTo(
+            MLText(
+                I18nContext.RUSSIAN to "Версия обновлена -> $version",
+                I18nContext.ENGLISH to "Version is updated -> $version"
+            ).toString()
+        )
     }
 
     @Test
@@ -127,10 +129,12 @@ class ProcDefEventHistoryTest {
 
         comparePayload(event, actualEntity)
 
-        assertThat(actualEntity.comments).isEqualTo(MLText(
-            I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $version",
-            I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $version"
-        ).toString())
+        assertThat(actualEntity.comments).isEqualTo(
+            MLText(
+                I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $version",
+                I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $version"
+            ).toString()
+        )
     }
 
     @Test
@@ -157,7 +161,7 @@ class ProcDefEventHistoryTest {
     }
 
     private fun comparePayload(expected: ProcDefEvent, actual: HistoryRecordEntity) {
-        with (actual) {
+        with(actual) {
             assertThat(historyEventId).isNotBlank
             assertThat(creationTime).isNotNull
 
@@ -166,5 +170,4 @@ class ProcDefEventHistoryTest {
             assertThat(userId).isEqualTo(runAsUser)
         }
     }
-
 }

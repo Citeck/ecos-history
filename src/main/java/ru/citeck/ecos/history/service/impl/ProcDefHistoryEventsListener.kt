@@ -30,7 +30,7 @@ fun getProcDefVersionUpdateMsg(createdFromVersion: Double = 0.0, newVersion: Dou
     if (createdFromVersion > 0) {
         rus += " $createdFromVersion -> $newVersion"
         eng += " $createdFromVersion -> $newVersion"
-    } else if (newVersion > 0 ) {
+    } else if (newVersion > 0) {
         rus += " -> $newVersion"
         eng += " -> $newVersion"
     }
@@ -76,7 +76,8 @@ class ProcDefHistoryEventsListener(
 
                 val record = getGeneralProcDefRecord(event, HistoryEventType.NODE_UPDATED)
                 record[HistoryRecordService.COMMENTS] = getProcDefVersionUpdateMsg(
-                    event.createdFromVersion, event.version
+                    event.createdFromVersion,
+                    event.version
                 ).toString()
 
                 log.debug { "History Proc Def Update Event Record: $record" }
@@ -118,9 +119,7 @@ class ProcDefHistoryEventsListener(
     private fun formatTime(time: Instant): String {
         return HistoryRecordServiceImpl.dateFormat.format(Date.from(time))
     }
-
 }
-
 
 data class ProcDefEvent(
     val procDefRef: RecordRef,
