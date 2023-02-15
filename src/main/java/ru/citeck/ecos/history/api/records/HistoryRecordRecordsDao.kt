@@ -214,7 +214,7 @@ class HistoryRecordRecordsDao(
             val historyRecDto = HistoryRecordDto()
             historyRecDto.comments = record.comments
             historyRecDto.version = record.version
-            historyRecDto.username = record.userName?.lowercase()
+            historyRecDto.username = record.userName
             historyRecDto.eventType = record.eventType
             historyRecDto.creationTime = record.creationTime?.toEpochMilli()
             historyRecDto.taskTitle = record.taskTitle
@@ -348,7 +348,7 @@ class HistoryRecordRecordsDao(
         }
 
         fun getUserRef(): RecordRef {
-            val userId = dto.username
+            val userId = dto.username?.lowercase()
             return RecordRef.create("emodel", "person", userId)
         }
     }
