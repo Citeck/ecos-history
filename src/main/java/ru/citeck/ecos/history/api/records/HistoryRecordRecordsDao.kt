@@ -96,7 +96,7 @@ class HistoryRecordRecordsDao(
         val (maxItems, skipCount) = recsQuery.page
 
         val maxItemsCount = if (maxItems < 0) {
-            10000
+            1000
         } else {
             maxItems
         }
@@ -108,7 +108,13 @@ class HistoryRecordRecordsDao(
             optimize = true
         ) ?: VoidPredicate.INSTANCE
 
-        var historyRecordDtoList = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
+        var historyRecordDtoPage = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
+
+        var historyRecordDtoList = historyRecordDtoPage?.historyRecordDtos
+        if (historyRecordDtoList == null) {
+            historyRecordDtoList = emptyList()
+        }
+
         fillTaskOutcomeNames(historyRecordDtoList)
 
         val alfEvents = try {
@@ -134,7 +140,11 @@ class HistoryRecordRecordsDao(
 
         val result = RecsQueryRes<HistoryRecord>()
         result.setRecords(historyRecordDtoList.map { HistoryRecord(recordsService, it) })
-        result.setTotalCount(historyRecordService.getCount(predicate))
+        var totalCount = historyRecordDtoPage?.totalElementsCount
+        if (totalCount == null) {
+            totalCount = 0L
+        }
+        result.setTotalCount(totalCount)
         return result
     }
 

@@ -4,6 +4,7 @@ import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Sort;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
+import ru.citeck.ecos.history.dto.HistoryRecordDtoPage;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
 
 import java.io.IOException;
@@ -58,7 +59,7 @@ public interface HistoryRecordService {
     @Nullable
     HistoryRecordDto getHistoryRecordByEventId(String eventId);
 
-    List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, Sort sort);
+    HistoryRecordDtoPage getAll(int maxItems, int skipCount, Predicate predicate, Sort sort);
 
     long getCount();
 
