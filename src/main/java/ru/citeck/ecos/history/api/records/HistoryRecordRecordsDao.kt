@@ -96,25 +96,32 @@ class HistoryRecordRecordsDao(
         val (maxItems, skipCount) = recsQuery.page
 
         val maxItemsCount = if (maxItems < 0) {
-            10000
+            1000
         } else {
             maxItems
         }
         val basePredicate = recsQuery.getQuery(Predicate::class.java)
+
         val predicate = PredicateUtils.mapAttributePredicates(
             basePredicate,
             { preProcessAttPredicate(it) },
-            onlyAnd = true,
+            onlyAnd = false,
             optimize = true
         ) ?: VoidPredicate.INSTANCE
 
-        var historyRecordDtoList = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
+        var historyRecordDtoPage = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
+
+        var historyRecordDtoList = historyRecordDtoPage?.historyRecordDtos
+        if (historyRecordDtoList == null) {
+            historyRecordDtoList = emptyList()
+        }
+
         fillTaskOutcomeNames(historyRecordDtoList)
 
         val alfEvents = try {
             getEventsFromAlfresco(basePredicate)
         } catch (e: Exception) {
-            log.error(e) { "Error while loading events from alfresco. Predicate: $predicate" }
+            log.error(e) { "Error while loading events from alfresco. Predicate: $basePredicate" }
             emptyList()
         }
         if (alfEvents.isNotEmpty()) {
@@ -134,7 +141,11 @@ class HistoryRecordRecordsDao(
 
         val result = RecsQueryRes<HistoryRecord>()
         result.setRecords(historyRecordDtoList.map { HistoryRecord(recordsService, it) })
-        result.setTotalCount(historyRecordService.getCount(predicate))
+        var totalCount = historyRecordDtoPage?.totalElementsCount
+        if (totalCount == null) {
+            totalCount = 0L
+        }
+        result.setTotalCount(totalCount)
         return result
     }
 
@@ -242,6 +253,10 @@ class HistoryRecordRecordsDao(
             } else {
                 val copy = predicate.copy<ValuePredicate>()
                 copy.setVal(value)
+                val predicateType = predicate.getType()
+                if (ValuePredicate.Type.CONTAINS == predicateType || ValuePredicate.Type.LIKE == predicateType) {
+                    copy.setType(ValuePredicate.Type.EQ)
+                }
                 copy
             }
         }

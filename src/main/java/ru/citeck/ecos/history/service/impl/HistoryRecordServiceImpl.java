@@ -6,6 +6,7 @@ import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jetbrains.annotations.Nullable;
+import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
@@ -15,6 +16,7 @@ import ru.citeck.ecos.commons.json.Json;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
+import ru.citeck.ecos.history.dto.HistoryRecordDtoPage;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.TaskRecordService;
@@ -246,17 +248,25 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     @Override
-    public List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, Sort sort) {
+    public HistoryRecordDtoPage getAll(int maxItems, int skipCount, Predicate predicate, Sort sort) {
         if (maxItems == 0) {
-            return Collections.emptyList();
+            return new HistoryRecordDtoPage();
         }
         final PageRequest page = PageRequest.of(skipCount / maxItems, maxItems,
             sort != null ? sort : Sort.by(Sort.Direction.DESC, CREATION_TIME));
         Specification<HistoryRecordEntity> entitySpecification = specificationFromPredicate(predicate);
-        return historyRecordRepository.findAll(entitySpecification, page)
+
+        Page<HistoryRecordEntity> pageResult = historyRecordRepository.findAll(entitySpecification, page);
+
+        HistoryRecordDtoPage result = new HistoryRecordDtoPage();
+        result.setTotalPages(pageResult.getTotalPages());
+        result.setTotalElementsCount(pageResult.getTotalElements());
+        result.setHistoryRecordDtos(pageResult
             .stream()
             .map(historyRecordConverter::toDto)
-            .collect(Collectors.toList());
+            .collect(Collectors.toList()));
+
+        return result;
     }
 
     @Transactional
