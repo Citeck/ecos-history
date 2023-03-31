@@ -101,10 +101,11 @@ class HistoryRecordRecordsDao(
             maxItems
         }
         val basePredicate = recsQuery.getQuery(Predicate::class.java)
+
         val predicate = PredicateUtils.mapAttributePredicates(
             basePredicate,
             { preProcessAttPredicate(it) },
-            onlyAnd = true,
+            onlyAnd = false,
             optimize = true
         ) ?: VoidPredicate.INSTANCE
 
@@ -120,7 +121,7 @@ class HistoryRecordRecordsDao(
         val alfEvents = try {
             getEventsFromAlfresco(basePredicate)
         } catch (e: Exception) {
-            log.error(e) { "Error while loading events from alfresco. Predicate: $predicate" }
+            log.error(e) { "Error while loading events from alfresco. Predicate: $basePredicate" }
             emptyList()
         }
         if (alfEvents.isNotEmpty()) {
@@ -252,6 +253,10 @@ class HistoryRecordRecordsDao(
             } else {
                 val copy = predicate.copy<ValuePredicate>()
                 copy.setVal(value)
+                val predicateType = predicate.getType()
+                if (ValuePredicate.Type.CONTAINS == predicateType || ValuePredicate.Type.LIKE == predicateType) {
+                    copy.setType(ValuePredicate.Type.EQ)
+                }
                 copy
             }
         }
