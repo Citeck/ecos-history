@@ -6,9 +6,9 @@ ecos:
   webapp:
     dataSources:
       main:
-        url: jdbc:postgresql://localhost:5442/history
+        url: jdbc:postgresql://localhost:14523/ecos_history
         username: history
-        password:
+        password: historypassword
 
 spring:
   data:

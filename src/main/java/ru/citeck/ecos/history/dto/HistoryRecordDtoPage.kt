@@ -1,7 +1,6 @@
 package ru.citeck.ecos.history.dto
 
 import lombok.Data
-import java.io.Serializable
 
 @Data
 class HistoryRecordDtoPage {
@@ -11,5 +10,4 @@ class HistoryRecordDtoPage {
     var totalPages: Int? = 0
 
     constructor() {}
-
 }
