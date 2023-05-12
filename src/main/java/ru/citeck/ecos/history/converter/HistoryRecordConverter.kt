@@ -26,6 +26,7 @@ class HistoryRecordConverter {
         result.taskOutcomeName = entity.taskOutcomeName
         result.taskDefinitionKey = entity.taskDefinitionKey
         result.taskType = entity.fullTaskType
+        result.taskCompletedOnBehalfOf = entity.taskCompletedOnBehalfOf
         result.documentId = entity.documentId
 
         return result

@@ -61,6 +61,9 @@ class EcosUserTaskHistoryEventsListener(
                 record[HistoryRecordService.TASK_OUTCOME_NAME] = event.outcomeName.toString()
                 record[HistoryRecordService.TASK_ROLE] = Json.mapper.toString(event.roles) ?: ""
                 record[HistoryRecordService.COMMENTS] = event.comment ?: ""
+                event.completedOnBehalfOf?.let {
+                    record[HistoryRecordService.TASK_COMPLETED_ON_BEHALF_OF] = it
+                }
 
                 log.debug { "History Task Complete Event Record: $record" }
 
@@ -112,6 +115,7 @@ class EcosUserTaskHistoryEventsListener(
 data class UserTaskEvent(
     var taskId: RecordRef,
     var assignee: String? = null,
+    var completedOnBehalfOf: String? = null,
 
     var procInstanceId: RecordRef,
     var form: RecordRef,

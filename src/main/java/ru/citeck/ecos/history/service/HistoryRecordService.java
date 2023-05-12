@@ -29,6 +29,7 @@ public interface HistoryRecordService {
     String TASK_OUTCOME_NAME = "taskOutcomeName";
     String TASK_DEFINITION_KEY = "taskDefinitionKey";
     String TASK_TYPE = "taskType";
+    String TASK_COMPLETED_ON_BEHALF_OF = "taskCompletedOnBehalfOf";
     String FULL_TASK_TYPE = "fullTaskType";
     String INITIATOR = "initiator";
     String WORKFLOW_INSTANCE_ID = "workflowInstanceId";

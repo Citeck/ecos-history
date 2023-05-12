@@ -23,6 +23,7 @@ class HistoryRecordDto : Serializable {
     var taskOutcome: String? = null
     var taskOutcomeName: String? = null
     var taskDefinitionKey: String? = null
+    var taskCompletedOnBehalfOf: String? = null
     var taskType: String? = null
     var documentId: String? = null
 
@@ -42,6 +43,7 @@ class HistoryRecordDto : Serializable {
         taskOutcome = other.taskOutcome
         taskOutcomeName = other.taskOutcomeName
         taskDefinitionKey = other.taskDefinitionKey
+        taskCompletedOnBehalfOf = other.taskCompletedOnBehalfOf
         taskType = other.taskType
         documentId = other.documentId
     }

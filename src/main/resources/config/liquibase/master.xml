@@ -11,6 +11,7 @@
     <include file="config/liquibase/changelog/20200211095728_add_fields_to_history_records_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20210405231427_add_task_definition_key_to_history_records_changelog.xml" relativeToChangelogFile="false"/>
     <include file="config/liquibase/changelog/20211018000000_add_task_outcome_name.xml" relativeToChangelogFile="false"/>
+    <include file="config/liquibase/changelog/20230512000000_add_task_completed_on_behalf_of.xml" relativeToChangelogFile="false"/>
     <!-- jhipster-needle-liquibase-add-changelog - JHipster will add liquibase changelogs here -->
     <!-- jhipster-needle-liquibase-add-constraints-changelog - JHipster will add liquibase constraints changelogs here -->
 </databaseChangeLog>

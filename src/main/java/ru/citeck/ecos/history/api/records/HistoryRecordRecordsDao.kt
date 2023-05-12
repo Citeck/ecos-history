@@ -30,6 +30,8 @@ import ru.citeck.ecos.records3.record.dao.query.dto.query.RecordsQuery
 import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy
 import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes
 import ru.citeck.ecos.records3.record.request.RequestContext
+import ru.citeck.ecos.webapp.api.constants.AppName
+import ru.citeck.ecos.webapp.api.entity.EntityRef
 import java.time.Instant
 import java.util.*
 import kotlin.collections.ArrayList
@@ -362,9 +364,17 @@ class HistoryRecordRecordsDao(
             return name
         }
 
-        fun getUserRef(): RecordRef {
+        fun getUserRef(): EntityRef {
             val userId = dto.username?.lowercase()
-            return RecordRef.create("emodel", "person", userId)
+            return EntityRef.create(AppName.EMODEL, "person", userId)
+        }
+
+        fun getOwner(): EntityRef {
+            val userId = dto.taskCompletedOnBehalfOf?.lowercase() ?: ""
+            if (userId.isEmpty()) {
+                return EntityRef.EMPTY
+            }
+            return EntityRef.create(AppName.EMODEL, "person", userId)
         }
     }
 

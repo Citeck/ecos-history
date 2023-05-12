@@ -31,6 +31,7 @@ class HistoryRecordEntity : Serializable {
         const val TASK_OUTCOME_NAME = "taskOutcomeName"
         const val TASK_DEFINITION_KEY = "taskDefinitionKey"
         const val TASK_TYPE = "taskType"
+        const val TASK_COMPLETED_ON_BEHALF_OF = "taskCompletedOnBehalfOf"
         const val FULL_TASK_TYPE = "fullTaskType"
         const val INITIATOR = "initiator"
         const val WORKFLOW_INSTANCE_ID = "workflowInstanceId"
@@ -50,7 +51,8 @@ class HistoryRecordEntity : Serializable {
         private var attributeNames: List<String> = listOf(
             HISTORY_EVENT_ID, DOCUMENT_ID, EVENT_TYPE, COMMENTS, VERSION,
             CREATION_TIME, USERNAME, USER_ID, TASK_TITLE, TASK_ROLE, TASK_TITLE, TASK_OUTCOME,
-            TASK_DEFINITION_KEY, TASK_TYPE, TASK_FORM_KEY, TASK_EVENT_INSTANCE_ID, TASK_OUTCOME_NAME, FULL_TASK_TYPE,
+            TASK_DEFINITION_KEY, TASK_TYPE, TASK_FORM_KEY, TASK_EVENT_INSTANCE_ID, TASK_OUTCOME_NAME,
+            TASK_COMPLETED_ON_BEHALF_OF, FULL_TASK_TYPE,
             INITIATOR, WORKFLOW_INSTANCE_ID, WORKFLOW_DESCRIPTION, DOC_STATUS_NAME, DOC_STATUS_TITLE,
             DOC_TYPE, DOCUMENT_VERSION, LAT_TASK_COMMENT, PROPERTY_NAME, EXPECTED_PERFORM_TIME,
             ENTITY_NAME
@@ -106,6 +108,7 @@ class HistoryRecordEntity : Serializable {
     var taskOutcomeName: String? = null
     var taskDefinitionKey: String? = null
     var taskType: String? = null
+    var taskCompletedOnBehalfOf: String? = null
 
     // var taskActors: String? = null
     var fullTaskType: String? = null

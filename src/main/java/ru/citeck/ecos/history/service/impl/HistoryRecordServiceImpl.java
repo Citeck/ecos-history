@@ -201,6 +201,13 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             }
         }
 
+        if (requestParams.containsKey(TASK_COMPLETED_ON_BEHALF_OF)) {
+            String completedOnBehalfOf = requestParams.get(TASK_COMPLETED_ON_BEHALF_OF);
+            if (StringUtils.isNotBlank(completedOnBehalfOf)) {
+                result.setTaskCompletedOnBehalfOf(completedOnBehalfOf);
+            }
+        }
+
         result.setLastTaskComment(getValueOrEmpty(requestParams, LAST_TASK_COMMENT));
         result.setDocType(getValueOrEmpty(requestParams, DOC_TYPE));
         result.setDocStatusName(getValueOrEmpty(requestParams, DOC_STATUS_NAME));
