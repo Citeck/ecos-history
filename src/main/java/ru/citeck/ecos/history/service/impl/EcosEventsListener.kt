@@ -151,8 +151,10 @@ class EcosEventsListener(
                     }
                     val typeAssoc = typeAssocsById[assoc.assocId]
                     if (typeAssoc != null &&
-                        (typeAssoc.direction == AssocDef.Direction.BOTH ||
-                            typeAssoc.direction == AssocDef.Direction.TARGET)
+                        (
+                            typeAssoc.direction == AssocDef.Direction.BOTH ||
+                                typeAssoc.direction == AssocDef.Direction.TARGET
+                            )
                     ) {
                         assoc.added.forEach { storeSourceAssocHistoryEvent(event, it, typeAssoc, true) }
                         assoc.removed.forEach { storeSourceAssocHistoryEvent(event, it, typeAssoc, false) }
@@ -187,7 +189,7 @@ class EcosEventsListener(
         var comment = targetAssoc.name.getClosest(I18nContext.RUSSIAN).ifBlank { targetAssoc.id } + ": "
         comment += if (added) {
             "добавлен"
-        } else  {
+        } else {
             "удален"
         }
         record[HistoryRecordService.COMMENTS] = comment + " " + sourceUpdatedEvent.recordDisp
