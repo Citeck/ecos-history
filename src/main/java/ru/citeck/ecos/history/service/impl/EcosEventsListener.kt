@@ -40,6 +40,20 @@ class EcosEventsListener(
         )
 
         private const val EMPTY_VALUE_STR = "—"
+
+        private val LOCALES = listOf(
+            I18nContext.RUSSIAN, I18nContext.ENGLISH
+        )
+
+        private val ADD_ACTION_TITLE = MLText(
+            I18nContext.RUSSIAN to "добавлено",
+            I18nContext.ENGLISH to "added"
+        )
+
+        private val REMOVE_ACTION_TITLE = MLText(
+            I18nContext.RUSSIAN to "удалено",
+            I18nContext.ENGLISH to "removed"
+        )
     }
 
     @PostConstruct
@@ -197,7 +211,7 @@ class EcosEventsListener(
 
     private fun getCommentsForChangedValue(changed: ChangedValue, attDef: AttributeDef): List<String> {
 
-        val fieldName = attDef.name.getClosest(I18nContext.RUSSIAN).ifBlank { changed.attId }
+        val fieldNames = LOCALES.associateWith { attDef.name.getClosest(it) }
 
         if (attDef.type == AttributeType.JSON) {
 
@@ -205,11 +219,17 @@ class EcosEventsListener(
             val isEmptyAfter = isEmpty(changed.after)
 
             if (isEmptyBefore && isEmptyBefore != isEmptyAfter) {
-                val msg = "$fieldName: " + if (isEmptyBefore) {
-                    "Добавлен"
-                } else {
-                    "Удален"
+
+                val msgTemplate = fieldNames.mapValues {
+                    "${it.value}: " + if (isEmptyBefore) {
+                        ADD_ACTION_TITLE.getClosestValue()
+                    } else {
+                        REMOVE_ACTION_TITLE.getClosestValue()
+                    }
                 }
+
+                val msg = MLText(msgTemplate).toString()
+
                 return listOf(msg)
             } else if (isEmptyBefore && isEmptyAfter) {
                 return emptyList()
@@ -227,7 +247,7 @@ class EcosEventsListener(
                 val valueAfter = convertArraysToObjects(DataValue.create(afterStrValue))
 
                 val comments = arrayListOf<String>()
-                collectJsonChangedEvents(fieldName, valueBefore, valueAfter, comments)
+                collectJsonChangedEvents(fieldNames, "", valueBefore, valueAfter, comments)
                 return comments
             }
         }
@@ -253,11 +273,13 @@ class EcosEventsListener(
             }
         }
 
-        return listOf(
-            "$fieldName: " + valueToStr(changed.before, attDef.type) +
-                " -> " +
-                valueToStr(changed.after, attDef.type)
-        )
+        val commentTemplate = fieldNames.mapValues {
+            "${it.value}: ${valueToStr(changed.before, attDef.type)} -> ${valueToStr(changed.after, attDef.type)}"
+        }
+
+        val comment = MLText(commentTemplate).toString()
+
+        return listOf(comment)
     }
 
     private fun isEmpty(value: Any?): Boolean {
@@ -300,6 +322,7 @@ class EcosEventsListener(
     }
 
     private fun collectJsonChangedEvents(
+        fieldNames: Map<Locale, String>,
         path: String,
         before: DataValue,
         after: DataValue,
@@ -318,18 +341,30 @@ class EcosEventsListener(
                     removed.add(key)
                     continue
                 }
-                collectJsonChangedEvents("$path.$key", before[key], after[key], events)
+                collectJsonChangedEvents(fieldNames, "$path.$key", before[key], after[key], events)
             }
             if (removed.isNotEmpty()) {
-                events.add("$path удалено: $removed")
+                val removedEvent = MLText(fieldNames.mapValues {
+                    "${it.value}$path ${REMOVE_ACTION_TITLE.getClosestValue()}: $removed"
+                }).toString()
+
+                events.add(removedEvent)
             }
             if (added.isNotEmpty()) {
                 added.forEach { (key, value) ->
-                    events.add("$path добавлено: $key = $value")
+                    val addedEvent = MLText(fieldNames.mapValues {
+                        "${it.value}$path ${ADD_ACTION_TITLE.getClosestValue()}: $key = $value"
+                    }).toString()
+
+                    events.add(addedEvent)
                 }
             }
         } else if (before != after) {
-            events.add("$path: $before -> $after")
+            val event = MLText(fieldNames.mapValues {
+                "${it.value}$path: $before -> $after}"
+            }).toString()
+
+            events.add(event)
         }
     }
 
