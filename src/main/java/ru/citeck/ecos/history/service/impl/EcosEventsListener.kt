@@ -42,7 +42,8 @@ class EcosEventsListener(
         private const val EMPTY_VALUE_STR = "—"
 
         private val LOCALES = listOf(
-            I18nContext.RUSSIAN, I18nContext.ENGLISH
+            I18nContext.RUSSIAN,
+            I18nContext.ENGLISH
         )
 
         private val ADD_ACTION_TITLE = MLText(
@@ -346,25 +347,31 @@ class EcosEventsListener(
                 collectJsonChangedEvents(fieldNames, "$path.$key", before[key], after[key], events)
             }
             if (removed.isNotEmpty()) {
-                val removedEvent = MLText(fieldNames.mapValues {
-                    "${it.value}$path ${REMOVE_ACTION_TITLE.getClosestValue()}: $removed"
-                }).toString()
+                val removedEvent = MLText(
+                    fieldNames.mapValues {
+                        "${it.value}$path ${REMOVE_ACTION_TITLE.getClosestValue()}: $removed"
+                    }
+                ).toString()
 
                 events.add(removedEvent)
             }
             if (added.isNotEmpty()) {
                 added.forEach { (key, value) ->
-                    val addedEvent = MLText(fieldNames.mapValues {
-                        "${it.value}$path ${ADD_ACTION_TITLE.getClosestValue()}: $key = $value"
-                    }).toString()
+                    val addedEvent = MLText(
+                        fieldNames.mapValues {
+                            "${it.value}$path ${ADD_ACTION_TITLE.getClosestValue()}: $key = $value"
+                        }
+                    ).toString()
 
                     events.add(addedEvent)
                 }
             }
         } else if (before != after) {
-            val event = MLText(fieldNames.mapValues {
-                "${it.value}$path: $before -> $after}"
-            }).toString()
+            val event = MLText(
+                fieldNames.mapValues {
+                    "${it.value}$path: $before -> $after}"
+                }
+            ).toString()
 
             events.add(event)
         }
