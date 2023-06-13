@@ -60,8 +60,13 @@ class EcosEventsListener(
     @PostConstruct
     fun init() {
 
-        val buildStatusMsg = { status: StatusValue ->
-            status.name.getClosest(I18nContext.RUSSIAN).ifBlank { "—" }
+        val buildStatusMsg = { statusBefore: StatusValue, statusAfter: StatusValue ->
+            MLText(
+                *LOCALES.map { locale ->
+                    locale to statusBefore.name.getClosest(locale).ifBlank { "—" } +
+                        " -> " + statusAfter.name.getClosest(locale)
+                }.toTypedArray()
+            ).toString()
         }
 
         eventsService.addListener<StatusChanged> {
@@ -79,8 +84,7 @@ class EcosEventsListener(
                 record[HistoryRecordService.USERNAME] = event.user
                 record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
 
-                record[HistoryRecordService.COMMENTS] =
-                    "${buildStatusMsg(event.before)} -> ${buildStatusMsg(event.after)}"
+                record[HistoryRecordService.COMMENTS] = buildStatusMsg(event.before, event.after)
 
                 historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
             }
