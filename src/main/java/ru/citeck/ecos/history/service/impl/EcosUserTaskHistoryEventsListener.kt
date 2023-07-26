@@ -97,7 +97,7 @@ class EcosUserTaskHistoryEventsListener(
         record[HistoryRecordService.WORKFLOW_INSTANCE_ID] = event.procInstanceId.toString()
         record[HistoryRecordService.TASK_TITLE] = event.name.toString()
         record[HistoryRecordService.TASK_EVENT_INSTANCE_ID] = event.taskId.toString()
-        record[HistoryRecordService.TASK_FORM_KEY] = event.form.toString()
+        record[HistoryRecordService.TASK_FORM_KEY] = event.form?.toString() ?: ""
 
         record[HistoryRecordService.DOC_TYPE] = event.documentTypeRef?.toString() ?: ""
 
@@ -118,7 +118,7 @@ data class UserTaskEvent(
     var completedOnBehalfOf: String? = null,
 
     var procInstanceId: RecordRef,
-    var form: RecordRef,
+    var form: RecordRef? = null,
 
     var name: MLText,
     var comment: String? = null,
