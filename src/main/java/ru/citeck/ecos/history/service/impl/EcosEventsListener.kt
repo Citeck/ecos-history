@@ -148,23 +148,29 @@ class EcosEventsListener(
                     if (!attDef.multiple) {
                         processChangedValue(ChangedValue(assoc.assocId, removedDisp, addedDisp), true)
                     } else {
-                        val fieldName = attDef.name.getClosest(I18nContext.RUSSIAN).ifBlank { assoc.assocId }
+
+                        val fieldName = LOCALES.associateWith { attDef.name.getClosest(it) }
+
                         if (addedDisp.isNotEmpty()) {
-                            var comment = "$fieldName: добавлен"
-                            if (addedDisp.size > 1) {
-                                comment += "ы"
-                            }
-                            record[HistoryRecordService.COMMENTS] =
-                                comment + " " + addedDisp.joinToString(", ")
+                            val comment = MLText(
+                                fieldName.mapValues {
+                                    "${it.value}: ${ADD_ACTION_TITLE.getClosestValue(it.key)} " +
+                                        addedDisp.joinToString(", ")
+                                }
+                            ).toString()
+
+                            record[HistoryRecordService.COMMENTS] = comment
                             historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
                         }
                         if (removedDisp.isNotEmpty()) {
-                            var comment = "$fieldName: удален"
-                            if (removedDisp.size > 1) {
-                                comment += "ы"
-                            }
-                            record[HistoryRecordService.COMMENTS] =
-                                comment + " " + removedDisp.joinToString(", ")
+                            val comment = MLText(
+                                fieldName.mapValues {
+                                    "${it.value}: ${REMOVE_ACTION_TITLE.getClosestValue(it.key)} " +
+                                        addedDisp.joinToString(", ")
+                                }
+                            ).toString()
+
+                            record[HistoryRecordService.COMMENTS] = comment
                             historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
                         }
                     }
