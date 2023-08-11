@@ -1,0 +1,26 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="Citeck" id="20230731000001">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="history_records" indexName="history_records_creation_time_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="history_records" indexName="history_records_creation_time_idx">
+            <column name="creation_time"/>
+        </createIndex>
+    </changeSet>
+
+    <changeSet author="Citeck" id="20230731000002">
+        <preConditions onFail="MARK_RAN">
+            <not>
+                <indexExists tableName="history_records" indexName="history_records_username_idx"/>
+            </not>
+        </preConditions>
+        <createIndex tableName="history_records" indexName="history_records_username_idx">
+            <column name="username"/>
+        </createIndex>
+    </changeSet>
+
+</databaseChangeLog>
