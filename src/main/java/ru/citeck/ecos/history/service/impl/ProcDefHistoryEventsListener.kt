@@ -18,27 +18,53 @@ const val PROC_DEF_EVENT_CREATE = "proc-def-create"
 const val PROC_DEF_EVENT_UPDATE = "proc-def-update"
 const val PROC_DEF_EVENT_DEPLOYED = "proc-def-deployed"
 
+const val PROC_DEF_DATA_STATE_RAW = "RAW"
+
 val PROC_DEF_VERSION_DEPLOYED_MSG = MLText(
     I18nContext.RUSSIAN to "Версия опубликована",
     I18nContext.ENGLISH to "Version is deployed"
 )
 
-fun getProcDefVersionUpdateMsg(createdFromVersion: Double = 0.0, newVersion: Double): MLText {
-    var rus = "Версия обновлена"
-    var eng = "Version is updated"
+private val procDefVersionCreateMessage = fun(event: ProcDefEvent): MLText {
+    with(event) {
+        var rus = "Описание процесса создано"
+        var eng = "Process definition is created"
 
-    if (createdFromVersion > 0) {
-        rus += " $createdFromVersion -> $newVersion"
-        eng += " $createdFromVersion -> $newVersion"
-    } else if (newVersion > 0) {
-        rus += " -> $newVersion"
-        eng += " -> $newVersion"
+        if (dataState == PROC_DEF_DATA_STATE_RAW) {
+            rus += " (черновик)"
+            eng += " (draft)"
+        }
+
+        return MLText(
+            I18nContext.RUSSIAN to rus,
+            I18nContext.ENGLISH to eng
+        )
     }
+}
 
-    return MLText(
-        I18nContext.RUSSIAN to rus,
-        I18nContext.ENGLISH to eng
-    )
+private val procDefVersionUpdateMessage = fun(event: ProcDefEvent): MLText {
+    with(event) {
+        var rus = "Версия обновлена"
+        var eng = "Version is updated"
+
+        if (createdFromVersion > 0) {
+            rus += " $createdFromVersion -> $version"
+            eng += " $createdFromVersion -> $version"
+        } else if (version > 0) {
+            rus += " -> $version"
+            eng += " -> $version"
+        }
+
+        if (dataState == PROC_DEF_DATA_STATE_RAW) {
+            rus += " (черновик)"
+            eng += " (draft)"
+        }
+
+        return MLText(
+            I18nContext.RUSSIAN to rus,
+            I18nContext.ENGLISH to eng
+        )
+    }
 }
 
 @Component
@@ -60,6 +86,7 @@ class ProcDefHistoryEventsListener(
                 log.debug { "History Proc Def Create Event: $event" }
 
                 val record = getGeneralProcDefRecord(event, HistoryEventType.NODE_CREATED)
+                record[HistoryRecordService.COMMENTS] = procDefVersionCreateMessage(event).toString()
 
                 log.debug { "History Proc Def Create Event Record: $record" }
 
@@ -75,10 +102,7 @@ class ProcDefHistoryEventsListener(
                 log.debug { "History Proc Def Update Event: $event" }
 
                 val record = getGeneralProcDefRecord(event, HistoryEventType.NODE_UPDATED)
-                record[HistoryRecordService.COMMENTS] = getProcDefVersionUpdateMsg(
-                    event.createdFromVersion,
-                    event.version
-                ).toString()
+                record[HistoryRecordService.COMMENTS] = procDefVersionUpdateMessage(event).toString()
 
                 log.debug { "History Proc Def Update Event Record: $record" }
 
@@ -125,6 +149,7 @@ data class ProcDefEvent(
     val procDefRef: RecordRef,
     val version: Double,
     val createdFromVersion: Double = 0.0,
+    val dataState: String? = null,
 
     @AttName("\$event.time")
     var time: Instant? = null,
