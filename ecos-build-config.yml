@@ -1,5 +1,2 @@
 ---
 type: 'maven-webapp'
-properties:
-    image:
-        multiplatform: true
