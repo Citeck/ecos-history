@@ -1,6 +1,7 @@
 package ru.citeck.ecos.history.service.task.impl;
 
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.time.FastDateFormat;
 import org.springframework.stereotype.Service;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.domain.TaskRecordEntity;
@@ -9,14 +10,13 @@ import ru.citeck.ecos.history.service.task.AbstractTaskHistoryEventHandler;
 import ru.citeck.ecos.history.service.utils.TaskPopulateUtils;
 
 import java.text.ParseException;
-import java.text.SimpleDateFormat;
 import java.util.Map;
 
 @Slf4j
 @Service
 public class CreateTaskEventTypeHandler extends AbstractTaskHistoryEventHandler {
 
-    private static final SimpleDateFormat dateFormat = new SimpleDateFormat("dd.MM.yyyy HH:mm:ss");
+    private static final FastDateFormat dateFormat = FastDateFormat.getInstance("dd.MM.yyyy HH:mm:ss");
     private static final String CREATE_TASK_TYPE = "task.create";
 
     private final TaskPopulateUtils taskPopulateUtils;
