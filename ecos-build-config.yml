@@ -1,6 +1,5 @@
 ---
 type: 'maven-webapp'
-skipCleaning: true
 properties:
   image:
     multiplatform: true
