@@ -42,24 +42,29 @@ public class RabbitNewHistoryRecordListener {
         if (connection == null) {
             throw new RuntimeException("RabbitMQ connection is not found");
         }
-        connection.doWithNewChannel(channel ->
+
+        connection.doWithNewChannel(channel -> {
+            channel.declareQueue(SEND_NEW_RECORD_QUEUE, true);
+
             channel.addAckedConsumer(SEND_NEW_RECORD_QUEUE, Delivery.class, (msg, headers) -> {
-                channel.declareQueue(SEND_NEW_RECORD_QUEUE, true);
                 sendNewRecordListener(new String(msg.getContent().getBody(), StandardCharsets.UTF_8));
-            })
-        );
-        connection.doWithNewChannel(channel ->
+            });
+        });
+
+        connection.doWithNewChannel(channel -> {
+            channel.declareQueue(SEND_NEW_RECORDS_QUEUE, true);
+
             channel.addAckedConsumer(SEND_NEW_RECORDS_QUEUE, Delivery.class, (msg, headers) -> {
-                channel.declareQueue(SEND_NEW_RECORDS_QUEUE, true);
                 sendNewRecordsListener(new String(msg.getContent().getBody(), StandardCharsets.UTF_8));
-            })
-        );
-        connection.doWithNewChannel(channel ->
+            });
+        });
+        connection.doWithNewChannel(channel -> {
+            channel.declareQueue(DELETE_RECORDS_BY_DOCUMENT, true);
+
             channel.addAckedConsumer(DELETE_RECORDS_BY_DOCUMENT, Delivery.class, (msg, headers) -> {
-                channel.declareQueue(DELETE_RECORDS_BY_DOCUMENT, true);
                 deleteRecordsByDocumentListener(new String(msg.getContent().getBody(), StandardCharsets.UTF_8));
-            })
-        );
+            });
+        });
     }
 
     /**
