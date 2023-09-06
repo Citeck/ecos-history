@@ -55,6 +55,7 @@ class EcosEventsListener(
             I18nContext.RUSSIAN to "удалено",
             I18nContext.ENGLISH to "removed"
         )
+
     }
 
     @PostConstruct
@@ -102,6 +103,32 @@ class EcosEventsListener(
                 record[HistoryRecordService.USER_ID] = event.user
                 record[HistoryRecordService.USERNAME] = event.user
                 record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
+
+                val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
+                val typeAssocsId = recordTypeDef?.associations?.map { it.id }
+
+                val assocsList = event.assocs ?: emptyList()
+                val assocsId = event.assocs?.map { it.assocId } ?: emptyList()
+
+                if (typeAssocsId?.any { it in assocsId } == true) {
+                    for (assoc in assocsList) {
+                        val typeAssocsById = recordTypeDef.associations.associateBy { it.id }
+                        val typeAssoc = typeAssocsById[assoc.assocId]
+
+                        if (typeAssoc != null &&
+                            (
+                                typeAssoc.direction == AssocDef.Direction.BOTH ||
+                                    typeAssoc.direction == AssocDef.Direction.TARGET
+                                )
+                        ) {
+                            assoc.added.forEach {
+                                storeSourceAssocHistoryEvent(
+                                    event.user, event.time, event.recordDispML, it, typeAssoc, true
+                                )
+                            }
+                        }
+                    }
+                }
 
                 historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
             }
@@ -181,8 +208,16 @@ class EcosEventsListener(
                                 typeAssoc.direction == AssocDef.Direction.TARGET
                             )
                     ) {
-                        assoc.added.forEach { storeSourceAssocHistoryEvent(event, it, typeAssoc, true) }
-                        assoc.removed.forEach { storeSourceAssocHistoryEvent(event, it, typeAssoc, false) }
+                        assoc.added.forEach {
+                            storeSourceAssocHistoryEvent(
+                                event.user, event.time, event.recordDispML, it, typeAssoc, true
+                            )
+                        }
+                        assoc.removed.forEach {
+                            storeSourceAssocHistoryEvent(
+                                event.user, event.time, event.recordDispML, it, typeAssoc, false
+                            )
+                        }
                     }
                 }
             }
@@ -190,7 +225,9 @@ class EcosEventsListener(
     }
 
     private fun storeSourceAssocHistoryEvent(
-        sourceUpdatedEvent: RecordUpdated,
+        user: String,
+        time: Instant,
+        recordDispML: MLText,
         target: AssocTargetAtts,
         assoc: AssocDef,
         added: Boolean
@@ -205,19 +242,28 @@ class EcosEventsListener(
 
         record[HistoryRecordService.DOCUMENT_ID] = target.recordRef.toString()
         record[HistoryRecordService.EVENT_TYPE] = HistoryEventType.NODE_UPDATED.value
-        record[HistoryRecordService.USER_ID] = sourceUpdatedEvent.user
-        record[HistoryRecordService.USERNAME] = sourceUpdatedEvent.user
-        record[HistoryRecordService.CREATION_TIME] = formatTime(sourceUpdatedEvent.time)
+        record[HistoryRecordService.USER_ID] = user
+        record[HistoryRecordService.USERNAME] = user
+        record[HistoryRecordService.CREATION_TIME] = formatTime(time)
         if (target.version != null) {
             record[HistoryRecordService.VERSION] = target.version
         }
-        var comment = targetAssoc.name.getClosest(I18nContext.RUSSIAN).ifBlank { targetAssoc.id } + ": "
-        comment += if (added) {
-            "добавлен"
-        } else {
-            "удален"
-        }
-        record[HistoryRecordService.COMMENTS] = comment + " " + sourceUpdatedEvent.recordDisp
+
+        val assocNames = LOCALES.associateWith { targetAssoc.name.getClosestValue(it) }
+
+        val comment = MLText(
+            assocNames.mapValues {
+                "${it.value}: " +
+                    if (added) {
+                        ADD_ACTION_TITLE.getClosestValue(it.key)
+                    } else {
+                        REMOVE_ACTION_TITLE.getClosestValue(it.key)
+                    } +
+                " ${recordDispML.getClosestValue(it.key)}"
+            }
+        ).toString()
+
+        record[HistoryRecordService.COMMENTS] = comment
 
         historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
     }
@@ -398,8 +444,8 @@ class EcosEventsListener(
         val record: RecordRef,
         @AttName("record._type?localId!")
         val recordTypeId: String,
-        @AttName("record?disp!record._type?disp!record?localId")
-        val recordDisp: String,
+        @AttName("record._disp?json")
+        val recordDispML: MLText,
         @AttName("\$event.time")
         val time: Instant,
         @AttName("\$event.user")
@@ -426,7 +472,9 @@ class EcosEventsListener(
         @AttName("?id")
         val recordRef: EntityRef,
         @AttName("version:version")
-        val version: String?
+        val version: String?,
+        @AttName("_disp?json")
+        val dispML: MLText
     )
 
     data class ChangedValue(
@@ -444,7 +492,20 @@ class EcosEventsListener(
         @AttName("\$event.time")
         val time: Instant,
         @AttName("\$event.user")
-        val user: String
+        val user: String,
+        val isDraft: Boolean,
+        val assocs: List<AssocInfo>?,
+        @AttName("record._type?localId!")
+        val recordTypeId: String,
+        @AttName("record._disp?json")
+        val recordDispML: MLText
+    )
+
+    data class AssocInfo(
+        val added: List<AssocTargetAtts>,
+        val assocId: String,
+        @AttName("def.name?json")
+        val name: MLText
     )
 
     data class StatusChanged(
