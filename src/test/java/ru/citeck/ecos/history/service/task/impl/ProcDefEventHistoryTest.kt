@@ -87,7 +87,36 @@ class ProcDefEventHistoryTest {
 
         comparePayload(event, actualEntity)
 
-        assertThat(actualEntity.comments).isBlank
+        assertThat(actualEntity.comments).isEqualTo(
+            MLText(
+                I18nContext.RUSSIAN to "Описание процесса создано",
+                I18nContext.ENGLISH to "Process definition is created"
+            ).toString()
+        )
+    }
+
+    @Test
+    fun `proc def raw create payload check`() {
+        val event = ProcDefEvent(
+            procDefRef = procDefRef,
+            version = version,
+            dataState = PROC_DEF_DATA_STATE_RAW
+        )
+
+        AuthContext.runAs(runAsUser) {
+            procDefCreateEmitter.emit(event)
+        }
+
+        val actualEntity = historyRecordRepository.findAll().first()
+
+        comparePayload(event, actualEntity)
+
+        assertThat(actualEntity.comments).isEqualTo(
+            MLText(
+                I18nContext.RUSSIAN to "Описание процесса создано (черновик)",
+                I18nContext.ENGLISH to "Process definition is created (draft)"
+            ).toString()
+        )
     }
 
     @Test
@@ -114,6 +143,30 @@ class ProcDefEventHistoryTest {
     }
 
     @Test
+    fun `proc def raw update payload check`() {
+        val event = ProcDefEvent(
+            procDefRef = procDefRef,
+            version = version,
+            dataState = PROC_DEF_DATA_STATE_RAW
+        )
+
+        AuthContext.runAs(runAsUser) {
+            procDefUpdateEmitter.emit(event)
+        }
+
+        val actualEntity = historyRecordRepository.findAll().first()
+
+        comparePayload(event, actualEntity)
+
+        assertThat(actualEntity.comments).isEqualTo(
+            MLText(
+                I18nContext.RUSSIAN to "Версия обновлена -> $version (черновик)",
+                I18nContext.ENGLISH to "Version is updated -> $version (draft)"
+            ).toString()
+        )
+    }
+
+    @Test
     fun `proc def update from version payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
@@ -133,6 +186,31 @@ class ProcDefEventHistoryTest {
             MLText(
                 I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $version",
                 I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $version"
+            ).toString()
+        )
+    }
+
+    @Test
+    fun `proc def raw update from version payload check`() {
+        val event = ProcDefEvent(
+            procDefRef = procDefRef,
+            version = version,
+            createdFromVersion = 2.0,
+            dataState = PROC_DEF_DATA_STATE_RAW
+        )
+
+        AuthContext.runAs(runAsUser) {
+            procDefUpdateEmitter.emit(event)
+        }
+
+        val actualEntity = historyRecordRepository.findAll().first()
+
+        comparePayload(event, actualEntity)
+
+        assertThat(actualEntity.comments).isEqualTo(
+            MLText(
+                I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $version (черновик)",
+                I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $version (draft)"
             ).toString()
         )
     }

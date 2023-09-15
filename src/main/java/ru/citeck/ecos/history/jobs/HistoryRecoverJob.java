@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history.jobs;
 
+import lombok.extern.slf4j.Slf4j;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Scheduled;
@@ -19,11 +20,12 @@ import java.text.ParseException;
 import java.util.HashMap;
 import java.util.Map;
 
+@Slf4j
 @Service("historyRecoverJob")
 public class HistoryRecoverJob {
 
     private static final String HISTORY_RECORD_FILE_NAME = "history_record";
-    private static final String DELIMETER = "\\|\\|";
+    private static final String DELIMITER = "\\|\\|";
     private static final String[] KEYS = {
         "historyEventId",
         "documentId",
@@ -84,7 +86,7 @@ public class HistoryRecoverJob {
     private void recoverHistoryRecord(File csvFile) {
         try (BufferedReader reader = new BufferedReader(new FileReader(csvFile))) {
             for (String line; (line = reader.readLine()) != null; ) {
-                String[] values = line.split(DELIMETER, -1);
+                String[] values = line.split(DELIMITER, -1);
                 int keysCount = Math.min(KEYS.length, values.length);
                 Map<String, String> requestParams = new HashMap<>();
                 for (int i = 0; i < keysCount; i++) {
@@ -93,11 +95,13 @@ public class HistoryRecoverJob {
                 historyRecordService.saveOrUpdateRecord(new HistoryRecordEntity(), requestParams);
             }
         } catch (IOException | ParseException e) {
-            e.printStackTrace();
+            log.error("Error while recovering history record from file: " + csvFile.getName(), e);
             moveToErrorDir(csvFile);
         }
 
-        csvFile.delete();
+        if (!csvFile.delete()) {
+            log.warn("Error while deleting file: " + csvFile.getName());
+        }
     }
 
     private void moveToErrorDir(File file) {
@@ -105,7 +109,7 @@ public class HistoryRecoverJob {
         try {
             Files.move(file.toPath(), errorsDir, StandardCopyOption.REPLACE_EXISTING);
         } catch (IOException e) {
-            e.printStackTrace();
+            log.error("Error while moving file to error dir: " + file.getName(), e);
         }
     }
 
