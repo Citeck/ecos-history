@@ -325,7 +325,7 @@ class EcosEventsListener(
                 notEmptyValues.joinToString(", ") {
                     when (type) {
                         AttributeType.DATETIME -> formatTime(Instant.parse(it))
-                        AttributeType.DATE -> DATE_FORMAT.format(Instant.parse(it))
+                        AttributeType.DATE -> DATE_FORMAT.format(Date.from(Instant.parse(it)))
                         else -> it
                     }
                 }
