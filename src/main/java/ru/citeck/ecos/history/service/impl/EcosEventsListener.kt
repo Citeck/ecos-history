@@ -1,6 +1,7 @@
 package ru.citeck.ecos.history.service.impl
 
 import org.apache.commons.lang3.time.FastDateFormat
+import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
@@ -159,7 +160,7 @@ class EcosEventsListener(
                     }
                     val comments = getCommentsForChangedValue(changed, attDef)
                     for (comment in comments) {
-                        record[HistoryRecordService.COMMENTS] = comment
+                        record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
                         historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
                     }
                 }
@@ -186,7 +187,7 @@ class EcosEventsListener(
                                 }
                             ).toString()
 
-                            record[HistoryRecordService.COMMENTS] = comment
+                            record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
                             historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
                         }
                         if (removedDisp.isNotEmpty()) {
@@ -197,7 +198,7 @@ class EcosEventsListener(
                                 }
                             ).toString()
 
-                            record[HistoryRecordService.COMMENTS] = comment
+                            record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
                             historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
                         }
                     }
@@ -332,11 +333,13 @@ class EcosEventsListener(
             }
         }
 
-        val commentTemplate = fieldNames.mapValues {
-            "${it.value}: ${valueToStr(changed.before, attDef.type)} -> ${valueToStr(changed.after, attDef.type)}"
-        }
+        val commentTemplate = MLText(
+            fieldNames.mapValues {
+                "${it.value}: ${valueToStr(changed.before, attDef.type)} -> ${valueToStr(changed.after, attDef.type)}"
+            }
+        ).toString()
 
-        val comment = MLText(commentTemplate).toString()
+        val comment = Jsoup.parse(commentTemplate).text()
 
         return listOf(comment)
     }
@@ -409,7 +412,7 @@ class EcosEventsListener(
                     }
                 ).toString()
 
-                events.add(removedEvent)
+                events.add(Jsoup.parse(removedEvent).text())
             }
             if (added.isNotEmpty()) {
                 added.forEach { (key, value) ->
@@ -419,7 +422,7 @@ class EcosEventsListener(
                         }
                     ).toString()
 
-                    events.add(addedEvent)
+                    events.add(Jsoup.parse(addedEvent).text())
                 }
             }
         } else if (before != after) {
@@ -429,7 +432,7 @@ class EcosEventsListener(
                 }
             ).toString()
 
-            events.add(event)
+            events.add(Jsoup.parse(event).text())
         }
     }
 
