@@ -6,6 +6,7 @@ import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.dto.HistoryRecordDtoPage;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
+import ru.citeck.ecos.webapp.api.entity.EntityRef;
 
 import java.io.IOException;
 import java.text.ParseException;
@@ -61,6 +62,8 @@ public interface HistoryRecordService {
     HistoryRecordDto getHistoryRecordByEventId(String eventId);
 
     HistoryRecordDtoPage getAll(int maxItems, int skipCount, Predicate predicate, Sort sort);
+
+    void createHistoryDocumentMirror(EntityRef documentMirrorRef, EntityRef documentRef);
 
     long getCount();
 

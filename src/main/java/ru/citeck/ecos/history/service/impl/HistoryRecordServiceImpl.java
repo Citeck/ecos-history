@@ -3,6 +3,7 @@ package ru.citeck.ecos.history.service.impl;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import lombok.RequiredArgsConstructor;
+import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jetbrains.annotations.Nullable;
@@ -13,20 +14,30 @@ import org.springframework.data.jpa.domain.Specification;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.citeck.ecos.commons.json.Json;
+import ru.citeck.ecos.data.sql.context.DbDataSourceContext;
+import ru.citeck.ecos.data.sql.context.DbSchemaContext;
+import ru.citeck.ecos.data.sql.domain.DbDomainFactory;
+import ru.citeck.ecos.data.sql.records.refs.DbRecordRefService;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
+import ru.citeck.ecos.history.domain.HistoryDocumentMirrorEntity;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.dto.HistoryRecordDtoPage;
+import ru.citeck.ecos.history.repository.HistoryDocumentMirrorRepo;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.history.service.TaskRecordService;
 import org.apache.commons.lang3.StringUtils;
 import ru.citeck.ecos.records2.RecordRef;
+import ru.citeck.ecos.records2.predicate.PredicateUtils;
 import ru.citeck.ecos.records2.predicate.model.AndPredicate;
 import ru.citeck.ecos.records2.predicate.model.ComposedPredicate;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
 import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
+import ru.citeck.ecos.webapp.api.constants.AppName;
+import ru.citeck.ecos.webapp.api.entity.EntityRef;
 
+import javax.annotation.PostConstruct;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
@@ -52,8 +63,25 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     private final HistoryRecordRepository historyRecordRepository;
     private final TaskRecordService taskRecordService;
+    private final HistoryDocumentMirrorRepo historyDocumentMirrorRepo;
+    private final DbDomainFactory dbDomainFactory;
+    private DbRecordRefService dbRecordRefService;
 
     private final HistoryRecordConverter historyRecordConverter;
+
+    @SneakyThrows
+    @PostConstruct
+    void init() {
+
+        // temp solution based on reflection to access DbRecordRefService.
+        // In future versions this service will be accessible with public methods
+        Field dataSourceContextField = DbDomainFactory.class.getDeclaredField("dataSourceContext");
+        dataSourceContextField.setAccessible(true);
+        DbDataSourceContext dataSourceCtx = (DbDataSourceContext) dataSourceContextField.get(dbDomainFactory);
+
+        DbSchemaContext publicSchemaCtx = dataSourceCtx.getSchemaContext("public");
+        dbRecordRefService = publicSchemaCtx.getRecordRefService();
+    }
 
     @Transactional
     @Override
@@ -259,9 +287,20 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         if (maxItems == 0) {
             return new HistoryRecordDtoPage();
         }
+        Predicate convertedPredicate = PredicateUtils.mapValuePredicates(predicate, (pred) -> {
+            String validName = HistoryRecordEntity.replaceNameValid(pred.getAttribute());
+            if (HistoryRecordEntity.DOCUMENT_ID.equals(validName)) {
+                Predicate newPred = expandDocumentMirrors(pred);
+                if (!newPred.equals(pred)) {
+                    return newPred;
+                }
+            }
+            return pred;
+        });
+
         final PageRequest page = PageRequest.of(skipCount / maxItems, maxItems,
             sort != null ? sort : Sort.by(Sort.Direction.DESC, CREATION_TIME));
-        Specification<HistoryRecordEntity> entitySpecification = specificationFromPredicate(predicate);
+        Specification<HistoryRecordEntity> entitySpecification = specificationFromPredicate(convertedPredicate);
 
         Page<HistoryRecordEntity> pageResult = historyRecordRepository.findAll(entitySpecification, page);
 
@@ -274,6 +313,66 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
             .collect(Collectors.toList()));
 
         return result;
+    }
+
+    @Transactional
+    @Override
+    public void createHistoryDocumentMirror(EntityRef documentMirrorRef, EntityRef documentRef) {
+
+        long documentMirrorRefId = dbRecordRefService.getOrCreateIdByEntityRef(documentMirrorRef);
+        long documentRefId = dbRecordRefService.getOrCreateIdByEntityRef(documentRef);
+
+        HistoryDocumentMirrorEntity entity = historyDocumentMirrorRepo.findByDocumentMirrorRefAndDocumentRef(
+            documentMirrorRefId,
+            documentRefId
+        );
+        if (entity != null) {
+            return;
+        }
+
+        entity = new HistoryDocumentMirrorEntity();
+        entity.setDocumentMirrorRef(documentMirrorRefId);
+        entity.setDocumentRef(documentRefId);
+
+        historyDocumentMirrorRepo.save(entity);
+    }
+
+    private Predicate expandDocumentMirrors(ValuePredicate predicate) {
+
+        EntityRef docRef = EntityRef.valueOf(predicate.getValue().asText());
+        if (docRef.isEmpty()) {
+            return predicate;
+        }
+        docRef = docRef.withDefaultAppName(AppName.ALFRESCO);
+        long docRefId = dbRecordRefService.getIdByEntityRefs(Collections.singletonList(docRef)).get(0);
+        if (docRefId == -1) {
+            return predicate;
+        }
+        List<HistoryDocumentMirrorEntity> mirrors = historyDocumentMirrorRepo.findAllByDocumentMirrorRef(docRefId);
+        if (mirrors.isEmpty()) {
+            return predicate;
+        }
+        List<Long> mirrorsIds = new ArrayList<>();
+        for (HistoryDocumentMirrorEntity mirror : mirrors) {
+            mirrorsIds.add(mirror.getDocumentRef());
+        }
+        List<EntityRef> entityRefsByIds = dbRecordRefService.getEntityRefsByIds(mirrorsIds);
+
+        List<EntityRef> documentVariants = new ArrayList<>();
+        documentVariants.add(docRef);
+        documentVariants.addAll(entityRefsByIds);
+
+        return new ValuePredicate(
+            predicate.getAttribute(),
+            ValuePredicate.Type.IN,
+            documentVariants.stream().map(ref -> {
+                if (AppName.ALFRESCO.equals(ref.getAppName())) {
+                    return ref.getLocalId().replace("workspace://SpacesStore/", "");
+                } else {
+                    return ref.toString();
+                }
+            }).collect(Collectors.toList())
+        );
     }
 
     @Transactional
