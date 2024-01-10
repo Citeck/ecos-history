@@ -1,0 +1,22 @@
+<?xml version="1.1" encoding="UTF-8" standalone="no"?>
+<databaseChangeLog xmlns="http://www.liquibase.org/xml/ns/dbchangelog" xmlns:ext="http://www.liquibase.org/xml/ns/dbchangelog-ext" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance" xsi:schemaLocation="http://www.liquibase.org/xml/ns/dbchangelog-ext http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-ext.xsd http://www.liquibase.org/xml/ns/dbchangelog http://www.liquibase.org/xml/ns/dbchangelog/dbchangelog-3.5.xsd">
+
+    <changeSet author="Citeck" id="20240110000000">
+
+        <createTable tableName="history_document_mirror">
+            <column name="id" type="BIGINT" autoIncrement="${autoIncrement}">
+                <constraints primaryKey="true" nullable="false"/>
+            </column>
+            <column name="document_mirror_ref" type="BIGINT"/>
+            <column name="document_ref" type="BIGINT"/>
+        </createTable>
+
+        <addUniqueConstraint tableName="history_document_mirror" columnNames="document_mirror_ref,document_ref" />
+
+        <createIndex tableName="history_document_mirror" indexName="history_document_mirror_mirror_ref_idx">
+            <column name="document_mirror_ref" type="BIGINT" />
+        </createIndex>
+
+    </changeSet>
+
+</databaseChangeLog>
