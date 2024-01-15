@@ -16,6 +16,7 @@ predicate:
     - node.updated
     - assoc.updated
     - task.complete
+    - task.delete
     - user.action
     - status.changed
     - esign.signed

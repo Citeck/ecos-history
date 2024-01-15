@@ -7,5 +7,6 @@ enum class HistoryEventType(val value: String) {
     STATUS_CHANGED("status.changed"),
     TASK_CREATED("task.created"),
     TASK_COMPLETE("task.complete"),
+    TASK_DELETE("task.delete"),
     TASK_ASSIGN("task.assign")
 }

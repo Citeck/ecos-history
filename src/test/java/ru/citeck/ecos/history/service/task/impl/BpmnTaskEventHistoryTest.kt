@@ -45,6 +45,7 @@ class BpmnTaskEventHistoryTest {
 
     private lateinit var userTaskCreateEmitter: EventsEmitter<UserTaskEvent>
     private lateinit var userTaskCompleteEmitter: EventsEmitter<UserTaskEvent>
+    private lateinit var userTaskDeleteEmitter: EventsEmitter<UserTaskEvent>
     private lateinit var userTaskAssignEmitter: EventsEmitter<UserTaskEvent>
 
     companion object {
@@ -115,6 +116,14 @@ class BpmnTaskEventHistoryTest {
             EmitterConfig.create<UserTaskEvent> {
                 source = appName
                 eventType = BPMN_EVENT_USER_TASK_ASSIGN
+                eventClass = UserTaskEvent::class.java
+            }
+        )
+
+        userTaskDeleteEmitter = eventsService.getEmitter(
+            EmitterConfig.create<UserTaskEvent> {
+                source = appName
+                eventType = BPMN_EVENT_USER_TASK_DELETE
                 eventClass = UserTaskEvent::class.java
             }
         )
@@ -196,6 +205,32 @@ class BpmnTaskEventHistoryTest {
         assertThat(actualEntity.username).isEqualTo(runAsUser)
         assertThat(actualEntity.taskOutcome).isEqualTo(outcome)
         assertThat(actualEntity.taskOutcomeName).isEqualTo(outcomeName.toString())
+        assertThat(actualEntity.taskRole).isEqualTo(Json.mapper.toString(roles))
+        assertThat(actualEntity.comments).isEqualTo(comment)
+    }
+
+    @Test
+    fun `task delete event history payload check`() {
+
+        val event = UserTaskEvent(
+            taskId = taskRef,
+            procInstanceId = procInstanceRef,
+            name = taskName,
+            document = documentRef,
+            form = formRef,
+            roles = roles,
+            comment = comment
+        )
+
+        AuthContext.runAs(runAsUser) {
+            userTaskDeleteEmitter.emit(event)
+        }
+
+        val actualEntity = historyRecordRepository.findAll().first()
+
+        compareCommonPayload(event, actualEntity, HistoryEventType.TASK_DELETE.value)
+
+        assertThat(actualEntity.username).isEqualTo(runAsUser)
         assertThat(actualEntity.taskRole).isEqualTo(Json.mapper.toString(roles))
         assertThat(actualEntity.comments).isEqualTo(comment)
     }

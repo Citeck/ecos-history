@@ -56,7 +56,6 @@ class EcosEventsListener(
             I18nContext.RUSSIAN to "удалено",
             I18nContext.ENGLISH to "removed"
         )
-
     }
 
     @PostConstruct
@@ -124,7 +123,12 @@ class EcosEventsListener(
                         ) {
                             assoc.added.forEach {
                                 storeSourceAssocHistoryEvent(
-                                    event.user, event.time, event.recordDispML, it, typeAssoc, true
+                                    event.user,
+                                    event.time,
+                                    event.recordDispML,
+                                    it,
+                                    typeAssoc,
+                                    true
                                 )
                             }
                         }
@@ -211,12 +215,22 @@ class EcosEventsListener(
                     ) {
                         assoc.added.forEach {
                             storeSourceAssocHistoryEvent(
-                                event.user, event.time, event.recordDispML, it, typeAssoc, true
+                                event.user,
+                                event.time,
+                                event.recordDispML,
+                                it,
+                                typeAssoc,
+                                true
                             )
                         }
                         assoc.removed.forEach {
                             storeSourceAssocHistoryEvent(
-                                event.user, event.time, event.recordDispML, it, typeAssoc, false
+                                event.user,
+                                event.time,
+                                event.recordDispML,
+                                it,
+                                typeAssoc,
+                                false
                             )
                         }
                     }
@@ -260,7 +274,7 @@ class EcosEventsListener(
                     } else {
                         REMOVE_ACTION_TITLE.getClosestValue(it.key)
                     } +
-                " ${recordDispML.getClosestValue(it.key)}"
+                    " ${recordDispML.getClosestValue(it.key)}"
             }
         ).toString()
 

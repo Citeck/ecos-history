@@ -17,6 +17,7 @@ import java.util.*
 const val BPMN_EVENT_USER_TASK_CREATE = "bpmn-user-task-create"
 const val BPMN_EVENT_USER_TASK_COMPLETE = "bpmn-user-task-complete"
 const val BPMN_EVENT_USER_TASK_ASSIGN = "bpmn-user-task-assign"
+const val BPMN_EVENT_USER_TASK_DELETE = "bpmn-user-task-delete"
 
 /**
  * @author Roman Makarskiy
@@ -66,6 +67,27 @@ class EcosUserTaskHistoryEventsListener(
                 }
 
                 log.debug { "History Task Complete Event Record: $record" }
+
+                historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
+            }
+        }
+
+        eventsService.addListener<UserTaskEvent> {
+            withEventType(BPMN_EVENT_USER_TASK_DELETE)
+            withDataClass(UserTaskEvent::class.java)
+            withAction { event ->
+
+                log.debug { "History Task Delete Event: $event" }
+
+                val record = getGeneralHistoryRecord(event, HistoryEventType.TASK_DELETE.value)
+                record[HistoryRecordService.USERNAME] = event.user ?: ""
+                record[HistoryRecordService.TASK_ROLE] = Json.mapper.toString(event.roles) ?: ""
+                record[HistoryRecordService.COMMENTS] = event.comment ?: ""
+                event.completedOnBehalfOf?.let {
+                    record[HistoryRecordService.TASK_COMPLETED_ON_BEHALF_OF] = it
+                }
+
+                log.debug { "History Task Delete Event Record: $record" }
 
                 historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
             }

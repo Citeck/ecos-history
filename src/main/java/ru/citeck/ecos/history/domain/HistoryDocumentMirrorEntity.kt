@@ -9,7 +9,7 @@ class HistoryDocumentMirrorEntity : Serializable {
 
     @Id
     @GeneratedValue(strategy = GenerationType.SEQUENCE, generator = "hibernate_sequence")
-    @SequenceGenerator(name="hibernate_sequence", sequenceName="hibernate_sequence")
+    @SequenceGenerator(name = "hibernate_sequence", sequenceName = "hibernate_sequence")
     @Column(name = "id", updatable = false, nullable = false)
     var id: Long? = null
 
