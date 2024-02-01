@@ -17,7 +17,9 @@ import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeDef
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeType
 import ru.citeck.ecos.records2.RecordRef
+import ru.citeck.ecos.records2.predicate.model.Predicates
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
+import ru.citeck.ecos.webapp.api.constants.AppName
 import ru.citeck.ecos.webapp.api.entity.EntityRef
 import ru.citeck.ecos.webapp.lib.model.type.dto.AssocDef
 import ru.citeck.ecos.webapp.lib.model.type.registry.EcosTypesRegistry
@@ -70,9 +72,14 @@ class EcosEventsListener(
             ).toString()
         }
 
+        val excludeBpmnElementsOptimizationPredicate = Predicates.notEq(
+            "record._type?id", "${AppName.EMODEL}/type@bpmn-process-element"
+        )
+
         eventsService.addListener<StatusChanged> {
             withEventType(RecordStatusChangedEvent.TYPE)
             withDataClass(StatusChanged::class.java)
+            withFilter(excludeBpmnElementsOptimizationPredicate)
             withAction { event ->
 
                 val record = hashMapOf<String, String>()
@@ -94,6 +101,7 @@ class EcosEventsListener(
         eventsService.addListener<RecordCreated> {
             withEventType(RecordCreatedEvent.TYPE)
             withDataClass(RecordCreated::class.java)
+            withFilter(excludeBpmnElementsOptimizationPredicate)
             withAction { event ->
 
                 val record = hashMapOf<String, String>()
@@ -142,6 +150,7 @@ class EcosEventsListener(
         eventsService.addListener<RecordUpdated> {
             withEventType(RecordChangedEvent.TYPE)
             withDataClass(RecordUpdated::class.java)
+            withFilter(excludeBpmnElementsOptimizationPredicate)
             withAction { event ->
 
                 val record = hashMapOf<String, String>()
