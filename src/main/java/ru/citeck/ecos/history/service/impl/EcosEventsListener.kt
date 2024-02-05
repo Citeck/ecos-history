@@ -73,8 +73,7 @@ class EcosEventsListener(
         }
 
         val excludeBpmnElementsOptimizationPredicate = Predicates.notEq(
-            "record._type?id",
-            "${AppName.EMODEL}/type@bpmn-process-element"
+            "record._type?id", "${AppName.EMODEL}/type@bpmn-process-element"
         )
 
         eventsService.addListener<StatusChanged> {
