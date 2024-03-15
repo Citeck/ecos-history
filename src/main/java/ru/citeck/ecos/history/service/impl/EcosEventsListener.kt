@@ -5,6 +5,7 @@ import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
+import ru.citeck.ecos.commons.data.ObjectData
 import ru.citeck.ecos.context.lib.i18n.I18nContext
 import ru.citeck.ecos.data.sql.records.DbRecordsUtils
 import ru.citeck.ecos.events2.EventsService
@@ -58,6 +59,9 @@ class EcosEventsListener(
             I18nContext.RUSSIAN to "удалено",
             I18nContext.ENGLISH to "removed"
         )
+
+        private val HISTORY_CONFIG_REF = EntityRef.create(AppName.EMODEL, "aspect", "history-config")
+        private const val EXCLUDED_ATTS_ATT = "excludedAtts";
     }
 
     @PostConstruct
@@ -179,12 +183,24 @@ class EcosEventsListener(
                     }
                 }
 
-                event.changed.forEach { processChangedValue(it, false) }
                 val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
+
+                val historyConfig = recordTypeDef?.aspects?.first { HISTORY_CONFIG_REF == it.ref }?.config ?: ObjectData.create()
+                val excludedAtts = historyConfig[EXCLUDED_ATTS_ATT].asStrList()
+                event.changed.forEach {
+                    if (!excludedAtts.contains(it.attId)) {
+                        processChangedValue(it, false)
+                    }
+                }
+
                 val typeAssocsById = recordTypeDef?.associations?.associateBy { it.id } ?: emptyMap()
 
                 for (assoc in event.assocs) {
                     val attDef = attsById[assoc.assocId] ?: continue
+                    if (excludedAtts.contains(attDef.id)) {
+                        continue
+                    }
+
                     val addedDisp = assoc.added.map { it.displayName }
                     val removedDisp = assoc.removed.map { it.displayName }
                     if (!attDef.multiple) {

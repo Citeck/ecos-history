@@ -1,0 +1,17 @@
+---
+id: history-config
+name:
+  ru: Конфигурация истории
+  en: History config
+prefix: ''
+configFormRef: uiserv/form@history-config-form
+attributes:
+  - id: excludedAtts
+    name:
+      ru: Исключенные атрибуты
+      en: Excluded attributes
+    type: TEXT
+    submit9: false
+    multiple: true
+    mandatory: false
+systemAttributes: []
