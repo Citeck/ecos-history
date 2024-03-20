@@ -11,7 +11,4 @@ attributes:
       ru: Исключенные атрибуты
       en: Excluded attributes
     type: TEXT
-    submit9: false
     multiple: true
-    mandatory: false
-systemAttributes: []
