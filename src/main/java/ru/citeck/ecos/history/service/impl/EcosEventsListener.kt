@@ -5,6 +5,7 @@ import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
+import ru.citeck.ecos.commons.data.ObjectData
 import ru.citeck.ecos.context.lib.i18n.I18nContext
 import ru.citeck.ecos.data.sql.records.DbRecordsUtils
 import ru.citeck.ecos.events2.EventsService
@@ -16,12 +17,14 @@ import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeDef
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeType
+import ru.citeck.ecos.model.lib.utils.ModelUtils
 import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records2.predicate.model.Predicates
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
 import ru.citeck.ecos.webapp.api.constants.AppName
 import ru.citeck.ecos.webapp.api.entity.EntityRef
 import ru.citeck.ecos.webapp.lib.model.type.dto.AssocDef
+import ru.citeck.ecos.webapp.lib.model.type.dto.TypeDef
 import ru.citeck.ecos.webapp.lib.model.type.registry.EcosTypesRegistry
 import java.time.Instant
 import java.time.ZoneId
@@ -58,6 +61,9 @@ class EcosEventsListener(
             I18nContext.RUSSIAN to "удалено",
             I18nContext.ENGLISH to "removed"
         )
+
+        private val HISTORY_CONFIG_REF = ModelUtils.getAspectRef("history-config");
+        private const val EXCLUDED_ATTS_ATT = "excludedAtts";
     }
 
     @PostConstruct
@@ -116,6 +122,8 @@ class EcosEventsListener(
                 val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
                 val typeAssocsId = recordTypeDef?.associations?.map { it.id }
 
+                val excludedAtts = getExcludedAtts(recordTypeDef)
+
                 val assocsList = event.assocs ?: emptyList()
                 val assocsId = event.assocs?.map { it.assocId } ?: emptyList()
 
@@ -124,7 +132,7 @@ class EcosEventsListener(
                         val typeAssocsById = recordTypeDef.associations.associateBy { it.id }
                         val typeAssoc = typeAssocsById[assoc.assocId]
 
-                        if (typeAssoc != null &&
+                        if (typeAssoc != null && !excludedAtts.contains(typeAssoc.attribute) &&
                             (
                                 typeAssoc.direction == AssocDef.Direction.BOTH ||
                                     typeAssoc.direction == AssocDef.Direction.TARGET
@@ -179,12 +187,23 @@ class EcosEventsListener(
                     }
                 }
 
-                event.changed.forEach { processChangedValue(it, false) }
                 val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
+                val excludedAtts = getExcludedAtts(recordTypeDef);
+
+                event.changed.forEach {
+                    if (!excludedAtts.contains(it.attId)) {
+                        processChangedValue(it, false)
+                    }
+                }
+
                 val typeAssocsById = recordTypeDef?.associations?.associateBy { it.id } ?: emptyMap()
 
                 for (assoc in event.assocs) {
                     val attDef = attsById[assoc.assocId] ?: continue
+                    if (excludedAtts.contains(attDef.id)) {
+                        continue
+                    }
+
                     val addedDisp = assoc.added.map { it.displayName }
                     val removedDisp = assoc.removed.map { it.displayName }
                     if (!attDef.multiple) {
@@ -458,6 +477,11 @@ class EcosEventsListener(
 
             events.add(Jsoup.parse(event).text())
         }
+    }
+
+    private fun getExcludedAtts(recordTypeDef: TypeDef?): List<String> {
+        val historyConfig = recordTypeDef?.aspects?.firstOrNull { HISTORY_CONFIG_REF == it.ref }?.config ?: ObjectData.create()
+        return historyConfig[EXCLUDED_ATTS_ATT].asStrList()
     }
 
     private fun formatTime(time: Instant): String {
