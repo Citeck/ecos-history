@@ -9,6 +9,7 @@ import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.graphql.meta.value.MetaField;
 import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDao;
 import ru.citeck.ecos.records2.source.dao.local.v2.LocalRecordsMetaDao;
+import ru.citeck.ecos.webapp.api.entity.EntityRef;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -34,12 +35,12 @@ public class FacadeRecords extends LocalRecordsDao implements LocalRecordsMetaDa
     }
 
     @Override
-    public List<FacadeRecordMeta> getLocalRecordsMeta(@NotNull List<RecordRef> records, @NotNull MetaField metaField) {
+    public List<FacadeRecordMeta> getLocalRecordsMeta(@NotNull List<EntityRef> records, @NotNull MetaField metaField) {
 
         List<FacadeRecordMeta> result = new ArrayList<>();
 
-        for (RecordRef recordRef : records) {
-            String id = recordRef.getId();
+        for (EntityRef entityRef : records) {
+            String id = entityRef.getLocalId();
             if (StringUtils.isBlank(id)) {
                 continue;
             }

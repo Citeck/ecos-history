@@ -1,0 +1,143 @@
+{
+  "id": "history-config-form",
+  "formKey": "",
+  "title": {
+    "en": "Форма конфигурации истории"
+  },
+  "description": {},
+  "customModule": "",
+  "typeRef": "",
+  "width": "",
+  "system": false,
+  "i18n": {},
+  "definition": {
+    "components": [
+      {
+        "scrollableContent": true,
+        "key": "panel2",
+        "type": "panel",
+        "input": false,
+        "components": [
+          {
+            "label": {
+              "ru": "Исключенные атрибуты"
+            },
+            "key": "excludedAtts",
+            "multiple": true,
+            "reorder": false,
+            "dataSrc": "custom",
+            "data": {
+              "custom": "const getAttrs = (form) => {\r\n    const parent = form.parentForm;\r\n    const attrs = _.get(parent, 'data.modelAttributes');\r\n\r\n    if (_.isUndefined(attrs) && parent) {\r\n      return getAttrs(parent);\r\n    }\r\n\r\n    return attrs;\r\n};\r\n\r\nvalues = (getAttrs(instance.root) || []).map(item => item.id);",
+              "headers": [
+                {}
+              ]
+            },
+            "defaultValue": "",
+            "optionalWhenDisabled": false,
+            "type": "ecosSelect",
+            "input": true
+          }
+        ]
+      },
+      {
+        "label": {
+          "ru": "Columns"
+        },
+        "key": "columns2",
+        "columns": [
+          {
+            "components": [
+              {
+                "label": "Cancel",
+                "action": "event",
+                "state": "",
+                "showValidations": false,
+                "event": "cancel",
+                "block": true,
+                "type": "button",
+                "input": true,
+                "key": "submit2",
+                "conditional": {
+                  "show": null,
+                  "when": null
+                }
+              }
+            ],
+            "type": "column",
+            "input": false,
+            "key": "column",
+            "label": "Column",
+            "md": 3,
+            "clearOnHide": true,
+            "conditional": {
+              "show": null,
+              "when": null
+            },
+            "index": 0
+          },
+          {
+            "components": [],
+            "type": "column",
+            "input": false,
+            "key": "column",
+            "label": "Column",
+            "clearOnHide": true,
+            "conditional": {
+              "show": null,
+              "when": null
+            },
+            "index": 1,
+            "md": 3
+          },
+          {
+            "md": 3,
+            "type": "column",
+            "input": false,
+            "key": "column",
+            "label": "Column",
+            "components": [],
+            "clearOnHide": true,
+            "conditional": {
+              "show": null,
+              "when": null
+            },
+            "index": 2
+          },
+          {
+            "md": 3,
+            "type": "column",
+            "input": false,
+            "key": "column",
+            "index": 3,
+            "components": [
+              {
+                "label": {
+                  "en": "Save",
+                  "ru": "Сохранить"
+                },
+                "key": "submit",
+                "state": "",
+                "theme": "primary",
+                "block": true,
+                "disableOnInvalid": true,
+                "refreshOn": [],
+                "optionalWhenDisabled": false,
+                "type": "button",
+                "input": true,
+                "headers": [
+                  {}
+                ]
+              }
+            ]
+          }
+        ],
+        "oneColumnInViewMode": false,
+        "type": "columns",
+        "input": false
+      }
+    ],
+    "formId": "history-config-form"
+  },
+  "attributes": {},
+  "notExists": false
+}

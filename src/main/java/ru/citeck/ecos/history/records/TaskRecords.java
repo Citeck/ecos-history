@@ -36,6 +36,7 @@ import ru.citeck.ecos.records2.source.dao.local.LocalRecordsDao;
 import ru.citeck.ecos.records2.source.dao.local.v2.LocalRecordsMetaDao;
 import ru.citeck.ecos.records2.source.dao.local.v2.LocalRecordsQueryWithMetaDao;
 import ru.citeck.ecos.records3.record.request.RequestContext;
+import ru.citeck.ecos.webapp.api.entity.EntityRef;
 
 import java.util.*;
 import java.util.stream.Collectors;
@@ -126,13 +127,13 @@ public class TaskRecords extends LocalRecordsDao implements
     }
 
     @Override
-    public List<MetaValue> getLocalRecordsMeta(@NotNull List<RecordRef> records, @NotNull MetaField metaField) {
+    public List<MetaValue> getLocalRecordsMeta(@NotNull List<EntityRef> records, @NotNull MetaField metaField) {
 
         if (CollectionUtils.isEmpty(records)) {
             return Collections.emptyList();
         }
 
-        List<String> taskIds = records.stream().map(RecordRef::getId).collect(Collectors.toList());
+        List<String> taskIds = records.stream().map(EntityRef::getLocalId).collect(Collectors.toList());
         List<TaskRecordEntity> entities = taskRecordService.findTasksByTaskId(taskIds);
         return entities.stream().map(Task::new).collect(Collectors.toList());
     }
@@ -331,8 +332,8 @@ public class TaskRecords extends LocalRecordsDao implements
     @Data
     private static class ContextData {
         private Map<String, String> attributesToRequest;
-        private Set<RecordRef> taskRefs;
-        private Map<RecordRef, RecordMeta> result;
+        private Set<EntityRef> taskRefs;
+        private Map<EntityRef, RecordMeta> result;
     }
 
     private void printWarnRemoteAttributeAccess(String attr, String schema, TaskRecordEntity entity) {
