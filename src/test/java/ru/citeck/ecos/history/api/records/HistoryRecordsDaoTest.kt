@@ -1,6 +1,7 @@
 package ru.citeck.ecos.history.api.records
 
 import org.assertj.core.api.Assertions.assertThat
+import org.junit.jupiter.api.AfterEach
 import org.junit.jupiter.api.BeforeEach
 import org.junit.jupiter.api.Test
 import org.junit.jupiter.api.extension.ExtendWith
@@ -24,6 +25,11 @@ class HistoryRecordsDaoTest {
 
     @BeforeEach
     fun beforeEach() {
+        repo.deleteAll()
+    }
+
+    @AfterEach
+    fun afterEach() {
         repo.deleteAll()
     }
 

@@ -62,8 +62,8 @@ class EcosEventsListener(
             I18nContext.ENGLISH to "removed"
         )
 
-        private val HISTORY_CONFIG_REF = ModelUtils.getAspectRef("history-config");
-        private const val EXCLUDED_ATTS_ATT = "excludedAtts";
+        private val HISTORY_CONFIG_REF = ModelUtils.getAspectRef("history-config")
+        private const val EXCLUDED_ATTS_ATT = "excludedAtts"
     }
 
     @PostConstruct
@@ -188,7 +188,7 @@ class EcosEventsListener(
                 }
 
                 val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
-                val excludedAtts = getExcludedAtts(recordTypeDef);
+                val excludedAtts = getExcludedAtts(recordTypeDef)
 
                 event.changed.forEach {
                     if (!excludedAtts.contains(it.attId)) {
@@ -393,10 +393,10 @@ class EcosEventsListener(
             value is Map<*, *> && value.isEmpty() ||
             value is String && value.isEmpty() ||
             value is DataValue && (
-            value.isNull() ||
-                ((value.isArray() || value.isObject()) && value.size() == 0) ||
-                value.isTextual() && value.asText().isEmpty()
-            )
+                value.isNull() ||
+                    ((value.isArray() || value.isObject()) && value.size() == 0) ||
+                    value.isTextual() && value.asText().isEmpty()
+                )
     }
 
     private fun convertArraysToObjects(value: DataValue): DataValue {

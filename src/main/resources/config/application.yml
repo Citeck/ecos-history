@@ -9,6 +9,10 @@ ecos:
         url: jdbc:postgresql://localhost:14523/ecos_history
         username: history
         password: historypassword
+      main-xa-aware:
+        url: jdbc:postgresql://localhost:14523/ecos_history
+        username: history
+        password: historypassword
 
 spring:
   data:
