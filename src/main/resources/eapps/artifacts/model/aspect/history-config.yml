@@ -5,10 +5,3 @@ name:
   en: History config
 prefix: ''
 configFormRef: uiserv/form@history-config-form
-attributes:
-  - id: excludedAtts
-    name:
-      ru: Исключенные атрибуты
-      en: Excluded attributes
-    type: TEXT
-    multiple: true

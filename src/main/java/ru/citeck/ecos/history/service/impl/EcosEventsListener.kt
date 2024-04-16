@@ -5,7 +5,6 @@ import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
-import ru.citeck.ecos.commons.data.ObjectData
 import ru.citeck.ecos.context.lib.i18n.I18nContext
 import ru.citeck.ecos.data.sql.records.DbRecordsUtils
 import ru.citeck.ecos.events2.EventsService
@@ -63,7 +62,6 @@ class EcosEventsListener(
         )
 
         private val HISTORY_CONFIG_REF = ModelUtils.getAspectRef("history-config")
-        private const val EXCLUDED_ATTS_ATT = "excludedAtts"
     }
 
     @PostConstruct
@@ -78,15 +76,21 @@ class EcosEventsListener(
             ).toString()
         }
 
-        val excludeBpmnElementsOptimizationPredicate = Predicates.notEq(
-            "record._type?id",
-            "${AppName.EMODEL}/type@bpmn-process-element"
+        val allListenersFilter = Predicates.and(
+            Predicates.notEq(
+                "record._type?id",
+                "${AppName.EMODEL}/type@bpmn-process-element"
+            ),
+            Predicates.notEq(
+                "record._type.aspectById.${HISTORY_CONFIG_REF.getLocalId()}.config.disableHistory?bool",
+                true
+            )
         )
 
         eventsService.addListener<StatusChanged> {
             withEventType(RecordStatusChangedEvent.TYPE)
             withDataClass(StatusChanged::class.java)
-            withFilter(excludeBpmnElementsOptimizationPredicate)
+            withFilter(allListenersFilter)
             withAction { event ->
 
                 val record = hashMapOf<String, String>()
@@ -108,7 +112,7 @@ class EcosEventsListener(
         eventsService.addListener<RecordCreated> {
             withEventType(RecordCreatedEvent.TYPE)
             withDataClass(RecordCreated::class.java)
-            withFilter(excludeBpmnElementsOptimizationPredicate)
+            withFilter(allListenersFilter)
             withAction { event ->
 
                 val record = hashMapOf<String, String>()
@@ -122,7 +126,8 @@ class EcosEventsListener(
                 val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
                 val typeAssocsId = recordTypeDef?.associations?.map { it.id }
 
-                val excludedAtts = getExcludedAtts(recordTypeDef)
+                val historyConfig = getHistoryConfig(recordTypeDef)
+                val excludedAtts = historyConfig.excludedAtts
 
                 val assocsList = event.assocs ?: emptyList()
                 val assocsId = event.assocs?.map { it.assocId } ?: emptyList()
@@ -153,116 +158,147 @@ class EcosEventsListener(
                 }
 
                 historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
+
+                if (historyConfig.onCreationHistoricalAtts.isNotEmpty()) {
+
+                    val assocsDiff = ArrayList<AssocDiff>()
+
+                    val eventAssocsById = event.assocs?.associateBy { it.assocId } ?: emptyMap()
+                    for (att in historyConfig.onCreationHistoricalAtts) {
+                        val assoc = eventAssocsById[att]
+                        if (assoc != null && assoc.added.isNotEmpty()) {
+                            assocsDiff.add(AssocDiff(att, assoc.child, assoc.added, emptyList()))
+                        }
+                    }
+                    if (assocsDiff.isNotEmpty()) {
+                        processRecUpdatedEvent(
+                            RecordUpdated(
+                                event.version,
+                                event.record,
+                                event.recordTypeId,
+                                event.recordDispML,
+                                event.time,
+                                event.user,
+                                emptyList(),
+                                assocsDiff,
+                                event.typeAtts
+                            )
+                        )
+                    }
+                }
             }
         }
 
         eventsService.addListener<RecordUpdated> {
             withEventType(RecordChangedEvent.TYPE)
             withDataClass(RecordUpdated::class.java)
-            withFilter(excludeBpmnElementsOptimizationPredicate)
-            withAction { event ->
+            withFilter(allListenersFilter)
+            withAction { processRecUpdatedEvent(it) }
+        }
+    }
 
-                val record = hashMapOf<String, String>()
+    private fun processRecUpdatedEvent(event: RecordUpdated) {
 
-                record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
-                record[HistoryRecordService.EVENT_TYPE] = HistoryEventType.NODE_UPDATED.value
-                record[HistoryRecordService.USER_ID] = event.user
-                record[HistoryRecordService.USERNAME] = event.user
-                record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
-                if (event.version != null) {
-                    record[HistoryRecordService.VERSION] = event.version
+        val record = hashMapOf<String, String>()
+
+        record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
+        record[HistoryRecordService.EVENT_TYPE] = HistoryEventType.NODE_UPDATED.value
+        record[HistoryRecordService.USER_ID] = event.user
+        record[HistoryRecordService.USERNAME] = event.user
+        record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
+        if (event.version != null) {
+            record[HistoryRecordService.VERSION] = event.version
+        }
+
+        val attsById = event.typeAtts.associateBy { it.id }
+
+        fun processChangedValue(changed: ChangedValue, allowAssocs: Boolean) {
+            val attDef = attsById[changed.attId] ?: return
+            if (!allowAssocs && DbRecordsUtils.isAssocLikeAttribute(attDef)) {
+                return
+            }
+            val comments = getCommentsForChangedValue(changed, attDef)
+            for (comment in comments) {
+                record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
+                historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
+            }
+        }
+
+        val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
+        val historyConfig = getHistoryConfig(recordTypeDef)
+        val excludedAtts = historyConfig.excludedAtts
+
+        event.changed.forEach {
+            if (!excludedAtts.contains(it.attId)) {
+                processChangedValue(it, false)
+            }
+        }
+
+        val typeAssocsById = recordTypeDef?.associations?.associateBy { it.id } ?: emptyMap()
+
+        for (assoc in event.assocs) {
+            val attDef = attsById[assoc.assocId] ?: continue
+            if (excludedAtts.contains(attDef.id)) {
+                continue
+            }
+
+            val addedDisp = assoc.added.map { it.displayName }
+            val removedDisp = assoc.removed.map { it.displayName }
+            if (!attDef.multiple) {
+                processChangedValue(ChangedValue(assoc.assocId, removedDisp, addedDisp), true)
+            } else {
+
+                val fieldName = LOCALES.associateWith { attDef.name.getClosest(it) }
+
+                if (addedDisp.isNotEmpty()) {
+                    val comment = MLText(
+                        fieldName.mapValues {
+                            "${it.value}: ${ADD_ACTION_TITLE.getClosestValue(it.key)} " +
+                                addedDisp.joinToString(", ")
+                        }
+                    ).toString()
+
+                    record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
+                    historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
                 }
+                if (removedDisp.isNotEmpty()) {
+                    val comment = MLText(
+                        fieldName.mapValues {
+                            "${it.value}: ${REMOVE_ACTION_TITLE.getClosestValue(it.key)} " +
+                                addedDisp.joinToString(", ")
+                        }
+                    ).toString()
 
-                val attsById = event.typeAtts.associateBy { it.id }
-
-                fun processChangedValue(changed: ChangedValue, allowAssocs: Boolean) {
-                    val attDef = attsById[changed.attId] ?: return
-                    if (!allowAssocs && DbRecordsUtils.isAssocLikeAttribute(attDef)) {
-                        return
-                    }
-                    val comments = getCommentsForChangedValue(changed, attDef)
-                    for (comment in comments) {
-                        record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
-                        historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
-                    }
+                    record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
+                    historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
                 }
-
-                val recordTypeDef = typesRegistry.getValue(event.recordTypeId)
-                val excludedAtts = getExcludedAtts(recordTypeDef)
-
-                event.changed.forEach {
-                    if (!excludedAtts.contains(it.attId)) {
-                        processChangedValue(it, false)
-                    }
+            }
+            val typeAssoc = typeAssocsById[assoc.assocId]
+            if (typeAssoc != null &&
+                (
+                    typeAssoc.direction == AssocDef.Direction.BOTH ||
+                        typeAssoc.direction == AssocDef.Direction.TARGET
+                    )
+            ) {
+                assoc.added.forEach {
+                    storeSourceAssocHistoryEvent(
+                        event.user,
+                        event.time,
+                        event.recordDispML,
+                        it,
+                        typeAssoc,
+                        true
+                    )
                 }
-
-                val typeAssocsById = recordTypeDef?.associations?.associateBy { it.id } ?: emptyMap()
-
-                for (assoc in event.assocs) {
-                    val attDef = attsById[assoc.assocId] ?: continue
-                    if (excludedAtts.contains(attDef.id)) {
-                        continue
-                    }
-
-                    val addedDisp = assoc.added.map { it.displayName }
-                    val removedDisp = assoc.removed.map { it.displayName }
-                    if (!attDef.multiple) {
-                        processChangedValue(ChangedValue(assoc.assocId, removedDisp, addedDisp), true)
-                    } else {
-
-                        val fieldName = LOCALES.associateWith { attDef.name.getClosest(it) }
-
-                        if (addedDisp.isNotEmpty()) {
-                            val comment = MLText(
-                                fieldName.mapValues {
-                                    "${it.value}: ${ADD_ACTION_TITLE.getClosestValue(it.key)} " +
-                                        addedDisp.joinToString(", ")
-                                }
-                            ).toString()
-
-                            record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
-                            historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
-                        }
-                        if (removedDisp.isNotEmpty()) {
-                            val comment = MLText(
-                                fieldName.mapValues {
-                                    "${it.value}: ${REMOVE_ACTION_TITLE.getClosestValue(it.key)} " +
-                                        addedDisp.joinToString(", ")
-                                }
-                            ).toString()
-
-                            record[HistoryRecordService.COMMENTS] = Jsoup.parse(comment).text()
-                            historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
-                        }
-                    }
-                    val typeAssoc = typeAssocsById[assoc.assocId]
-                    if (typeAssoc != null &&
-                        (
-                            typeAssoc.direction == AssocDef.Direction.BOTH ||
-                                typeAssoc.direction == AssocDef.Direction.TARGET
-                            )
-                    ) {
-                        assoc.added.forEach {
-                            storeSourceAssocHistoryEvent(
-                                event.user,
-                                event.time,
-                                event.recordDispML,
-                                it,
-                                typeAssoc,
-                                true
-                            )
-                        }
-                        assoc.removed.forEach {
-                            storeSourceAssocHistoryEvent(
-                                event.user,
-                                event.time,
-                                event.recordDispML,
-                                it,
-                                typeAssoc,
-                                false
-                            )
-                        }
-                    }
+                assoc.removed.forEach {
+                    storeSourceAssocHistoryEvent(
+                        event.user,
+                        event.time,
+                        event.recordDispML,
+                        it,
+                        typeAssoc,
+                        false
+                    )
                 }
             }
         }
@@ -479,14 +515,22 @@ class EcosEventsListener(
         }
     }
 
-    private fun getExcludedAtts(recordTypeDef: TypeDef?): List<String> {
-        val historyConfig = recordTypeDef?.aspects?.firstOrNull { HISTORY_CONFIG_REF == it.ref }?.config ?: ObjectData.create()
-        return historyConfig[EXCLUDED_ATTS_ATT].asStrList()
+    private fun getHistoryConfig(typeDef: TypeDef?): HistoryConfig {
+        val configData = typeDef?.aspects?.find { HISTORY_CONFIG_REF == it.ref }?.config
+        if (configData == null || configData.isEmpty()) {
+            return HistoryConfig()
+        }
+        return configData.getAsNotNull(HistoryConfig::class.java)
     }
 
     private fun formatTime(time: Instant): String {
         return HistoryRecordServiceImpl.dateFormat.format(Date.from(time))
     }
+
+    class HistoryConfig(
+        val excludedAtts: Set<String> = emptySet(),
+        val onCreationHistoricalAtts: Set<String> = emptySet()
+    )
 
     data class RecordUpdated(
         @AttName("record.version:version")
@@ -538,6 +582,8 @@ class EcosEventsListener(
     )
 
     data class RecordCreated(
+        @AttName("record.version:version")
+        val version: String?,
         @AttName("record?id")
         val record: RecordRef,
         @AttName("\$event.time")
@@ -549,12 +595,16 @@ class EcosEventsListener(
         @AttName("record._type?localId!")
         val recordTypeId: String,
         @AttName("record._disp?json")
-        val recordDispML: MLText
+        val recordDispML: MLText,
+        @AttName("typeDef.model.attributes[]?json")
+        val typeAtts: List<AttributeDef>
     )
 
     data class AssocInfo(
         val added: List<AssocTargetAtts>,
         val assocId: String,
+        @AttName("child?bool!")
+        val child: Boolean,
         @AttName("def.name?json")
         val name: MLText
     )

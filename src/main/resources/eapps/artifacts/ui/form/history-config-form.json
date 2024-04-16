@@ -2,7 +2,8 @@
   "id": "history-config-form",
   "formKey": "",
   "title": {
-    "en": "Форма конфигурации истории"
+    "ru": "Форма конфигурации истории",
+    "en": "History config form"
   },
   "description": {},
   "customModule": "",
@@ -20,22 +21,71 @@
         "components": [
           {
             "label": {
-              "ru": "Исключенные атрибуты"
+              "ru": "Отключить историю",
+              "en": "Disable history"
             },
-            "key": "excludedAtts",
-            "multiple": true,
-            "reorder": false,
-            "dataSrc": "custom",
-            "data": {
-              "custom": "const getAttrs = (form) => {\r\n    const parent = form.parentForm;\r\n    const attrs = _.get(parent, 'data.modelAttributes');\r\n\r\n    if (_.isUndefined(attrs) && parent) {\r\n      return getAttrs(parent);\r\n    }\r\n\r\n    return attrs;\r\n};\r\n\r\nvalues = (getAttrs(instance.root) || []).map(item => item.id);",
-              "headers": [
-                {}
-              ]
-            },
-            "defaultValue": "",
+            "key": "disableHistory",
+            "refreshOn": [],
             "optionalWhenDisabled": false,
-            "type": "ecosSelect",
+            "type": "checkbox",
             "input": true
+          },
+          {
+            "label": {
+              "ru": "Panel"
+            },
+            "key": "settings",
+            "refreshOn": [],
+            "optionalWhenDisabled": false,
+            "conditional": {
+              "show": "false",
+              "when": "disableHistory",
+              "eq": "true"
+            },
+            "type": "panel",
+            "input": false,
+            "components": [
+              {
+                "label": {
+                  "ru": "Исключенные атрибуты",
+                  "en": "Excluded attributes"
+                },
+                "key": "excludedAtts",
+                "multiple": true,
+                "reorder": false,
+                "dataSrc": "custom",
+                "data": {
+                  "custom": "const typeAtts = _.get(instance, 'root.parentForm.data.attributesOptions.attributes', []);\n\nif (typeAtts.length) {\n    values = typeAtts;\n} else {\n    //legacy solution. will be removed in future releases\n    const getAttrs = (form) => {\n        const parent = form.parentForm;\n\n        const attrs = _.get(parent, 'data.modelAttributes');\n\n        if (_.isUndefined(attrs) && parent) {\n            return getAttrs(parent);\n        }\n\n        return attrs;\n    };\n\n    values = (getAttrs(instance.root) || []).map(item => item.id);\n}",
+                  "headers": [
+                    {}
+                  ]
+                },
+                "defaultValue": "",
+                "optionalWhenDisabled": false,
+                "type": "ecosSelect",
+                "input": true
+              },
+              {
+                "label": {
+                  "ru": "Атрибуты для записи истории при создании",
+                  "en": "Attributes to record history on creation"
+                },
+                "key": "onCreationHistoricalAtts",
+                "multiple": true,
+                "reorder": false,
+                "dataSrc": "custom",
+                "data": {
+                  "custom": "const typeAtts = _.get(instance, 'root.parentForm.data.attributesOptions.attributes', []);\n\nif (typeAtts.length) {\n    values = typeAtts;\n} else {\n    //legacy solution. will be removed in future releases\n    const getAttrs = (form) => {\n        const parent = form.parentForm;\n\n        const attrs = _.get(parent, 'data.modelAttributes');\n\n        if (_.isUndefined(attrs) && parent) {\n            return getAttrs(parent);\n        }\n\n        return attrs;\n    };\n\n    values = (getAttrs(instance.root) || []).map(item => item.id);\n}",
+                  "headers": [
+                    {}
+                  ]
+                },
+                "defaultValue": "",
+                "optionalWhenDisabled": false,
+                "type": "ecosSelect",
+                "input": true
+              }
+            ]
           }
         ]
       },
