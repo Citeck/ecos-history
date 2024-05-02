@@ -3,4 +3,6 @@
 
 <configuration>
     <include resource="ecos/logback-base.xml" />
+
+    <logger name="ru.citeck.ecos.history.service.impl.HistoryRecordServiceImpl" level="WARN" />
 </configuration>
