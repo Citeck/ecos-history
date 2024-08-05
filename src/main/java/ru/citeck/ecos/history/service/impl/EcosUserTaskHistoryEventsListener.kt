@@ -1,6 +1,6 @@
 package ru.citeck.ecos.history.service.impl
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.commons.json.Json
@@ -9,8 +9,8 @@ import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.dto.TaskRole
 import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
-import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
+import ru.citeck.ecos.webapp.api.entity.EntityRef
 import java.time.Instant
 import java.util.*
 
@@ -135,12 +135,12 @@ class EcosUserTaskHistoryEventsListener(
 }
 
 data class UserTaskEvent(
-    var taskId: RecordRef,
+    var taskId: EntityRef,
     var assignee: String? = null,
     var completedOnBehalfOf: String? = null,
 
-    var procInstanceId: RecordRef,
-    var form: RecordRef? = null,
+    var procInstanceId: EntityRef,
+    var form: EntityRef? = null,
 
     var name: MLText,
     var comment: String? = null,
@@ -150,10 +150,10 @@ data class UserTaskEvent(
     @AttName("document.version")
     var version: String? = null,
 
-    var document: RecordRef,
+    var document: EntityRef,
 
     @AttName("document._type?id")
-    var documentTypeRef: RecordRef? = null,
+    var documentTypeRef: EntityRef? = null,
 
     var roles: List<TaskRole> = emptyList(),
 

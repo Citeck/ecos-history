@@ -1,18 +1,17 @@
 package ru.citeck.ecos.history.api.records
 
-import com.netflix.discovery.EurekaClient
+import io.github.oshai.kotlinlogging.KotlinLogging
 import lombok.extern.slf4j.Slf4j
-import mu.KotlinLogging
 import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.data.domain.Sort
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.commons.json.Json
+import ru.citeck.ecos.context.lib.i18n.I18nContext
 import ru.citeck.ecos.history.dto.HistoryRecordDto
 import ru.citeck.ecos.history.dto.TaskRole
 import ru.citeck.ecos.history.service.HistoryRecordService
-import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records2.predicate.PredicateService
 import ru.citeck.ecos.records2.predicate.PredicateUtils
 import ru.citeck.ecos.records2.predicate.model.AttributePredicate
@@ -29,7 +28,7 @@ import ru.citeck.ecos.records3.record.dao.query.RecordsQueryDao
 import ru.citeck.ecos.records3.record.dao.query.dto.query.RecordsQuery
 import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy
 import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes
-import ru.citeck.ecos.records3.record.request.RequestContext
+import ru.citeck.ecos.webapp.api.apps.EcosRemoteWebAppsApi
 import ru.citeck.ecos.webapp.api.constants.AppName
 import ru.citeck.ecos.webapp.api.entity.EntityRef
 import java.time.Instant
@@ -66,8 +65,8 @@ class HistoryRecordRecordsDao(
         )
     }
 
-    @Autowired(required = false)
-    private var eurekaClient: EurekaClient? = null
+    @Autowired
+    private lateinit var remoteApps: EcosRemoteWebAppsApi
 
     override fun getRecToMutate(recordId: String): HistoryRecordDto {
         val historyRecord = historyRecordService.getHistoryRecordByEventId(recordId)
@@ -153,7 +152,7 @@ class HistoryRecordRecordsDao(
 
     private fun fillTaskOutcomeNames(historyRecords: List<HistoryRecordDto>) {
 
-        if (eurekaClient?.getApplication(APP_NAME_ALFRESCO) == null) {
+        if (!remoteApps.isAppAvailable(APP_NAME_ALFRESCO)) {
             return
         }
 
@@ -198,21 +197,24 @@ class HistoryRecordRecordsDao(
 
     private fun getEventsFromAlfresco(predicate: Predicate): List<HistoryRecordDto> {
 
-        if (eurekaClient?.getApplication(APP_NAME_ALFRESCO) == null) {
+        if (!remoteApps.isAppAvailable(APP_NAME_ALFRESCO)) {
             return emptyList()
         }
 
         val predicateDto = PredicateUtils.convertToDto(predicate, PredicateDto::class.java, true)
         val document = predicateDto.document
 
-        if (document == null || RecordRef.isEmpty(document) || ALF_REF_PREFIXES.none { document.id.startsWith(it) }) {
+        if (document == null || EntityRef.isEmpty(document) || ALF_REF_PREFIXES.none {
+                document.getLocalId().startsWith(it)
+            }
+        ) {
             return emptyList()
         }
 
         val records = recordsService.query(
             RecordsQuery.create {
                 withSourceId(HISTORY_ALF_SOURCE_ID)
-                withQuery(AlfHistoryQuery(true, document.id))
+                withQuery(AlfHistoryQuery(true, document.getLocalId()))
                 withLanguage(AlfHistoryQuery.LANG)
             },
             AlfHistoryRecordAtts::class.java
@@ -233,7 +235,7 @@ class HistoryRecordRecordsDao(
             historyRecDto.taskTitle = record.taskTitle
             historyRecDto.taskRole = record.taskRole
             historyRecDto.taskOutcomeName = record.taskOutcomeName
-            historyRecDto.documentId = document.id
+            historyRecDto.documentId = document.getLocalId()
             result.add(historyRecDto)
         }
 
@@ -343,12 +345,12 @@ class HistoryRecordRecordsDao(
             return dto.creationTime?.let { Instant.ofEpochMilli(it) }
         }
 
-        fun getDocument(): RecordRef {
-            val docId = dto.documentId ?: return RecordRef.EMPTY
-            var ref = RecordRef.valueOf(docId)
-            if (ref.appName.isBlank()) {
+        fun getDocument(): EntityRef {
+            val docId = dto.documentId ?: return EntityRef.EMPTY
+            var ref = EntityRef.valueOf(docId)
+            if (ref.getAppName().isBlank()) {
                 ref = ref.withAppName("alfresco")
-                    .withId("workspace://SpacesStore/${ref.id}")
+                    .withLocalId("workspace://SpacesStore/${ref.getLocalId()}")
             }
             return ref
         }
@@ -394,7 +396,7 @@ class HistoryRecordRecordsDao(
 
         fun getDisplayName(): String {
             return try {
-                val result = getBundle(RequestContext.getLocale()).getString(id)
+                val result = getBundle(I18nContext.getLocale()).getString(id)
                 result ?: id
             } catch (e: Exception) {
                 id
@@ -417,7 +419,7 @@ class HistoryRecordRecordsDao(
     }
 
     data class PredicateDto(
-        var document: RecordRef? = null,
+        var document: EntityRef? = null,
         var eventType: Set<String>? = null
     )
 

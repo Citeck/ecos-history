@@ -1,6 +1,6 @@
 package ru.citeck.ecos.history.service.impl
 
-import mu.KotlinLogging
+import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.context.lib.i18n.I18nContext
@@ -8,8 +8,8 @@ import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
-import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
+import ru.citeck.ecos.webapp.api.entity.EntityRef
 import java.time.Instant
 import java.util.*
 import kotlin.collections.HashMap
@@ -146,7 +146,7 @@ class ProcDefHistoryEventsListener(
 }
 
 data class ProcDefEvent(
-    val procDefRef: RecordRef,
+    val procDefRef: EntityRef,
     val version: Double,
     val createdFromVersion: Double = 0.0,
     val dataState: String? = null,

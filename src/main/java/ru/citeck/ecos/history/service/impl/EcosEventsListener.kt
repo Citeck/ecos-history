@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history.service.impl
 
+import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.time.FastDateFormat
 import org.jsoup.Jsoup
 import org.springframework.stereotype.Component
@@ -17,7 +18,6 @@ import ru.citeck.ecos.history.service.HistoryRecordService
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeDef
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeType
 import ru.citeck.ecos.model.lib.utils.ModelUtils
-import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records2.predicate.model.Predicates
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
 import ru.citeck.ecos.webapp.api.constants.AppName
@@ -28,7 +28,6 @@ import ru.citeck.ecos.webapp.lib.model.type.registry.EcosTypesRegistry
 import java.time.Instant
 import java.time.ZoneId
 import java.util.*
-import javax.annotation.PostConstruct
 
 @Component
 class EcosEventsListener(
@@ -536,7 +535,7 @@ class EcosEventsListener(
         @AttName("record.version:version")
         val version: String?,
         @AttName("record?id")
-        val record: RecordRef,
+        val record: EntityRef,
         @AttName("record._type?localId!")
         val recordTypeId: String,
         @AttName("record._disp?json")
@@ -585,7 +584,7 @@ class EcosEventsListener(
         @AttName("record.version:version")
         val version: String?,
         @AttName("record?id")
-        val record: RecordRef,
+        val record: EntityRef,
         @AttName("\$event.time")
         val time: Instant,
         @AttName("\$event.user")
@@ -611,7 +610,7 @@ class EcosEventsListener(
 
     data class StatusChanged(
         @AttName("record?id")
-        val record: RecordRef,
+        val record: EntityRef,
         val before: StatusValue,
         val after: StatusValue,
         @AttName("\$event.time")

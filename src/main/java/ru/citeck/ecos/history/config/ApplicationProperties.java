@@ -17,7 +17,6 @@ import java.util.Map;
 public class ApplicationProperties {
 
     private final Recover recover = new Recover();
-    private final Event event = new Event();
     private final Alfresco alfresco = new Alfresco();
 
     // legacy properties. Should not be used
@@ -28,16 +27,6 @@ public class ApplicationProperties {
     /* ====================================*/
 
     private boolean deferredActorsJobEnabled;
-
-    @Getter
-    @Setter
-    public static class Event {
-
-        private String host = HistoryDefault.Event.HOST;
-        private int port = HistoryDefault.Event.PORT;
-        private String username = HistoryDefault.Event.USERNAME;
-        private String password = HistoryDefault.Event.PASSWORD;
-    }
 
     @Getter
     @Setter

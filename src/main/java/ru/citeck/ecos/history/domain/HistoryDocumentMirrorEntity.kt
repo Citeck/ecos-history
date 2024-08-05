@@ -1,7 +1,7 @@
 package ru.citeck.ecos.history.domain
 
+import jakarta.persistence.*
 import java.io.Serializable
-import javax.persistence.*
 
 @Entity
 @Table(name = "history_document_mirror")

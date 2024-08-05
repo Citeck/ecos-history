@@ -26,9 +26,7 @@ import ru.citeck.ecos.history.dto.HistoryRecordDtoPage;
 import ru.citeck.ecos.history.repository.HistoryDocumentMirrorRepo;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
-import ru.citeck.ecos.history.service.TaskRecordService;
 import org.apache.commons.lang3.StringUtils;
-import ru.citeck.ecos.records2.RecordRef;
 import ru.citeck.ecos.records2.predicate.PredicateUtils;
 import ru.citeck.ecos.records2.predicate.model.AndPredicate;
 import ru.citeck.ecos.records2.predicate.model.ComposedPredicate;
@@ -37,7 +35,7 @@ import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
 import ru.citeck.ecos.webapp.api.constants.AppName;
 import ru.citeck.ecos.webapp.api.entity.EntityRef;
 
-import javax.annotation.PostConstruct;
+import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
@@ -62,7 +60,6 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     private final HistoryRecordRepository historyRecordRepository;
-    private final TaskRecordService taskRecordService;
     private final HistoryDocumentMirrorRepo historyDocumentMirrorRepo;
     private final DbDomainFactory dbDomainFactory;
     private DbRecordRefService dbRecordRefService;
@@ -246,8 +243,6 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         }
 
         result = historyRecordRepository.save(result);
-
-        taskRecordService.handleTaskFromHistoryRecord(result, requestParams);
 
         return result;
     }
@@ -457,10 +452,10 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         Specification<HistoryRecordEntity> specification = null;
         if (ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType())
             || ValuePredicate.Type.LIKE.equals(valuePredicate.getType())) {
-            RecordRef recordRef = RecordRef.valueOf(valuePredicate.getValue().asText());
-            String tmpValue = RecordRef.isEmpty(recordRef) ?
+            EntityRef recordRef = EntityRef.valueOf(valuePredicate.getValue().asText());
+            String tmpValue = EntityRef.isEmpty(recordRef) ?
                 valuePredicate.getValue().asText() :
-                recordRef.getId();
+                recordRef.getLocalId();
             String attributeValue =
                 ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType()) ?
                     "%" + tmpValue.toLowerCase() + "%" :

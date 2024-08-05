@@ -1,4 +1,4 @@
-
+---
 server:
   port: 8086
 
@@ -10,23 +10,10 @@ ecos:
         username: history
         password: historypassword
       main-xa-aware:
-        url: jdbc:postgresql://localhost:14523/ecos_history
-        username: history
-        password: historypassword
-
-spring:
-  data:
-    mongodb:
-      uri: mongodb://localhost:27017
-      database: history
-  autoconfigure:
-    exclude:
-      - org.springframework.boot.autoconfigure.mongo.MongoAutoConfiguration
-      - org.springframework.boot.autoconfigure.data.mongo.MongoDataAutoConfiguration
-
-ecos-history:
-  recover:
-    scheduled: true
-    sourceFolder: /home/impi/history_record_csv/
-    errorsFolder: /home/impi/history_record_csv/errors/
-  deferred-actors-job-enabled: true
+        url: ${ecos.webapp.dataSources.main.url}
+        username: ${ecos.webapp.dataSources.main.username}
+        password: ${ecos.webapp.dataSources.main.password}
+    x509:
+      keys:
+        application:
+          location: classpath:ecos/x509/keys/application.key

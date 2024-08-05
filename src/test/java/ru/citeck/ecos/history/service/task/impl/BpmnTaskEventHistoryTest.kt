@@ -21,10 +21,10 @@ import ru.citeck.ecos.history.dto.TaskRole
 import ru.citeck.ecos.history.repository.HistoryRecordRepository
 import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.impl.*
-import ru.citeck.ecos.records2.RecordRef
 import ru.citeck.ecos.records2.source.dao.local.RecordsDaoBuilder
 import ru.citeck.ecos.records3.RecordsService
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
+import ru.citeck.ecos.webapp.api.entity.EntityRef
 import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension
 
 @ExtendWith(EcosSpringExtension::class)
@@ -50,11 +50,11 @@ class BpmnTaskEventHistoryTest {
 
     companion object {
         private val documentRecord = DocumentRecord()
-        private val documentRef = RecordRef.valueOf("data/doc@1")
+        private val documentRef = EntityRef.valueOf("data/doc@1")
 
-        private val taskRef = RecordRef.valueOf("proc/task@1")
-        private val procInstanceRef = RecordRef.valueOf("proc/procInstaceId@1")
-        private val formRef = RecordRef.valueOf("ui/form@task-form")
+        private val taskRef = EntityRef.valueOf("proc/task@1")
+        private val procInstanceRef = EntityRef.valueOf("proc/procInstaceId@1")
+        private val formRef = EntityRef.valueOf("ui/form@task-form")
         private val taskName = MLText(
             LocaleUtils.toLocale("en") to "Task name",
             LocaleUtils.toLocale("ru") to "Название задачи"
@@ -90,7 +90,7 @@ class BpmnTaskEventHistoryTest {
         recordsService.register(
             RecordsDaoBuilder.create("data/doc")
                 .addRecord(
-                    documentRef.id,
+                    documentRef.getLocalId(),
                     documentRecord
                 )
                 .build()
@@ -286,5 +286,5 @@ class DocumentRecord(
     val version: String = "1.0",
 
     @AttName("_type")
-    val type: RecordRef = RecordRef.valueOf("tp/type@document")
+    val type: EntityRef = EntityRef.valueOf("tp/type@document")
 )

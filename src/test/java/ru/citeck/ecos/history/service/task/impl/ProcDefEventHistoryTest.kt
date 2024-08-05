@@ -18,7 +18,7 @@ import ru.citeck.ecos.history.HistoryApp
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.repository.HistoryRecordRepository
 import ru.citeck.ecos.history.service.impl.*
-import ru.citeck.ecos.records2.RecordRef
+import ru.citeck.ecos.webapp.api.entity.EntityRef
 import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension
 
 @ExtendWith(EcosSpringExtension::class)
@@ -29,7 +29,7 @@ class ProcDefEventHistoryTest {
         private const val version = 3.0
         private const val runAsUser = "ivan"
 
-        private val procDefRef = RecordRef.valueOf("proc/procDef@1")
+        private val procDefRef = EntityRef.valueOf("proc/procDef@1")
     }
 
     @Value("\${spring.application.name}")

@@ -4,266 +4,240 @@ import lombok.SneakyThrows;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.boot.test.autoconfigure.web.servlet.AutoConfigureMockMvc;
 import org.springframework.boot.test.context.SpringBootTest;
 import org.springframework.test.annotation.DirtiesContext;
-import org.springframework.test.web.servlet.MockMvc;
-import org.springframework.test.web.servlet.ResultActions;
-import org.springframework.test.web.servlet.request.MockMvcRequestBuilders;
 import ru.citeck.ecos.commons.data.DataValue;
+import ru.citeck.ecos.commons.data.ObjectData;
 import ru.citeck.ecos.history.HistoryApp;
-import ru.citeck.ecos.history.TestUtil;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 import ru.citeck.ecos.records2.predicate.PredicateService;
+import ru.citeck.ecos.records2.predicate.model.Predicate;
+import ru.citeck.ecos.records2.predicate.model.Predicates;
+import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
+import ru.citeck.ecos.records3.RecordsService;
+import ru.citeck.ecos.records3.record.atts.dto.RecordAtts;
+import ru.citeck.ecos.records3.record.dao.query.dto.query.RecordsQuery;
+import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes;
+import ru.citeck.ecos.webapp.api.entity.EntityRef;
 import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
 
+import static org.assertj.core.api.AssertionsForClassTypes.assertThat;
 import static org.junit.jupiter.api.Assertions.assertEquals;
-import static org.springframework.test.web.servlet.result.MockMvcResultHandlers.print;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.jsonPath;
-import static org.springframework.test.web.servlet.result.MockMvcResultMatchers.status;
 
 @ExtendWith(EcosSpringExtension.class)
 @SpringBootTest(classes = HistoryApp.class)
-@AutoConfigureMockMvc
 @DirtiesContext(classMode = DirtiesContext.ClassMode.BEFORE_CLASS)
 public class HistoryRecordRecordsDaoTest {
 
-    static String QUERY = "query";
-    static String LANGUAGE = "language";
-    static String RECORDS = "records";
-    static String ATTRIBUTES = "attributes";
     static String STR = "?str";
 
     @Autowired
-    private MockMvc mockMvc;
+    private RecordsService recordsService;
     @Autowired
     private HistoryRecordService service;
     @Autowired
     private HistoryRecordConverter historyRecordConverter;
 
-    @Test
-    public void createHistoryRecord() throws Exception {
-        String jsonString = getJsonToSend(DataValue.createObj()
-            .set(RECORDS, DataValue.createArr().add(
-                DataValue.createObj()
-                    .set(HistoryRecordTestData.PROP_ID, HistoryRecordTestData.getEmptyId())
-                    .set(ATTRIBUTES, getHistoryRecordAttributes(HistoryRecordTestData.getTestHistoryRecord()))
-            )).toString());
-
-        final ResultActions resultActions =
-            mockMvc.perform(MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_MUTATE)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$." + RECORDS).isNotEmpty());
+    private boolean isRecExists(Object ref) {
+        return !recordsService.getAtt(EntityRef.valueOf(ref), "_notExists?bool").asBoolean();
     }
 
     @Test
-    public void queryEqualByUsername() throws Exception {
+    public void createHistoryRecord() {
+
+        EntityRef mutRes = recordsService.mutate(
+            HistoryRecordTestData.getEmptyId(),
+            getHistoryRecordAttributes(HistoryRecordTestData.getTestHistoryRecord())
+        );
+        assertThat(mutRes.isEmpty()).isFalse();
+        assertThat(isRecExists(HistoryRecordTestData.getEmptyId() + "test")).isFalse();
+        assertThat(isRecExists(mutRes)).isTrue();
+    }
+
+    @Test
+    public void queryEqualByUsername() {
+
         propagateTestHistoryRecord();
-        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.USERNAME,
-            HistoryRecordTestData.getTestHistoryRecord().getUsername(),
-            HistoryRecordTestData.PREDICATE_TYPE_EQUAL)));
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(1))
-            .andDo(print());
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.eq(
+                    HistoryRecordEntity.USERNAME,
+                    HistoryRecordTestData
+                        .getTestHistoryRecord()
+                        .getUsername())
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(1);
     }
 
     @Test
-    public void queryEqualByCreationTime() throws Exception {
+    public void queryEqualByCreationTime() {
+
         propagateTestHistoryRecord();
-        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.CREATION_TIME,
-            String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime()),
-            HistoryRecordTestData.PREDICATE_TYPE_EQUAL)));
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(1))
-            .andDo(print());
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.eq(
+                    HistoryRecordEntity.CREATION_TIME,
+                    HistoryRecordTestData
+                        .getTestHistoryRecord()
+                        .getCreationTime())
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(1);
     }
 
     @Test
-    public void queryGtByCreationTime() throws Exception {
-        List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
-        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.CREATION_TIME,
-            String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime()), //.PROP_CREATETIME_VALUE),
-            HistoryRecordTestData.PREDICATE_TYPE_GREATER_THAN)));
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(3))
-            .andDo(print());
+    public void queryGtByCreationTime() {
+        propagateTestHistoryRecord();
+
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.gt(
+                    HistoryRecordEntity.CREATION_TIME,
+                    HistoryRecordTestData.getTestHistoryRecord().getCreationTime()
+                )
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(3);
     }
 
     @Test
-    public void queryLtByCreationTime() throws Exception {
+    public void queryLtByCreationTime() {
+
         List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
         int last = entities.size() - 1;
-        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.CREATION_TIME,
-            String.valueOf(entities.get(last).getCreationTime().getTime()),
-            HistoryRecordTestData.PREDICATE_TYPE_LESS_THAN)));
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(3))
-            .andDo(print());
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                ValuePredicate.lt(
+                    HistoryRecordEntity.CREATION_TIME,
+                    String.valueOf(entities.get(last).getCreationTime().getTime())
+                )
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(3);
     }
 
     @Test
-    public void queryGtByUsernameAndCreationTime() throws Exception {
+    public void queryGtByUsernameAndCreationTime() {
+
         propagateTestHistoryRecord();
-        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
-            getPredicateJson(HistoryRecordEntity.USERNAME,
-                HistoryRecordTestData.ADMIN,
-                HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
-            getPredicateJson(HistoryRecordEntity.CREATION_TIME,
-                String.valueOf(HistoryRecordTestData.PROP_CREATETIME_VALUE),
-                HistoryRecordTestData.PREDICATE_TYPE_GREATER_THAN));
-        String jsonString = getJsonToSend(getQueryJson(composed));
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(3))
-            .andDo(print());
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.and(
+                    Predicates.eq(HistoryRecordEntity.USERNAME, HistoryRecordTestData.ADMIN),
+                    Predicates.gt(
+                        HistoryRecordEntity.CREATION_TIME,
+                        HistoryRecordTestData.PROP_CREATETIME_VALUE
+                    )
+                )
+
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(3);
     }
 
     @Test
-    public void queryOrByUsername() throws Exception {
+    public void queryOrByUsername() {
+
         propagateTestHistoryRecord();
-        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_OR,
-            getPredicateJson(HistoryRecordEntity.USERNAME,
-                HistoryRecordTestData.ADMIN,
-                HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
-            getPredicateJson(HistoryRecordEntity.USERNAME,
-                HistoryRecordTestData.getTestHistoryRecord().getUsername(),
-                HistoryRecordTestData.PREDICATE_TYPE_EQUAL));
-        String jsonString = getJsonToSend(getQueryJson(composed));
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(4))
-            .andDo(print());
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.or(
+                    Predicates.eq(HistoryRecordEntity.USERNAME, HistoryRecordTestData.ADMIN),
+                    Predicates.eq(
+                        HistoryRecordEntity.USERNAME,
+                        HistoryRecordTestData.getTestHistoryRecord().getUsername()
+                    )
+                )
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(4);
     }
 
     @Test
-    public void queryPeriodByCreationTime() throws Exception {
+    public void queryPeriodByCreationTime() {
+
         List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
-        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
-            getPredicateJson(HistoryRecordEntity.CREATION_TIME,
-                String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime()),
-                HistoryRecordTestData.PREDICATE_TYPE_GREATER_THAN),
-            getPredicateJson(HistoryRecordEntity.CREATION_TIME,
-                String.valueOf(entities.get(entities.size() - 1).getCreationTime().getTime()),
-                HistoryRecordTestData.PREDICATE_TYPE_LESS_THAN));
-        String jsonString = getJsonToSend(getQueryJson(composed));
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(2))
-            .andDo(print());
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.and(
+                    ValuePredicate.gt(HistoryRecordEntity.CREATION_TIME, String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime())),
+                    ValuePredicate.lt(HistoryRecordEntity.CREATION_TIME, String.valueOf(entities.get(entities.size() - 1).getCreationTime().getTime()))
+                )
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(2);
     }
 
     @Test
-    public void queryStartsByComment() throws Exception {
-        propagateTestHistoryRecord();
-        String jsonString = getJsonToSend(getQueryJson(getPredicateJson(HistoryRecordEntity.COMMENTS,
-            "Some",
-            HistoryRecordTestData.PREDICATE_TYPE_STARTS)));
+    public void queryStartsByComment() {
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(3))
-            .andDo(print());
+        propagateTestHistoryRecord();
+
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.like(HistoryRecordEntity.COMMENTS, "Some%")
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(3);
     }
 
     @Test
     public void queryEqualByUsernameAndEventType() throws Exception {
-        propagateTestHistoryRecord();
-        DataValue composed = getComposedPredicateJson(HistoryRecordTestData.PREDICATE_TYPE_AND,
-            getPredicateJson(HistoryRecordEntity.USERNAME,
-                HistoryRecordTestData.ADMIN,
-                HistoryRecordTestData.PREDICATE_TYPE_EQUAL),
-            getPredicateJson(HistoryRecordEntity.EVENT_TYPE,
-                HistoryRecordTestData.RECORD_CHANGED_EVENT_TYPE,
-                HistoryRecordTestData.PREDICATE_TYPE_EQUAL));
-        String jsonString = getJsonToSend(getQueryJson(composed));
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$.totalCount").value(3))
-            .andDo(print());
+        propagateTestHistoryRecord();
+
+        RecsQueryRes<EntityRef> result = recordsService.query(
+            getQuery(
+                Predicates.and(
+                    Predicates.eq(HistoryRecordEntity.USERNAME, HistoryRecordTestData.ADMIN),
+                    Predicates.eq(HistoryRecordEntity.EVENT_TYPE, HistoryRecordTestData.RECORD_CHANGED_EVENT_TYPE)
+                )
+            ).build()
+        );
+        assertThat(result.getRecords().size()).isEqualTo(3);
     }
 
     @Test
-    public void updateRecord() throws Exception {
+    public void updateRecord() {
+
         HistoryRecordEntity recordEntity = createTestHistoryRecord();
         String comment = "Updated test comment";
 
-        String jsonString = getJsonToSend(DataValue.createObj()
-            .set(RECORDS, DataValue.createArr().add(
-                DataValue.createObj().set(
-                    "id", HistoryRecordTestData.getEmptyId() + recordEntity.getId()
-                ).set(ATTRIBUTES, DataValue.createObj()
-                    .set("historyEventId", recordEntity.getId())
-                    .set("documentId", "test/doc@123")
-                    .set("creationTime", System.currentTimeMillis())
-                    .set("eventType", "created")
-                    .set("userId", "admin")
-                    .set("username", "admin")
-                    .set(HistoryRecordEntity.COMMENTS, comment))
-            )).toString());
+        RecordAtts toMutate = new RecordAtts(
+            EntityRef.valueOf(
+                HistoryRecordTestData.getEmptyId() + recordEntity.getId()
+            )
+        );
+        toMutate.setAttributes(ObjectData.create()
+            .set("historyEventId", recordEntity.getId())
+            .set("documentId", "test/doc@123")
+            .set("creationTime", System.currentTimeMillis())
+            .set("eventType", "created")
+            .set("userId", "admin")
+            .set("username", "admin")
+            .set(HistoryRecordEntity.COMMENTS, comment)
+        );
+        recordsService.mutate(toMutate);
 
-        ResultActions resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_MUTATE)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(jsonString));
-        resultActions.andExpect(status().isOk())
-            .andExpect(jsonPath("$." + RECORDS).isNotEmpty());
+        String recId = HistoryRecordTestData.getEmptyId() + recordEntity.getId();
+        DataValue attsToLoad = getAttributesJsonArray();
+        RecordAtts atts = recordsService.getAtts(recId, attsToLoad.toStrList());
 
-
-        resultActions = mockMvc.perform(
-            MockMvcRequestBuilders.post(TestUtil.URL_RECORDS_QUERY)
-                .contentType(TestUtil.APPLICATION_JSON_UTF8)
-                .content(queryTestHistoryRecordJson(recordEntity.getId())));
-        resultActions.andExpect(status().isOk())
-            .andDo(print())
-            .andExpect(jsonPath("$." + RECORDS).isNotEmpty())
-            .andExpect(jsonPath("$.." + HistoryRecordEntity.COMMENTS + STR).value(comment));
+        assertThat(atts.get(HistoryRecordEntity.COMMENTS + STR).asText()).isEqualTo(comment);
     }
 
     @SneakyThrows
@@ -290,43 +264,14 @@ public class HistoryRecordRecordsDaoTest {
         return entities;
     }
 
-    private static DataValue getPredicateJson(String attributeName, String attributeValue,
-                                              String precicateType) throws Exception {
-        return DataValue.createObj().set("att", attributeName)
-            .set(HistoryRecordTestData.PREDICATE_VAL, attributeValue)
-            .set(HistoryRecordTestData.PREDICATE_TYPE, precicateType);
+    private static RecordsQuery.Builder getQuery(Predicate predicate) {
+        return RecordsQuery.create()
+            .withSourceId(HistoryRecordRecordsDao.ID)
+            .withLanguage(PredicateService.LANGUAGE_PREDICATE)
+            .withQuery(predicate);
     }
 
-    private static DataValue getComposedPredicateJson(String precicateType, DataValue... predicates)
-        throws Exception {
-        DataValue jsonArray = DataValue.createArr();
-        for (DataValue predicate : predicates) {
-            jsonArray.add(predicate);
-        }
-        return DataValue.createObj().set(HistoryRecordTestData.PREDICATE_TYPE, precicateType)
-            .set(HistoryRecordTestData.PREDICATE_VAL, jsonArray);
-    }
-
-    private static String getQueryJson(DataValue predicate) throws Exception {
-        String jsonString = DataValue.createObj()
-            .set(QUERY,
-                DataValue.createObj().set("sourceId", HistoryRecordRecordsDao.ID)
-                    .set(LANGUAGE, PredicateService.LANGUAGE_PREDICATE)
-                    .set(QUERY, predicate)
-                    .set(ATTRIBUTES, getAttributesJsonArray()))
-            .toString();
-        return jsonString;
-    }
-
-    private static String queryTestHistoryRecordJson(Long localRecordId) throws Exception {
-        return getJsonToSend(DataValue.createObj()
-            .set(RECORDS, DataValue.createArr().add(HistoryRecordTestData.getEmptyId() +
-                (localRecordId != null ? localRecordId.toString() : "")))
-            .set(ATTRIBUTES, getAttributesJsonArray())
-            .toString());
-    }
-
-    private static DataValue getAttributesJsonArray() throws Exception {
+    private static DataValue getAttributesJsonArray() {
         return DataValue.createArr()
             .add(HistoryRecordTestData.PROP_ID + STR)
             .add(HistoryRecordEntity.USERNAME + STR)
@@ -339,9 +284,7 @@ public class HistoryRecordRecordsDaoTest {
     private DataValue getHistoryRecordAttributes(HistoryRecordDto dto) {
         Map<String, String> attrMap = historyRecordConverter.toMap(dto);
         DataValue result = DataValue.createObj();
-        attrMap.entrySet().forEach(entry -> {
-            result.set(entry.getKey(), entry.getValue());
-        });
+        attrMap.forEach(result::set);
         return result;
     }
 

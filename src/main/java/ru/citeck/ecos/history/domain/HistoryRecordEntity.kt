@@ -1,9 +1,9 @@
 package ru.citeck.ecos.history.domain
 
+import jakarta.persistence.*
 import lombok.Data
 import java.io.Serializable
 import java.util.*
-import javax.persistence.*
 
 @Data
 @Entity(name = HistoryRecordEntity.ENTITY_NAME)
