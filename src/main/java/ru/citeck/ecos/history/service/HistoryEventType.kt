@@ -8,5 +8,8 @@ enum class HistoryEventType(val value: String) {
     TASK_CREATED("task.created"),
     TASK_COMPLETE("task.complete"),
     TASK_DELETE("task.delete"),
-    TASK_ASSIGN("task.assign")
+    TASK_ASSIGN("task.assign"),
+    COMMENT_CREATED("comment.created"),
+    COMMENT_DELETED("comment.deleted"),
+    COMMENT_UPDATED("comment.updated"),
 }
