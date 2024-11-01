@@ -1,0 +1,34 @@
+---
+id: add-history-admin-menu-section
+name:
+  ru: Добавить раздел администратора history
+  en: Add history admin section
+
+target: 'ui/menu$admin-workspace-menu'
+system: true
+order: 900
+
+type: json
+config:
+  operations:
+    - op: add
+      path: '$.subMenu.left.items'
+      value:
+        id: history-section
+        label:
+          en: History
+          ru: История
+        hidden: false
+        type: SECTION
+        config: { }
+        items:
+          - id: history-records
+            label:
+              ru: История
+              en: History
+            icon: ui/icon@i-leftmenu-tools
+            hidden: false
+            type: JOURNAL
+            config:
+              recordRef: uiserv/journal@history-records
+
