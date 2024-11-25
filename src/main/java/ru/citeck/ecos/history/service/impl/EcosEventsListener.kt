@@ -567,7 +567,7 @@ class EcosEventsListener(
         val recordRef: EntityRef,
         @AttName("version:version")
         val version: String?,
-        @AttName("_disp?json")
+        @AttName("_disp?json!_type._disp?json!?localId")
         val dispML: MLText
     )
 
