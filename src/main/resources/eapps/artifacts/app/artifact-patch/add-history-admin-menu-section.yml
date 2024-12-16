@@ -26,7 +26,6 @@ config:
             label:
               ru: История
               en: History
-            icon: ui/icon@i-leftmenu-tools
             hidden: false
             type: JOURNAL
             config:
