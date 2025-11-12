@@ -11,7 +11,6 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.commons.json.Json
-import ru.citeck.ecos.context.lib.auth.AuthContext
 import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.events2.emitter.EmitterConfig
 import ru.citeck.ecos.events2.emitter.EventsEmitter
@@ -168,7 +167,7 @@ class BpmnTaskEventHistoryTest {
             form = formRef
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(runAsUser) {
             userTaskCreateEmitter.emit(event)
         }
 
@@ -194,7 +193,7 @@ class BpmnTaskEventHistoryTest {
             comment = comment
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(runAsUser) {
             userTaskCompleteEmitter.emit(event)
         }
 
@@ -222,7 +221,7 @@ class BpmnTaskEventHistoryTest {
             comment = comment
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(runAsUser) {
             userTaskDeleteEmitter.emit(event)
         }
 
@@ -247,7 +246,7 @@ class BpmnTaskEventHistoryTest {
             assignee = "petya"
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(runAsUser) {
             userTaskAssignEmitter.emit(event)
         }
 

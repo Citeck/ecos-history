@@ -9,7 +9,6 @@ import org.springframework.beans.factory.annotation.Autowired
 import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import ru.citeck.ecos.commons.data.MLText
-import ru.citeck.ecos.context.lib.auth.AuthContext
 import ru.citeck.ecos.context.lib.i18n.I18nContext
 import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.events2.emitter.EmitterConfig
@@ -26,8 +25,8 @@ import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension
 class ProcDefEventHistoryTest {
 
     companion object {
-        private const val version = 3.0
-        private const val runAsUser = "ivan"
+        private const val VERSION = 3.0
+        private const val USER_IVAN = "ivan"
 
         private val procDefRef = EntityRef.valueOf("proc/procDef@1")
     }
@@ -76,10 +75,10 @@ class ProcDefEventHistoryTest {
     fun `proc def create payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
-            version = version
+            version = VERSION
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(USER_IVAN) {
             procDefCreateEmitter.emit(event)
         }
 
@@ -99,11 +98,11 @@ class ProcDefEventHistoryTest {
     fun `proc def raw create payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
-            version = version,
+            version = VERSION,
             dataState = PROC_DEF_DATA_STATE_RAW
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(USER_IVAN) {
             procDefCreateEmitter.emit(event)
         }
 
@@ -123,10 +122,10 @@ class ProcDefEventHistoryTest {
     fun `proc def update payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
-            version = version
+            version = VERSION
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(USER_IVAN) {
             procDefUpdateEmitter.emit(event)
         }
 
@@ -136,8 +135,8 @@ class ProcDefEventHistoryTest {
 
         assertThat(actualEntity.comments).isEqualTo(
             MLText(
-                I18nContext.RUSSIAN to "Версия обновлена -> $version",
-                I18nContext.ENGLISH to "Version is updated -> $version"
+                I18nContext.RUSSIAN to "Версия обновлена -> $VERSION",
+                I18nContext.ENGLISH to "Version is updated -> $VERSION"
             ).toString()
         )
     }
@@ -146,11 +145,11 @@ class ProcDefEventHistoryTest {
     fun `proc def raw update payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
-            version = version,
+            version = VERSION,
             dataState = PROC_DEF_DATA_STATE_RAW
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(USER_IVAN) {
             procDefUpdateEmitter.emit(event)
         }
 
@@ -160,8 +159,8 @@ class ProcDefEventHistoryTest {
 
         assertThat(actualEntity.comments).isEqualTo(
             MLText(
-                I18nContext.RUSSIAN to "Версия обновлена -> $version (черновик)",
-                I18nContext.ENGLISH to "Version is updated -> $version (draft)"
+                I18nContext.RUSSIAN to "Версия обновлена -> $VERSION (черновик)",
+                I18nContext.ENGLISH to "Version is updated -> $VERSION (draft)"
             ).toString()
         )
     }
@@ -170,11 +169,11 @@ class ProcDefEventHistoryTest {
     fun `proc def update from version payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
-            version = version,
+            version = VERSION,
             createdFromVersion = 2.0
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(USER_IVAN) {
             procDefUpdateEmitter.emit(event)
         }
 
@@ -184,8 +183,8 @@ class ProcDefEventHistoryTest {
 
         assertThat(actualEntity.comments).isEqualTo(
             MLText(
-                I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $version",
-                I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $version"
+                I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $VERSION",
+                I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $VERSION"
             ).toString()
         )
     }
@@ -194,12 +193,12 @@ class ProcDefEventHistoryTest {
     fun `proc def raw update from version payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
-            version = version,
+            version = VERSION,
             createdFromVersion = 2.0,
             dataState = PROC_DEF_DATA_STATE_RAW
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(USER_IVAN) {
             procDefUpdateEmitter.emit(event)
         }
 
@@ -209,8 +208,8 @@ class ProcDefEventHistoryTest {
 
         assertThat(actualEntity.comments).isEqualTo(
             MLText(
-                I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $version (черновик)",
-                I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $version (draft)"
+                I18nContext.RUSSIAN to "Версия обновлена ${event.createdFromVersion} -> $VERSION (черновик)",
+                I18nContext.ENGLISH to "Version is updated ${event.createdFromVersion} -> $VERSION (draft)"
             ).toString()
         )
     }
@@ -219,10 +218,10 @@ class ProcDefEventHistoryTest {
     fun `proc def deployed payload check`() {
         val event = ProcDefEvent(
             procDefRef = procDefRef,
-            version = version
+            version = VERSION
         )
 
-        AuthContext.runAs(runAsUser) {
+        emitEventAsUser(USER_IVAN) {
             procDefDeployedEmitter.emit(event)
         }
 
@@ -245,7 +244,7 @@ class ProcDefEventHistoryTest {
 
             assertThat(procDefRef).isEqualTo(expected.procDefRef)
             assertThat(version!!.toDouble()).isEqualTo(expected.version)
-            assertThat(userId).isEqualTo(runAsUser)
+            assertThat(userId).isEqualTo(USER_IVAN)
         }
     }
 }
