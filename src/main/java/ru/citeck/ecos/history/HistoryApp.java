@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history;
 
+import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
 import ru.citeck.ecos.history.config.ApplicationProperties;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
@@ -10,6 +11,7 @@ import ru.citeck.ecos.webapp.lib.spring.EcosSpringApplication;
 
 @SpringBootApplication(scanBasePackageClasses = { HistoryApp.class })
 @EnableConfigurationProperties({LiquibaseProperties.class, ApplicationProperties.class})
+@EnableMethodSecurity(securedEnabled = true)
 @EnableDiscoveryClient
 public class HistoryApp {
 
