@@ -11,13 +11,16 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.data.domain.Sort;
 import org.springframework.data.jpa.domain.Specification;
+import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 import ru.citeck.ecos.commons.json.Json;
+import ru.citeck.ecos.context.lib.auth.AuthRole;
 import ru.citeck.ecos.data.sql.context.DbDataSourceContext;
 import ru.citeck.ecos.data.sql.context.DbSchemaContext;
 import ru.citeck.ecos.data.sql.domain.DbDomainFactory;
 import ru.citeck.ecos.data.sql.records.refs.DbRecordRefService;
+import ru.citeck.ecos.history.common.HistorySystemArtifactPerms;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryDocumentMirrorEntity;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
@@ -62,6 +65,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     private final HistoryRecordRepository historyRecordRepository;
     private final HistoryDocumentMirrorRepo historyDocumentMirrorRepo;
     private final DbDomainFactory dbDomainFactory;
+    private final HistorySystemArtifactPerms perms;
     private DbRecordRefService dbRecordRefService;
 
     private final HistoryRecordConverter historyRecordConverter;
@@ -81,9 +85,9 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     @Transactional
+    @Secured({AuthRole.SYSTEM, AuthRole.ADMIN})
     @Override
     public List<HistoryRecordEntity> saveOrUpdateRecords(String jsonRecords) throws IOException, ParseException {
-
         if (jsonRecords == null) {
             return null;
         }
@@ -107,6 +111,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     @Transactional
+    @Secured({AuthRole.SYSTEM, AuthRole.ADMIN})
     @Override
     public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordEntity historyRecord,
                                                   Map<String, String> requestParams) throws ParseException {
@@ -311,6 +316,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     @Transactional
+    @Secured({AuthRole.SYSTEM, AuthRole.ADMIN})
     @Override
     public void createHistoryDocumentMirror(EntityRef documentMirrorRef, EntityRef documentRef) {
 
@@ -371,6 +377,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     @Transactional
+    @Secured({AuthRole.SYSTEM, AuthRole.ADMIN})
     @Override
     public HistoryRecordEntity saveOrUpdateRecord(HistoryRecordDto historyRecordDto) throws ParseException {
         Map<String, String> propertyMap = historyRecordConverter.toMap(historyRecordDto);
