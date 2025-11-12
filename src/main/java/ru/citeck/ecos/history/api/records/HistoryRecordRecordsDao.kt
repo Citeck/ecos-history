@@ -9,6 +9,7 @@ import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.commons.json.Json
 import ru.citeck.ecos.context.lib.i18n.I18nContext
+import ru.citeck.ecos.history.common.HistorySystemArtifactPerms
 import ru.citeck.ecos.history.dto.HistoryRecordDto
 import ru.citeck.ecos.history.dto.TaskRole
 import ru.citeck.ecos.history.service.HistoryRecordService
@@ -31,6 +32,7 @@ import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes
 import ru.citeck.ecos.webapp.api.apps.EcosRemoteWebAppsApi
 import ru.citeck.ecos.webapp.api.constants.AppName
 import ru.citeck.ecos.webapp.api.entity.EntityRef
+import ru.citeck.ecos.webapp.lib.perms.RecordPerms
 import java.time.Instant
 import java.util.*
 import kotlin.collections.ArrayList
@@ -38,7 +40,8 @@ import kotlin.collections.ArrayList
 @Slf4j
 @Component
 class HistoryRecordRecordsDao(
-    private val historyRecordService: HistoryRecordService
+    private val historyRecordService: HistoryRecordService,
+    private val perms: HistorySystemArtifactPerms
 ) : AbstractRecordsDao(),
     RecordAttsDao,
     RecordsQueryDao,
@@ -307,7 +310,7 @@ class HistoryRecordRecordsDao(
 
     override fun getId() = ID
 
-    class HistoryRecord(
+    inner class HistoryRecord(
         val recordsService: RecordsService,
         @AttName("...")
         val dto: HistoryRecordDto
@@ -377,6 +380,10 @@ class HistoryRecordRecordsDao(
                 return EntityRef.EMPTY
             }
             return EntityRef.create(AppName.EMODEL, "person", userId)
+        }
+
+        fun getPermissions(): RecordPerms {
+            return perms.getPerms(EntityRef.create(AppName.HISTORY, ID, getId()))
         }
     }
 
