@@ -319,6 +319,11 @@ class HistoryRecordRecordsDao(
             return dto.historyEventId ?: ""
         }
 
+        @AttName("?disp")
+        fun getDispName(): String {
+            return getId()
+        }
+
         fun getEventType(): EventType {
             val type = dto.eventType ?: ""
             return EventType(type)

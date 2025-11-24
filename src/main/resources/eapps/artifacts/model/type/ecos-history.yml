@@ -8,6 +8,8 @@ name:
 system: true
 sourceId: history/history-record
 
+inheritActions: false
+
 journalRef: uiserv/journal@history-records
 
 model:
