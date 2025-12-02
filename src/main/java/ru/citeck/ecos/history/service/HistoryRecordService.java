@@ -1,11 +1,10 @@
 package ru.citeck.ecos.history.service;
 
 import org.jetbrains.annotations.Nullable;
-import org.springframework.data.domain.Sort;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
-import ru.citeck.ecos.history.dto.HistoryRecordDtoPage;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
+import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy;
 import ru.citeck.ecos.webapp.api.entity.EntityRef;
 
 import java.io.IOException;
@@ -61,7 +60,7 @@ public interface HistoryRecordService {
     @Nullable
     HistoryRecordDto getHistoryRecordByEventId(String eventId);
 
-    HistoryRecordDtoPage getAll(int maxItems, int skipCount, Predicate predicate, Sort sort);
+    List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, List<SortBy> sort);
 
     void createHistoryDocumentMirror(EntityRef documentMirrorRef, EntityRef documentRef);
 

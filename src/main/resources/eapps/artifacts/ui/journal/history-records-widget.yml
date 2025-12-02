@@ -45,11 +45,12 @@ columns:
     name:
       en: Person
       ru: Участник
-    type: ASSOC
+    type: PERSON
   - id: owner
     name:
       ru: От имени
       en: On behalf of
+    type: PERSON
   - id: taskRole
     name:
       ru: Роль
