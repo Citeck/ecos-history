@@ -19,7 +19,7 @@ class HistoryRecordConverter {
         result.comments = entity.comments
         result.version = entity.version
         result.eventType = entity.eventType
-        result.creationTime = entity.creationTime?.time ?: 0L
+        result.creationTime = entity.creationTime?.toEpochMilli() ?: 0L
         result.taskTitle = entity.taskTitle
         result.taskRole = entity.taskRole
         result.taskOutcome = entity.taskOutcome

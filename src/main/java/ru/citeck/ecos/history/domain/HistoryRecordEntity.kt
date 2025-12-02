@@ -3,6 +3,7 @@ package ru.citeck.ecos.history.domain
 import jakarta.persistence.*
 import lombok.Data
 import java.io.Serializable
+import java.time.Instant
 import java.util.*
 
 @Data
@@ -95,7 +96,7 @@ class HistoryRecordEntity : Serializable {
     var version: String? = null
 
     @Basic(optional = false)
-    var creationTime: Date? = null
+    var creationTime: Instant? = null
 
     @Basic(optional = false)
     var username: String? = null

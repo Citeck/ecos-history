@@ -96,6 +96,8 @@ class BpmnTaskEventHistoryTest {
                 .build()
         )
 
+        historyRecordRepository.deleteAll()
+
         userTaskCreateEmitter = eventsService.getEmitter(
             EmitterConfig.create<UserTaskEvent> {
                 source = appName
