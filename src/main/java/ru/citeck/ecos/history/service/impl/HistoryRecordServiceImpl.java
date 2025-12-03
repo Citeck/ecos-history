@@ -28,8 +28,11 @@ import ru.citeck.ecos.history.dto.HistoryRecordDto;
 import ru.citeck.ecos.history.repository.HistoryDocumentMirrorRepo;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
+import ru.citeck.ecos.records2.predicate.PredicateUtils;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
+import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
 import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy;
+import ru.citeck.ecos.webapp.api.constants.AppName;
 import ru.citeck.ecos.webapp.api.entity.EntityRef;
 import ru.citeck.ecos.webapp.lib.spring.hibernate.context.predicate.JpaEntityFieldType;
 import ru.citeck.ecos.webapp.lib.spring.hibernate.context.predicate.JpaSearchConverter;
@@ -40,6 +43,7 @@ import java.lang.reflect.Field;
 import java.text.ParseException;
 import java.time.ZoneId;
 import java.util.*;
+import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -78,6 +82,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         searchConv = jpaSearchConverterFactory.createConverter(HistoryRecordEntity.class)
             .withAttMapping(HistoryRecordRecordsDao.USER_REF_ATT, HistoryRecordEntity.USERNAME)
             .withAttMapping(HistoryRecordRecordsDao.OWNER_ATT, HistoryRecordEntity.TASK_COMPLETED_ON_BEHALF_OF)
+            .withAttMapping(HistoryRecordEntity.DOCUMENT, HistoryRecordEntity.DOCUMENT_ID)
             .withFieldType(HistoryRecordEntity.TASK_ROLE, JpaEntityFieldType.MLTEXT)
             .withFieldType(HistoryRecordEntity.TASK_TITLE, JpaEntityFieldType.MLTEXT)
             .withFieldType(HistoryRecordEntity.TASK_OUTCOME_NAME, JpaEntityFieldType.MLTEXT)
@@ -301,7 +306,18 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     @Override
     public List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, List<SortBy> sort) {
-        return searchConv.findAll(historyRecordRepository, predicate, maxItems, skipCount, sort)
+        Predicate convertedPredicate = PredicateUtils.mapValuePredicates(predicate, (pred) -> {
+            String validName = HistoryRecordEntity.replaceNameValid(pred.getAttribute());
+            if (HistoryRecordEntity.DOCUMENT_ID.equals(validName)) {
+                Predicate newPred = expandDocumentMirrors(pred);
+                if (!newPred.equals(pred)) {
+                    return newPred;
+                }
+            }
+            return pred;
+        });
+
+        return searchConv.findAll(historyRecordRepository, convertedPredicate, maxItems, skipCount, sort)
             .stream()
             .map(historyRecordConverter::toDto)
             .toList();
@@ -328,6 +344,44 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         entity.setDocumentRef(documentRefId);
 
         historyDocumentMirrorRepo.save(entity);
+    }
+
+    private Predicate expandDocumentMirrors(ValuePredicate predicate) {
+
+        EntityRef docRef = EntityRef.valueOf(predicate.getValue().asText());
+        if (docRef.isEmpty()) {
+            return predicate;
+        }
+        docRef = docRef.withDefaultAppName(AppName.ALFRESCO);
+        long docRefId = dbRecordRefService.getIdByEntityRefs(Collections.singletonList(docRef)).get(0);
+        if (docRefId == -1) {
+            return predicate;
+        }
+        List<HistoryDocumentMirrorEntity> mirrors = historyDocumentMirrorRepo.findAllByDocumentMirrorRef(docRefId);
+        if (mirrors.isEmpty()) {
+            return predicate;
+        }
+        List<Long> mirrorsIds = new ArrayList<>();
+        for (HistoryDocumentMirrorEntity mirror : mirrors) {
+            mirrorsIds.add(mirror.getDocumentRef());
+        }
+        List<EntityRef> entityRefsByIds = dbRecordRefService.getEntityRefsByIds(mirrorsIds);
+
+        List<EntityRef> documentVariants = new ArrayList<>();
+        documentVariants.add(docRef);
+        documentVariants.addAll(entityRefsByIds);
+
+        return new ValuePredicate(
+            predicate.getAttribute(),
+            ValuePredicate.Type.IN,
+            documentVariants.stream().map(ref -> {
+                if (AppName.ALFRESCO.equals(ref.getAppName())) {
+                    return ref.getLocalId().replace("workspace://SpacesStore/", "");
+                } else {
+                    return ref.toString();
+                }
+            }).collect(Collectors.toList())
+        );
     }
 
     @Transactional
