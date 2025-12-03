@@ -14,6 +14,7 @@ public class HistoryRecordTestData {
     public static String PROP_ID = "id";
     public static String RECORD_CREATED_EVENT_TYPE = "record-created";
     public static String RECORD_CHANGED_EVENT_TYPE = "record-changed";
+    public static String NODE_UPDATED_EVENT_TYPE = "node.updated";
     public static String PREDICATE_VAL = "val";
     public static String PREDICATE_TYPE = "t";
     public static String PREDICATE_TYPE_AND = "and";

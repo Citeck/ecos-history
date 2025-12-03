@@ -24,6 +24,7 @@ import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes;
 import ru.citeck.ecos.webapp.api.entity.EntityRef;
 import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension;
 
+import java.time.Instant;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Map;
@@ -81,15 +82,13 @@ public class HistoryRecordRecordsDaoTest {
     @Test
     public void queryEqualByCreationTime() {
 
-        propagateTestHistoryRecord();
+        List<HistoryRecordEntity> entities = propagateTestHistoryRecord();
 
         RecsQueryRes<EntityRef> result = recordsService.query(
             getQuery(
                 Predicates.eq(
                     HistoryRecordEntity.CREATION_TIME,
-                    HistoryRecordTestData
-                        .getTestHistoryRecord()
-                        .getCreationTime())
+                    entities.get(entities.size() - 1).getCreationTime())
             ).build()
         );
         assertThat(result.getRecords().size()).isEqualTo(1);
@@ -120,7 +119,7 @@ public class HistoryRecordRecordsDaoTest {
             getQuery(
                 ValuePredicate.lt(
                     HistoryRecordEntity.CREATION_TIME,
-                    String.valueOf(entities.get(last).getCreationTime().getTime())
+                    entities.get(last).getCreationTime()
                 )
             ).build()
         );
@@ -174,8 +173,8 @@ public class HistoryRecordRecordsDaoTest {
         RecsQueryRes<EntityRef> result = recordsService.query(
             getQuery(
                 Predicates.and(
-                    ValuePredicate.gt(HistoryRecordEntity.CREATION_TIME, String.valueOf(HistoryRecordTestData.getTestHistoryRecord().getCreationTime())),
-                    ValuePredicate.lt(HistoryRecordEntity.CREATION_TIME, String.valueOf(entities.get(entities.size() - 1).getCreationTime().getTime()))
+                    ValuePredicate.gt(HistoryRecordEntity.CREATION_TIME, Instant.ofEpochMilli(HistoryRecordTestData.getTestHistoryRecord().getCreationTime())),
+                    ValuePredicate.lt(HistoryRecordEntity.CREATION_TIME, entities.get(entities.size() - 1).getCreationTime())
                 )
             ).build()
         );
@@ -204,7 +203,7 @@ public class HistoryRecordRecordsDaoTest {
             getQuery(
                 Predicates.and(
                     Predicates.eq(HistoryRecordEntity.USERNAME, HistoryRecordTestData.ADMIN),
-                    Predicates.eq(HistoryRecordEntity.EVENT_TYPE, HistoryRecordTestData.RECORD_CHANGED_EVENT_TYPE)
+                    Predicates.eq(HistoryRecordEntity.EVENT_TYPE, HistoryRecordTestData.NODE_UPDATED_EVENT_TYPE)
                 )
             ).build()
         );
@@ -254,7 +253,7 @@ public class HistoryRecordRecordsDaoTest {
         for (int idx = 1; idx < 4; idx++) {
             HistoryRecordDto dto = HistoryRecordTestData.getNewHistoryRecord();
             dto.setCreationTime(System.currentTimeMillis() + 10000 * idx);
-            dto.setEventType(HistoryRecordTestData.RECORD_CHANGED_EVENT_TYPE);
+            dto.setEventType(HistoryRecordTestData.NODE_UPDATED_EVENT_TYPE);
             dto.setComments("Some test comment for history record " + String.valueOf(idx));
             dto.setUsername(HistoryRecordTestData.ADMIN);
             dto.setHistoryEventId(String.valueOf(idx));

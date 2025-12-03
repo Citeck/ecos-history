@@ -34,9 +34,7 @@ columns:
     name:
       en: Person
       ru: Участник
-    type: ASSOC
-    formatter:
-      type: assoc
+    type: PERSON
   - id: taskRole
     name:
       ru: Роль

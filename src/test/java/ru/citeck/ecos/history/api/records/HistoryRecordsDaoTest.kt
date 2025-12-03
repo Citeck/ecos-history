@@ -41,7 +41,7 @@ class HistoryRecordsDaoTest {
             mapOf(
                 "documentId" to "test/test@test",
                 "creationTime" to System.currentTimeMillis(),
-                "eventType" to "task.assigned",
+                "eventType" to "task.assign",
                 "userId" to "admin",
                 "username" to "admin",
                 "comments" to "comments"
@@ -54,7 +54,7 @@ class HistoryRecordsDaoTest {
 
         val recs0 = records.query(
             query.copy {
-                withQuery(Predicates.`in`("eventType", listOf("task.assigned")))
+                withQuery(Predicates.`in`("eventType", listOf("task.assign")))
             }
         ).getRecords()
         assertThat(recs0).hasSize(1)

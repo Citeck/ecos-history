@@ -2,53 +2,44 @@ package ru.citeck.ecos.history.service.impl;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import jakarta.annotation.PostConstruct;
 import lombok.RequiredArgsConstructor;
 import lombok.SneakyThrows;
 import lombok.extern.slf4j.Slf4j;
+import org.apache.commons.lang3.StringUtils;
 import org.apache.commons.lang3.time.FastDateFormat;
 import org.jetbrains.annotations.Nullable;
-import org.springframework.data.domain.Page;
-import org.springframework.data.domain.PageRequest;
-import org.springframework.data.domain.Sort;
-import org.springframework.data.jpa.domain.Specification;
 import org.springframework.security.access.annotation.Secured;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
+import ru.citeck.ecos.commons.data.MLText;
 import ru.citeck.ecos.commons.json.Json;
 import ru.citeck.ecos.context.lib.auth.AuthRole;
+import ru.citeck.ecos.context.lib.i18n.I18nContext;
 import ru.citeck.ecos.data.sql.context.DbDataSourceContext;
 import ru.citeck.ecos.data.sql.context.DbSchemaContext;
 import ru.citeck.ecos.data.sql.domain.DbDomainFactory;
 import ru.citeck.ecos.data.sql.records.refs.DbRecordRefService;
-import ru.citeck.ecos.history.common.HistorySystemArtifactPerms;
+import ru.citeck.ecos.history.api.records.HistoryRecordRecordsDao;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryDocumentMirrorEntity;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.dto.HistoryRecordDto;
-import ru.citeck.ecos.history.dto.HistoryRecordDtoPage;
 import ru.citeck.ecos.history.repository.HistoryDocumentMirrorRepo;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
-import org.apache.commons.lang3.StringUtils;
-import ru.citeck.ecos.records2.predicate.PredicateUtils;
-import ru.citeck.ecos.records2.predicate.model.AndPredicate;
-import ru.citeck.ecos.records2.predicate.model.ComposedPredicate;
 import ru.citeck.ecos.records2.predicate.model.Predicate;
-import ru.citeck.ecos.records2.predicate.model.ValuePredicate;
-import ru.citeck.ecos.webapp.api.constants.AppName;
+import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy;
 import ru.citeck.ecos.webapp.api.entity.EntityRef;
+import ru.citeck.ecos.webapp.lib.spring.hibernate.context.predicate.JpaEntityFieldType;
+import ru.citeck.ecos.webapp.lib.spring.hibernate.context.predicate.JpaSearchConverter;
+import ru.citeck.ecos.webapp.lib.spring.hibernate.context.predicate.JpaSearchConverterFactory;
 
-import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.text.ParseException;
-import java.time.DateTimeException;
-import java.time.Instant;
 import java.time.ZoneId;
-import java.time.format.DateTimeFormatter;
-import java.time.temporal.ChronoUnit;
 import java.util.*;
-import java.util.stream.Collectors;
 
 @Slf4j
 @RequiredArgsConstructor
@@ -65,10 +56,11 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     private final HistoryRecordRepository historyRecordRepository;
     private final HistoryDocumentMirrorRepo historyDocumentMirrorRepo;
     private final DbDomainFactory dbDomainFactory;
-    private final HistorySystemArtifactPerms perms;
+    private final JpaSearchConverterFactory jpaSearchConverterFactory;
     private DbRecordRefService dbRecordRefService;
 
     private final HistoryRecordConverter historyRecordConverter;
+    private JpaSearchConverter<HistoryRecordEntity> searchConv;
 
     @SneakyThrows
     @PostConstruct
@@ -82,6 +74,31 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
         DbSchemaContext publicSchemaCtx = dataSourceCtx.getSchemaContext("public");
         dbRecordRefService = publicSchemaCtx.getRecordRefService();
+
+        searchConv = jpaSearchConverterFactory.createConverter(HistoryRecordEntity.class)
+            .withAttMapping(HistoryRecordRecordsDao.USER_REF_ATT, HistoryRecordEntity.USERNAME)
+            .withAttMapping(HistoryRecordRecordsDao.OWNER_ATT, HistoryRecordEntity.TASK_COMPLETED_ON_BEHALF_OF)
+            .withFieldType(HistoryRecordEntity.TASK_ROLE, JpaEntityFieldType.MLTEXT)
+            .withFieldType(HistoryRecordEntity.TASK_TITLE, JpaEntityFieldType.MLTEXT)
+            .withFieldType(HistoryRecordEntity.TASK_OUTCOME_NAME, JpaEntityFieldType.MLTEXT)
+            .withFieldVariants(HistoryRecordEntity.EVENT_TYPE, this::loadEventTypeVariants)
+            .build();
+    }
+
+    private Map<String, MLText> loadEventTypeVariants() {
+        Map<String, MLText> variants = new HashMap<>();
+        ResourceBundle bundleEn = ResourceBundle.getBundle(HistoryRecordRecordsDao.EventType.BUNDLE_NAME, I18nContext.ENGLISH);
+        ResourceBundle bundleRu = ResourceBundle.getBundle(HistoryRecordRecordsDao.EventType.BUNDLE_NAME, I18nContext.RUSSIAN);
+
+        Set<String> keys = bundleEn.keySet();
+        for (String key : keys) {
+            MLText localizedVariant = new MLText()
+                .withValue(I18nContext.ENGLISH, bundleEn.getString(key))
+                .withValue(I18nContext.RUSSIAN, bundleRu.getString(key));
+
+            variants.put(key, localizedVariant);
+        }
+        return variants;
     }
 
     @Transactional
@@ -156,7 +173,7 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
         if (requestParams.containsKey(CREATION_TIME)) {
             String dateString = requestParams.get(CREATION_TIME);
-            result.setCreationTime(dateFormat.parse(dateString));
+            result.setCreationTime(dateFormat.parse(dateString).toInstant());
         }
 
         if (requestParams.containsKey(USERNAME)) {
@@ -283,36 +300,11 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
     }
 
     @Override
-    public HistoryRecordDtoPage getAll(int maxItems, int skipCount, Predicate predicate, Sort sort) {
-        if (maxItems == 0) {
-            return new HistoryRecordDtoPage();
-        }
-        Predicate convertedPredicate = PredicateUtils.mapValuePredicates(predicate, (pred) -> {
-            String validName = HistoryRecordEntity.replaceNameValid(pred.getAttribute());
-            if (HistoryRecordEntity.DOCUMENT_ID.equals(validName)) {
-                Predicate newPred = expandDocumentMirrors(pred);
-                if (!newPred.equals(pred)) {
-                    return newPred;
-                }
-            }
-            return pred;
-        });
-
-        final PageRequest page = PageRequest.of(skipCount / maxItems, maxItems,
-            sort != null ? sort : Sort.by(Sort.Direction.DESC, CREATION_TIME));
-        Specification<HistoryRecordEntity> entitySpecification = specificationFromPredicate(convertedPredicate);
-
-        Page<HistoryRecordEntity> pageResult = historyRecordRepository.findAll(entitySpecification, page);
-
-        HistoryRecordDtoPage result = new HistoryRecordDtoPage();
-        result.setTotalPages(pageResult.getTotalPages());
-        result.setTotalElementsCount(pageResult.getTotalElements());
-        result.setHistoryRecordDtos(pageResult
+    public List<HistoryRecordDto> getAll(int maxItems, int skipCount, Predicate predicate, List<SortBy> sort) {
+        return searchConv.findAll(historyRecordRepository, predicate, maxItems, skipCount, sort)
             .stream()
             .map(historyRecordConverter::toDto)
-            .collect(Collectors.toList()));
-
-        return result;
+            .toList();
     }
 
     @Transactional
@@ -338,44 +330,6 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         historyDocumentMirrorRepo.save(entity);
     }
 
-    private Predicate expandDocumentMirrors(ValuePredicate predicate) {
-
-        EntityRef docRef = EntityRef.valueOf(predicate.getValue().asText());
-        if (docRef.isEmpty()) {
-            return predicate;
-        }
-        docRef = docRef.withDefaultAppName(AppName.ALFRESCO);
-        long docRefId = dbRecordRefService.getIdByEntityRefs(Collections.singletonList(docRef)).get(0);
-        if (docRefId == -1) {
-            return predicate;
-        }
-        List<HistoryDocumentMirrorEntity> mirrors = historyDocumentMirrorRepo.findAllByDocumentMirrorRef(docRefId);
-        if (mirrors.isEmpty()) {
-            return predicate;
-        }
-        List<Long> mirrorsIds = new ArrayList<>();
-        for (HistoryDocumentMirrorEntity mirror : mirrors) {
-            mirrorsIds.add(mirror.getDocumentRef());
-        }
-        List<EntityRef> entityRefsByIds = dbRecordRefService.getEntityRefsByIds(mirrorsIds);
-
-        List<EntityRef> documentVariants = new ArrayList<>();
-        documentVariants.add(docRef);
-        documentVariants.addAll(entityRefsByIds);
-
-        return new ValuePredicate(
-            predicate.getAttribute(),
-            ValuePredicate.Type.IN,
-            documentVariants.stream().map(ref -> {
-                if (AppName.ALFRESCO.equals(ref.getAppName())) {
-                    return ref.getLocalId().replace("workspace://SpacesStore/", "");
-                } else {
-                    return ref.toString();
-                }
-            }).collect(Collectors.toList())
-        );
-    }
-
     @Transactional
     @Secured({AuthRole.SYSTEM, AuthRole.ADMIN})
     @Override
@@ -397,44 +351,6 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
         return StringUtils.isNotBlank(value) ? value : "";
     }
 
-    private Specification<HistoryRecordEntity> specificationFromPredicate(Predicate predicate) {
-        if (predicate == null) {
-            return null;
-        }
-        Specification<HistoryRecordEntity> result = null;
-        if (predicate instanceof ComposedPredicate) {
-            ComposedPredicate composedPredicate = (ComposedPredicate) predicate;
-            ArrayList<Specification<HistoryRecordEntity>> specifications = new ArrayList<>();
-            composedPredicate.getPredicates().forEach(subPredicate -> {
-                Specification<HistoryRecordEntity> subSpecification = null;
-                if (subPredicate instanceof ValuePredicate) {
-                    subSpecification = fromValuePredicate((ValuePredicate) subPredicate);
-                } else if (subPredicate instanceof ComposedPredicate) {
-                    subSpecification = specificationFromPredicate(subPredicate);
-                }
-                if (subSpecification != null) {
-                    specifications.add(subSpecification);
-                }
-            });
-
-            if (!specifications.isEmpty()) {
-                result = specifications.get(0);
-                if (specifications.size() > 1) {
-                    for (int idx = 1; idx < specifications.size(); idx++) {
-                        result = (composedPredicate instanceof AndPredicate) ?
-                            result.and(specifications.get(idx)) :
-                            result.or(specifications.get(idx));
-                    }
-                }
-            }
-            return result;
-        } else if (predicate instanceof ValuePredicate) {
-            return fromValuePredicate((ValuePredicate) predicate);
-        }
-        log.warn("Unexpected predicate class: {}", predicate.getClass());
-        return null;
-    }
-
     @Override
     public long getCount() {
         return historyRecordRepository.count();
@@ -442,97 +358,6 @@ public class HistoryRecordServiceImpl implements HistoryRecordService {
 
     @Override
     public long getCount(Predicate predicate) {
-        Specification<HistoryRecordEntity> specification = specificationFromPredicate(predicate);
-        return specification != null ? historyRecordRepository.count(specification) : getCount();
-    }
-
-    private Specification<HistoryRecordEntity> fromValuePredicate(ValuePredicate valuePredicate) {
-        //ValuePredicate.Type.IN was not implemented
-        if (StringUtils.isBlank(valuePredicate.getAttribute())) {
-            return null;
-        }
-        String attributeName = HistoryRecordEntity.replaceNameValid(StringUtils.trim(valuePredicate.getAttribute()));
-        if (!HistoryRecordEntity.isAttributeNameValid(attributeName)) {
-            return null;
-        }
-
-        Specification<HistoryRecordEntity> specification = null;
-        if (ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType())
-            || ValuePredicate.Type.LIKE.equals(valuePredicate.getType())) {
-            EntityRef recordRef = EntityRef.valueOf(valuePredicate.getValue().asText());
-            String tmpValue = EntityRef.isEmpty(recordRef) ?
-                valuePredicate.getValue().asText() :
-                recordRef.getLocalId();
-            String attributeValue =
-                ValuePredicate.Type.CONTAINS.equals(valuePredicate.getType()) ?
-                    "%" + tmpValue.toLowerCase() + "%" :
-                    tmpValue.toLowerCase();
-            specification = (root, query, builder) ->
-                builder.like(builder.lower(root.get(attributeName)), attributeValue);
-        } else {
-            Comparable objectValue = getObjectValue(attributeName, valuePredicate.getValue().asText());
-            if (objectValue != null) {
-                if (ValuePredicate.Type.EQ.equals(valuePredicate.getType())) {
-                    specification = (root, query, builder) ->
-                        builder.equal(root.get(attributeName), objectValue);
-                } else if (ValuePredicate.Type.GT.equals(valuePredicate.getType())) {
-                    specification = (root, query, builder) ->
-                        builder.greaterThan(root.get(attributeName), objectValue);
-                } else if (ValuePredicate.Type.GE.equals(valuePredicate.getType())) {
-                    specification = (root, query, builder) ->
-                        builder.greaterThanOrEqualTo(root.get(attributeName), objectValue);
-                } else if (ValuePredicate.Type.LT.equals(valuePredicate.getType())) {
-                    specification = (root, query, builder) ->
-                        builder.lessThan(root.get(attributeName), objectValue);
-                } else if (ValuePredicate.Type.LE.equals(valuePredicate.getType())) {
-                    specification = (root, query, builder) ->
-                        builder.lessThanOrEqualTo(root.get(attributeName), objectValue);
-                } else if (ValuePredicate.Type.IN.equals(valuePredicate.getType())) {
-                    specification = (root, query, builder) ->
-                        builder.isTrue(root.get(attributeName).in(valuePredicate.getValue().asStrList()));
-                }
-            }
-        }
-        return specification;
-    }
-
-    private Comparable getObjectValue(String attributeName, String attributeValue) {
-        try {
-            Field searchField = HistoryRecordEntity.class.getDeclaredField(attributeName);
-            if (searchField.getType() == String.class) {
-                return attributeValue;
-            } else if (searchField.getType() == Long.class) {
-                return Long.valueOf(attributeValue);
-            } else if (searchField.getType() == Date.class) {
-                //saved values has no milliseconds part cause of dateFormat
-                try {
-                    Calendar calendar = Calendar.getInstance();
-                    calendar.setTimeInMillis(Long.valueOf(attributeValue));
-                    calendar.set(Calendar.MILLISECOND, 0);
-                    return calendar.getTime();
-                } catch (NumberFormatException formatException) {
-                    try {
-                        Instant valueObject =
-                            Instant.from(DateTimeFormatter.ISO_OFFSET_DATE_TIME.parse(attributeValue));
-                        valueObject = valueObject.truncatedTo(ChronoUnit.SECONDS);
-                        return Date.from(valueObject);
-                    } catch (DateTimeException e) {
-                        log.error("Failed to convert attribute '{}' value ({}) to date", attributeName,
-                            attributeValue, e);
-                    }
-                }
-            } else {
-                log.error("Unexpected attribute type {} for predicate", searchField.getType());
-            }
-        } catch (NumberFormatException e) {
-            log.error("Failed to convert attribute '{}' value ({}) to number", attributeName,
-                attributeValue, e);
-        } catch (NoSuchFieldException e) {
-        }
-        return null;
-    }
-
-    static class PredicateMap {
-
+        return searchConv.getCount(historyRecordRepository, predicate);
     }
 }
