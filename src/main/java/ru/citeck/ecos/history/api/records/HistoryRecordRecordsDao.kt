@@ -24,6 +24,7 @@ import ru.citeck.ecos.records3.record.dao.atts.RecordAttsDao
 import ru.citeck.ecos.records3.record.dao.mutate.RecordMutateDtoDao
 import ru.citeck.ecos.records3.record.dao.query.RecordsQueryDao
 import ru.citeck.ecos.records3.record.dao.query.dto.query.RecordsQuery
+import ru.citeck.ecos.records3.record.dao.query.dto.query.SortBy
 import ru.citeck.ecos.records3.record.dao.query.dto.res.RecsQueryRes
 import ru.citeck.ecos.webapp.api.apps.EcosRemoteWebAppsApi
 import ru.citeck.ecos.webapp.api.constants.AppName
@@ -46,6 +47,13 @@ class HistoryRecordRecordsDao(
 
         const val USER_REF_ATT = "userRef"
         const val OWNER_ATT = "owner"
+
+        private const val ATT_CREATION_TIME = "creationTime"
+
+        private val ATTS_MAPPING = mapOf(
+            "_created" to "creationTime",
+            "_modified" to "creationTime"
+        )
     }
 
     @Autowired
@@ -76,6 +84,7 @@ class HistoryRecordRecordsDao(
             log.warn("Unsupported query language '{}'", recsQuery.language)
             return null
         }
+        val sort = preProcessSortBy(recsQuery.sortBy)
         val (maxItems, skipCount) = recsQuery.page
 
         val maxItemsCount = if (maxItems <= 0) {
@@ -92,7 +101,7 @@ class HistoryRecordRecordsDao(
             optimize = true
         ) ?: VoidPredicate.INSTANCE
 
-        val historyRecordDtoList = historyRecordService.getAll(maxItemsCount, skipCount, predicate, recsQuery.sortBy)
+        val historyRecordDtoList = historyRecordService.getAll(maxItemsCount, skipCount, predicate, sort)
 
         val result = RecsQueryRes<HistoryRecord>()
         result.setRecords(historyRecordDtoList.map { HistoryRecord(recordsService, it) })
@@ -144,6 +153,17 @@ class HistoryRecordRecordsDao(
             return res
         }
         return DataValue.NULL
+    }
+
+    private fun preProcessSortBy(sort: List<SortBy>): List<SortBy> {
+        if (sort.isEmpty()) {
+            return listOf(SortBy(ATT_CREATION_TIME, false))
+        }
+
+        return sort.map { sortBy ->
+            val mappedAttribute = ATTS_MAPPING[sortBy.attribute] ?: sortBy.attribute
+            SortBy(mappedAttribute, sortBy.ascending)
+        }
     }
 
     override fun getId() = ID
