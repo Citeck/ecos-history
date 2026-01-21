@@ -118,24 +118,33 @@ class HistoryRecordRecordsDao(
         }
 
         val attribute = predicate.getAttribute()
-        if (attribute == USER_REF_ATT || attribute == OWNER_ATT) {
+        if (attribute == "document") {
+            val value = preProcessTxtValuePredicate(predicate.getValue()) {
+                it.replaceFirst("alfresco/@workspace://SpacesStore/", "")
+            }
+            return prepareValuePredicate(value, predicate)
+        } else if (attribute == USER_REF_ATT || attribute == OWNER_ATT) {
             val value = preProcessTxtValuePredicate(predicate.getValue()) {
                 EntityRef.valueOf(it).getLocalId()
             }
-            return if (value.isNull()) {
-                null
-            } else {
-                val copy = predicate.copy<ValuePredicate>()
-                copy.setVal(value)
-                val predicateType = predicate.getType()
-                if (ValuePredicate.Type.CONTAINS == predicateType || ValuePredicate.Type.LIKE == predicateType) {
-                    copy.setType(ValuePredicate.Type.EQ)
-                }
-                copy
-            }
+            return prepareValuePredicate(value, predicate)
         }
 
         return predicate
+    }
+
+    private fun prepareValuePredicate(value: DataValue, predicate: ValuePredicate): ValuePredicate? {
+        return if (value.isNull()) {
+            null
+        } else {
+            val copy = predicate.copy<ValuePredicate>()
+            copy.setVal(value)
+            val predicateType = predicate.getType()
+            if (ValuePredicate.Type.CONTAINS == predicateType || ValuePredicate.Type.LIKE == predicateType) {
+                copy.setType(ValuePredicate.Type.EQ)
+            }
+            copy
+        }
     }
 
     private fun preProcessTxtValuePredicate(value: DataValue, action: (String) -> String?): DataValue {
