@@ -11,15 +11,20 @@ import org.springframework.beans.factory.annotation.Value
 import org.springframework.boot.test.context.SpringBootTest
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.commons.json.Json
+import ru.citeck.ecos.data.sql.records.refs.DbRecordRefService
 import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.events2.emitter.EmitterConfig
 import ru.citeck.ecos.events2.emitter.EventsEmitter
 import ru.citeck.ecos.history.HistoryApp
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.dto.TaskRole
+import ru.citeck.ecos.history.listener.BPMN_EVENT_USER_TASK_ASSIGN
+import ru.citeck.ecos.history.listener.BPMN_EVENT_USER_TASK_COMPLETE
+import ru.citeck.ecos.history.listener.BPMN_EVENT_USER_TASK_CREATE
+import ru.citeck.ecos.history.listener.BPMN_EVENT_USER_TASK_DELETE
+import ru.citeck.ecos.history.listener.UserTaskEvent
 import ru.citeck.ecos.history.repository.HistoryRecordRepository
 import ru.citeck.ecos.history.service.HistoryEventType
-import ru.citeck.ecos.history.service.impl.*
 import ru.citeck.ecos.records2.source.dao.local.RecordsDaoBuilder
 import ru.citeck.ecos.records3.RecordsService
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
@@ -38,6 +43,9 @@ class BpmnTaskEventHistoryTest {
 
     @Autowired
     private lateinit var recordsService: RecordsService
+
+    @Autowired
+    private lateinit var recordRefService: DbRecordRefService
 
     @Autowired
     private lateinit var historyRecordRepository: HistoryRecordRepository
@@ -260,9 +268,12 @@ class BpmnTaskEventHistoryTest {
     }
 
     private fun compareCommonPayload(expected: UserTaskEvent, actual: HistoryRecordEntity, type: String) {
+
+        val expectedDocRefId = recordRefService.getIdByEntityRef(expected.document)
+
         with(actual) {
             assertThat(historyEventId).isNotBlank
-            assertThat(documentId).isEqualTo(expected.document.toString())
+            assertThat(documentRefId).isEqualTo(expectedDocRefId)
             assertThat(version).isEqualTo(documentRecord.version)
             assertThat(eventType).isEqualTo(type)
             assertThat(workflowInstanceId).isEqualTo(expected.procInstanceId.toString())

@@ -4,7 +4,6 @@ import jakarta.persistence.*
 import lombok.Data
 import java.io.Serializable
 import java.time.Instant
-import java.util.*
 
 @Data
 @Entity(name = HistoryRecordEntity.ENTITY_NAME)
@@ -19,7 +18,7 @@ class HistoryRecordEntity : Serializable {
         const val ENTITY_NAME = "HistoryRecord"
 
         const val HISTORY_EVENT_ID = "historyEventId"
-        const val DOCUMENT_ID = "documentId"
+        const val DOCUMENT_REF_ID = "documentRefId"
         const val EVENT_TYPE = "eventType"
         const val COMMENTS = "comments"
         const val VERSION = "version"
@@ -46,31 +45,6 @@ class HistoryRecordEntity : Serializable {
         const val DOC_STATUS_NAME = "docStatusName"
         const val DOC_STATUS_TITLE = "docStatusTitle"
         const val LAT_TASK_COMMENT = "lastTaskComment"
-
-        const val DOCUMENT = "document"
-
-        private var attributeNames: List<String> = listOf(
-            HISTORY_EVENT_ID, DOCUMENT_ID, EVENT_TYPE, COMMENTS, VERSION,
-            CREATION_TIME, USERNAME, USER_ID, TASK_TITLE, TASK_ROLE, TASK_TITLE, TASK_OUTCOME,
-            TASK_DEFINITION_KEY, TASK_TYPE, TASK_FORM_KEY, TASK_EVENT_INSTANCE_ID, TASK_OUTCOME_NAME,
-            TASK_COMPLETED_ON_BEHALF_OF, FULL_TASK_TYPE,
-            INITIATOR, WORKFLOW_INSTANCE_ID, WORKFLOW_DESCRIPTION, DOC_STATUS_NAME, DOC_STATUS_TITLE,
-            DOC_TYPE, DOCUMENT_VERSION, LAT_TASK_COMMENT, PROPERTY_NAME, EXPECTED_PERFORM_TIME,
-            ENTITY_NAME
-        )
-
-        @JvmStatic
-        fun isAttributeNameValid(attributeName: String): Boolean {
-            return attributeNames.contains(attributeName)
-        }
-
-        @JvmStatic
-        fun replaceNameValid(attributeName: String): String {
-            if (DOCUMENT.equals(attributeName)) {
-                return DOCUMENT_ID
-            }
-            return attributeName
-        }
     }
 
     @Id
@@ -84,7 +58,7 @@ class HistoryRecordEntity : Serializable {
     lateinit var historyEventId: String
 
     @Basic(optional = false)
-    var documentId: String? = null
+    var documentRefId: Long? = null
 
     @Basic(optional = false)
     var eventType: String? = null

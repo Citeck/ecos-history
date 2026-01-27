@@ -7,16 +7,17 @@ import lombok.RequiredArgsConstructor;
 import org.springframework.amqp.rabbit.annotation.EnableRabbit;
 import org.springframework.boot.autoconfigure.condition.ConditionalOnClass;
 import org.springframework.stereotype.Service;
+import ru.citeck.ecos.data.sql.records.refs.DbRecordRefService;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
+import ru.citeck.ecos.history.service.HistoryRecordServiceImpl;
 import ru.citeck.ecos.rabbitmq.RabbitMqConn;
 import ru.citeck.ecos.rabbitmq.RabbitMqConnProvider;
 
 import jakarta.annotation.PostConstruct;
 import java.io.IOException;
 import java.nio.charset.StandardCharsets;
-import java.text.ParseException;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -35,6 +36,7 @@ public class RabbitNewHistoryRecordListener {
     private final HistoryRecordService historyRecordService;
     private final HistoryRecordRepository historyRecordRepository;
     private final RabbitMqConnProvider rabbitMqConnProv;
+    private final DbRecordRefService recordRefService;
 
     @PostConstruct
     public void init() {
@@ -70,7 +72,7 @@ public class RabbitNewHistoryRecordListener {
     /**
      * @param message Message (json-object)
      */
-    public synchronized void sendNewRecordListener(String message) throws IOException, ParseException {
+    public synchronized void sendNewRecordListener(String message) throws IOException {
         Map<String, String> resultMap = OBJECT_MAPPER.readValue(message, new TypeReference<HashMap<String, String>>() {
         });
         historyRecordService.saveOrUpdateRecord(new HistoryRecordEntity(), resultMap);
@@ -79,7 +81,7 @@ public class RabbitNewHistoryRecordListener {
     /**
      * @param message Message (json-object)
      */
-    public synchronized void sendNewRecordsListener(String message) throws IOException, ParseException {
+    public synchronized void sendNewRecordsListener(String message) {
         historyRecordService.saveOrUpdateRecords(message);
     }
 
@@ -87,7 +89,11 @@ public class RabbitNewHistoryRecordListener {
      * @param message Document uuid
      */
     public synchronized void deleteRecordsByDocumentListener(String message) {
-        List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(message);
-        historyRecordRepository.deleteAll(records);
+        var docRef = HistoryRecordServiceImpl.normalizeDocRef(message);
+        var docRefId = recordRefService.getIdByEntityRef(docRef);
+        if (docRefId >= 0) {
+            List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(docRefId);
+            historyRecordRepository.deleteAll(records);
+        }
     }
 }

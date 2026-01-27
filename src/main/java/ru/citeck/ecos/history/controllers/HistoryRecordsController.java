@@ -1,21 +1,23 @@
 package ru.citeck.ecos.history.controllers;
 
 import lombok.Data;
+import org.jetbrains.annotations.NotNull;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.PageRequest;
 import org.springframework.web.bind.annotation.*;
+import ru.citeck.ecos.data.sql.records.refs.DbRecordRefService;
 import ru.citeck.ecos.history.converter.HistoryRecordConverter;
 import ru.citeck.ecos.history.domain.HistoryRecordEntity;
 import ru.citeck.ecos.history.repository.HistoryRecordRepository;
 import ru.citeck.ecos.history.service.HistoryRecordService;
 
 import jakarta.servlet.http.HttpServletRequest;
+import ru.citeck.ecos.history.service.HistoryRecordServiceImpl;
+import ru.citeck.ecos.webapp.api.entity.EntityRef;
+
 import java.io.IOException;
 import java.text.ParseException;
-import java.util.Date;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
+import java.util.*;
 
 @RestController
 @RequestMapping("/history_records")
@@ -24,6 +26,7 @@ public class HistoryRecordsController {
     private HistoryRecordRepository historyRecordRepository;
     private HistoryRecordConverter historyRecordConverter;
     private HistoryRecordService historyRecordService;
+    private DbRecordRefService recordRefService;
 
     @RequestMapping(method = RequestMethod.GET, value = "/all_records/page/{page}/limit/{limit}")
     public Object getAllRecords(@PathVariable Integer page, @PathVariable Integer limit) {
@@ -33,28 +36,37 @@ public class HistoryRecordsController {
 
     @RequestMapping(method = RequestMethod.GET, value = "/by_document_id/{documentId}")
     public Object getAllRecordsByDocumentId(@PathVariable String documentId) {
-        List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(documentId);
+        List<HistoryRecordEntity> records = getRecordsByDocumentRef(documentId);
         return historyRecordConverter.toDto(records);
     }
 
     @PostMapping("/get_document_history")
     public Object getAllRecordsByDocumentIdParam(@RequestBody String documentId) {
-        List<HistoryRecordEntity> records = historyRecordRepository.getRecordsByDocumentId(documentId);
+        List<HistoryRecordEntity> records = getRecordsByDocumentRef(documentId);
         return historyRecordConverter.toDto(records);
     }
 
     @RequestMapping(method = RequestMethod.DELETE, value = "/by_document_id/{documentId}")
     public Object removeAllRecordsByDocumentId(@PathVariable String documentId) {
-        List<HistoryRecordEntity> allRecords = historyRecordRepository.getRecordsByDocumentId(documentId);
+        List<HistoryRecordEntity> allRecords = getRecordsByDocumentRef(documentId);
         historyRecordRepository.deleteAll(allRecords);
         return allRecords.size();
     }
 
     @PostMapping("/delete_document_history")
     public Object removeAllRecordsByDocumentIdParam(@RequestBody String documentId) {
-        List<HistoryRecordEntity> allRecords = historyRecordRepository.getRecordsByDocumentId(documentId);
+        List<HistoryRecordEntity> allRecords = getRecordsByDocumentRef(documentId);
         historyRecordRepository.deleteAll(allRecords);
         return allRecords.size();
+    }
+
+    private List<HistoryRecordEntity> getRecordsByDocumentRef(String documentId) {
+        EntityRef docRef = HistoryRecordServiceImpl.normalizeDocRef(documentId);
+        long docRefId = recordRefService.getIdByEntityRef(docRef);
+        if (docRefId < 0) {
+            return Collections.emptyList();
+        }
+        return historyRecordRepository.getRecordsByDocumentId(docRefId);
     }
 
     @RequestMapping(method = RequestMethod.GET, value = "/by_username/{username}/limit/{limit}")
@@ -147,5 +159,10 @@ public class HistoryRecordsController {
     @Autowired
     public void setHistoryRecordService(HistoryRecordService historyRecordService) {
         this.historyRecordService = historyRecordService;
+    }
+
+    @Autowired
+    public void setRecordRefService(@NotNull DbRecordRefService recordRefService) {
+        this.recordRefService = recordRefService;
     }
 }

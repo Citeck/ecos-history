@@ -277,7 +277,7 @@ public class HistoryRecordRecordsDaoTest {
             .add(HistoryRecordEntity.CREATION_TIME)// + "|fmt(\"yyyy__MM__dd HH:mm\")")
             .add(HistoryRecordEntity.COMMENTS + STR)
             .add(HistoryRecordEntity.EVENT_TYPE + STR)
-            .add(HistoryRecordEntity.DOCUMENT_ID + STR);
+            .add("documentId" + STR);
     }
 
     private DataValue getHistoryRecordAttributes(HistoryRecordDto dto) {

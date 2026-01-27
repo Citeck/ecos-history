@@ -1,5 +1,6 @@
 package ru.citeck.ecos.history.repository;
 
+import org.jetbrains.annotations.Nullable;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaSpecificationExecutor;
 import org.springframework.data.jpa.repository.Query;
@@ -29,9 +30,9 @@ public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEnt
      * @return List of history records
      */
     @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
-        "WHERE record." + HistoryRecordEntity.DOCUMENT_ID + " = :documentId " +
+        "WHERE record." + HistoryRecordEntity.DOCUMENT_REF_ID + " = :documentId " +
         "ORDER BY record." + HistoryRecordEntity.CREATION_TIME)
-    List<HistoryRecordEntity> getRecordsByDocumentId(@Param("documentId") String documentId);
+    List<HistoryRecordEntity> getRecordsByDocumentId(@Param("documentId") long documentId);
 
     /**
      * Get history record by history event id
@@ -39,6 +40,7 @@ public interface HistoryRecordRepository extends CrudRepository<HistoryRecordEnt
      * @param historyEventId History event id
      * @return History record or null
      */
+    @Nullable
     @Query("SELECT record FROM " + HistoryRecordEntity.ENTITY_NAME + " as record " +
         "WHERE record." + HistoryRecordEntity.HISTORY_EVENT_ID + " = :historyEventId")
     HistoryRecordEntity getHistoryRecordByHistoryEventId(@Param("historyEventId") String historyEventId);

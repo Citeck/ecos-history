@@ -1,4 +1,4 @@
-package ru.citeck.ecos.history.service.impl
+package ru.citeck.ecos.history.listener
 
 import jakarta.annotation.PostConstruct
 import org.apache.commons.lang3.time.FastDateFormat
@@ -15,6 +15,7 @@ import ru.citeck.ecos.events2.type.RecordStatusChangedEvent
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
+import ru.citeck.ecos.history.service.HistoryRecordServiceImpl
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeDef
 import ru.citeck.ecos.model.lib.attributes.dto.AttributeType
 import ru.citeck.ecos.model.lib.utils.ModelUtils
@@ -136,7 +137,8 @@ class EcosEventsListener(
                         val typeAssocsById = recordTypeDef.associations.associateBy { it.id }
                         val typeAssoc = typeAssocsById[assoc.assocId]
 
-                        if (typeAssoc != null && !excludedAtts.contains(typeAssoc.attribute) &&
+                        if (typeAssoc != null &&
+                            !excludedAtts.contains(typeAssoc.attribute) &&
                             (
                                 typeAssoc.direction == AssocDef.Direction.BOTH ||
                                     typeAssoc.direction == AssocDef.Direction.TARGET
@@ -424,13 +426,15 @@ class EcosEventsListener(
 
     private fun isEmpty(value: Any?): Boolean {
         return value == null ||
-            value is Collection<*> && (value.isEmpty() || value.all { isEmpty(it) }) ||
-            value is Map<*, *> && value.isEmpty() ||
-            value is String && value.isEmpty() ||
-            value is DataValue && (
+            (value is Collection<*> && (value.isEmpty() || value.all { isEmpty(it) })) ||
+            (value is Map<*, *> && value.isEmpty()) ||
+            (value is String && value.isEmpty()) ||
+            value is DataValue &&
+            (
                 value.isNull() ||
                     ((value.isArray() || value.isObject()) && value.size() == 0) ||
-                    value.isTextual() && value.asText().isEmpty()
+                    value.isTextual() &&
+                    value.asText().isEmpty()
                 )
     }
 
@@ -523,7 +527,7 @@ class EcosEventsListener(
     }
 
     private fun formatTime(time: Instant): String {
-        return HistoryRecordServiceImpl.dateFormat.format(Date.from(time))
+        return HistoryRecordServiceImpl.Companion.dateFormat.format(Date.from(time))
     }
 
     class HistoryConfig(

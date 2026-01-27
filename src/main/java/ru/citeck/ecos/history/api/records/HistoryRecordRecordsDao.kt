@@ -69,7 +69,7 @@ class HistoryRecordRecordsDao(
 
     override fun saveMutatedRec(record: HistoryRecordDto): String {
         val entity = historyRecordService.saveOrUpdateRecord(record)
-        return entity.historyEventId
+        return entity!!.historyEventId
     }
 
     override fun getRecordAtts(recordId: String): HistoryRecord? {
@@ -84,7 +84,7 @@ class HistoryRecordRecordsDao(
     override fun queryRecords(recsQuery: RecordsQuery): RecsQueryRes<HistoryRecord>? {
 
         if (recsQuery.language != PredicateService.LANGUAGE_PREDICATE) {
-            log.warn("Unsupported query language '{}'", recsQuery.language)
+            log.warn { "Unsupported query language '${recsQuery.language}'" }
             return null
         }
         val sort = preProcessSortBy(recsQuery.sortBy)

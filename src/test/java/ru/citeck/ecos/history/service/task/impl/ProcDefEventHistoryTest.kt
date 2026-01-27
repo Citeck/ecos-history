@@ -15,8 +15,13 @@ import ru.citeck.ecos.events2.emitter.EmitterConfig
 import ru.citeck.ecos.events2.emitter.EventsEmitter
 import ru.citeck.ecos.history.HistoryApp
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
+import ru.citeck.ecos.history.listener.PROC_DEF_DATA_STATE_RAW
+import ru.citeck.ecos.history.listener.PROC_DEF_EVENT_CREATE
+import ru.citeck.ecos.history.listener.PROC_DEF_EVENT_DEPLOYED
+import ru.citeck.ecos.history.listener.PROC_DEF_EVENT_UPDATE
+import ru.citeck.ecos.history.listener.PROC_DEF_VERSION_DEPLOYED_MSG
+import ru.citeck.ecos.history.listener.ProcDefEvent
 import ru.citeck.ecos.history.repository.HistoryRecordRepository
-import ru.citeck.ecos.history.service.impl.*
 import ru.citeck.ecos.webapp.api.entity.EntityRef
 import ru.citeck.ecos.webapp.lib.spring.test.extension.EcosSpringExtension
 

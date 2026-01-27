@@ -1,7 +1,7 @@
 package ru.citeck.ecos.history;
 
 import org.springframework.security.config.annotation.method.configuration.EnableMethodSecurity;
-import ru.citeck.ecos.history.config.ApplicationProperties;
+import ru.citeck.ecos.history.props.ApplicationProperties;
 
 import org.springframework.boot.autoconfigure.SpringBootApplication;
 import org.springframework.boot.autoconfigure.liquibase.LiquibaseProperties;

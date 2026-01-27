@@ -1,4 +1,4 @@
-package ru.citeck.ecos.history.service.impl
+package ru.citeck.ecos.history.listener
 
 import io.github.oshai.kotlinlogging.KotlinLogging
 import org.springframework.stereotype.Component
@@ -8,6 +8,7 @@ import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
+import ru.citeck.ecos.history.service.HistoryRecordServiceImpl
 import ru.citeck.ecos.records3.record.atts.schema.annotation.AttName
 import ru.citeck.ecos.webapp.api.entity.EntityRef
 import java.time.Instant

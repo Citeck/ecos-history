@@ -1,4 +1,4 @@
-package ru.citeck.ecos.history.config;
+package ru.citeck.ecos.history.props;
 
 import lombok.Data;
 import lombok.Getter;

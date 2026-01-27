@@ -2,11 +2,14 @@ package ru.citeck.ecos.history.converter
 
 import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.json.Json
+import ru.citeck.ecos.data.sql.records.refs.DbRecordRefService
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.dto.HistoryRecordDto
 
 @Component
-class HistoryRecordConverter {
+class HistoryRecordConverter(
+    private val recordRefService: DbRecordRefService
+) {
 
     fun toDto(entity: HistoryRecordEntity): HistoryRecordDto {
 
@@ -27,7 +30,7 @@ class HistoryRecordConverter {
         result.taskDefinitionKey = entity.taskDefinitionKey
         result.taskType = entity.fullTaskType
         result.taskCompletedOnBehalfOf = entity.taskCompletedOnBehalfOf
-        result.documentId = entity.documentId
+        result.documentId = recordRefService.getEntityRefById(entity.documentRefId ?: -1L).toString()
 
         return result
     }
@@ -36,7 +39,7 @@ class HistoryRecordConverter {
         return sources.map { toDto(it) }
     }
 
-    fun toMap(dto: HistoryRecordDto): Map<String, String> {
+    fun toMap(dto: HistoryRecordDto): MutableMap<String, String> {
         val mapType = Json.mapper.getMapType(String::class.java, String::class.java)
         val resultWithNull = Json.mapper.convert<Map<String, String?>>(dto, mapType)
             ?: error("Error while dto-to-map conversion. Dto: $dto")
