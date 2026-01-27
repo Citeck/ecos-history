@@ -82,7 +82,7 @@ class HistoryDocRefsMigration(
 
                 processed += batchToProc.size
 
-                if ((processed % 10_000) > reportCounter) {
+                if ((processed / 10_000) > reportCounter) {
                     reportCounter += 1
                     log.info { "Processed $processed records" }
                 }
