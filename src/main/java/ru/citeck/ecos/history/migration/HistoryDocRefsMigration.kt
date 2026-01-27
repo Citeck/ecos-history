@@ -68,7 +68,7 @@ class HistoryDocRefsMigration(
                 transaction.begin()
 
                 val batchToProc = entityManager.createQuery(
-                    "FROM HistoryDocRefsMigrationEntity WHERE documentRefId = -1",
+                    "FROM HistoryDocRefsMigrationEntity WHERE documentRefId = -1 OR documentRefId IS NULL",
                     HistoryDocRefsMigrationEntity::class.java
                 ).setMaxResults(100)
                     .getResultList()

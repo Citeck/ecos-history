@@ -13,5 +13,5 @@ class HistoryDocRefsMigrationEntity : Serializable {
     var id: Long = -1L
 
     var documentId: String? = null
-    var documentRefId: Long = -1
+    var documentRefId: Long? = null
 }
