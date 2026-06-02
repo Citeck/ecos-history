@@ -128,6 +128,8 @@ class HistoryRecordRecordsDao(
                 EntityRef.valueOf(it).getLocalId()
             }
             return prepareValuePredicate(value, predicate)
+        } else if (ATTS_MAPPING[attribute] != null) {
+            predicate.setAttribute(ATTS_MAPPING[attribute]);
         }
 
         return predicate
@@ -220,6 +222,11 @@ class HistoryRecordRecordsDao(
         }
 
         fun getCreationTime(): Instant? {
+            return dto.creationTime?.let { Instant.ofEpochMilli(it) }
+        }
+
+        @AttName("_created")
+        fun getCreated(): Instant? {
             return dto.creationTime?.let { Instant.ofEpochMilli(it) }
         }
 
