@@ -14,6 +14,7 @@ predicate:
     - email.sent
     - node.created
     - node.updated
+    - type.changed
     - assoc.updated
     - task.complete
     - task.delete

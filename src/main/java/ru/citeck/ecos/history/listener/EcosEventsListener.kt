@@ -7,11 +7,11 @@ import org.springframework.stereotype.Component
 import ru.citeck.ecos.commons.data.DataValue
 import ru.citeck.ecos.commons.data.MLText
 import ru.citeck.ecos.context.lib.i18n.I18nContext
-import ru.citeck.ecos.data.sql.records.DbRecordsUtils
 import ru.citeck.ecos.events2.EventsService
 import ru.citeck.ecos.events2.type.RecordChangedEvent
 import ru.citeck.ecos.events2.type.RecordCreatedEvent
 import ru.citeck.ecos.events2.type.RecordStatusChangedEvent
+import ru.citeck.ecos.events2.type.RecordTypeChangedEvent
 import ru.citeck.ecos.history.domain.HistoryRecordEntity
 import ru.citeck.ecos.history.service.HistoryEventType
 import ru.citeck.ecos.history.service.HistoryRecordService
@@ -196,6 +196,37 @@ class EcosEventsListener(
             withFilter(allListenersFilter)
             withAction { processRecUpdatedEvent(it) }
         }
+
+        eventsService.addListener<RecordTypeChanged> {
+            withEventType(RecordTypeChangedEvent.TYPE)
+            withDataClass(RecordTypeChanged::class.java)
+            withFilter(allListenersFilter)
+            withAction { processRecTypeChangedEvent(it) }
+        }
+    }
+
+    private fun processRecTypeChangedEvent(event: RecordTypeChanged) {
+
+        val record = hashMapOf<String, String>()
+
+        record[HistoryRecordService.DOCUMENT_ID] = event.record.toString()
+        record[HistoryRecordService.EVENT_TYPE] = HistoryEventType.TYPE_CHANGED.value
+        record[HistoryRecordService.USER_ID] = event.user
+        record[HistoryRecordService.USERNAME] = event.user
+        record[HistoryRecordService.CREATION_TIME] = formatTime(event.time)
+
+        record[HistoryRecordService.COMMENTS] = buildTypeChangedMsg(event.typeNameBefore, event.typeNameAfter)
+
+        historyRecordService.saveOrUpdateRecord(HistoryRecordEntity(), record)
+    }
+
+    private fun buildTypeChangedMsg(typeNameBefore: MLText, typeNameAfter: MLText): String {
+        return MLText(
+            *LOCALES.map { locale ->
+                locale to typeNameBefore.getClosest(locale).ifBlank { "—" } +
+                    " -> " + typeNameAfter.getClosest(locale)
+            }.toTypedArray()
+        ).toString()
     }
 
     private fun processRecUpdatedEvent(event: RecordUpdated) {
@@ -215,7 +246,7 @@ class EcosEventsListener(
 
         fun processChangedValue(changed: ChangedValue, allowAssocs: Boolean) {
             val attDef = attsById[changed.attId] ?: return
-            if (!allowAssocs && DbRecordsUtils.isAssocLikeAttribute(attDef)) {
+            if (!allowAssocs && AttributeType.isAssocLike(attDef.type)) {
                 return
             }
             val comments = getCommentsForChangedValue(changed, attDef)
@@ -533,6 +564,23 @@ class EcosEventsListener(
     class HistoryConfig(
         val excludedAtts: Set<String> = emptySet(),
         val onCreationHistoricalAtts: Set<String> = emptySet()
+    )
+
+    data class RecordTypeChanged(
+        @AttName("record.version:version")
+        val version: String?,
+        @AttName("record?id")
+        val record: EntityRef,
+        @AttName("record._disp?json")
+        val recordDispML: MLText,
+        @AttName("\$event.time")
+        val time: Instant,
+        @AttName("\$event.user")
+        val user: String,
+        @AttName("before.name?json!")
+        val typeNameBefore: MLText,
+        @AttName("typeDef.name?json!")
+        val typeNameAfter: MLText
     )
 
     data class RecordUpdated(
