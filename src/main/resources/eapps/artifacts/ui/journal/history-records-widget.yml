@@ -23,6 +23,9 @@ predicate:
     - esign.signed
     - approval.cancelled
     - role.changed
+    - comment.created
+    - comment.updated
+    - comment.deleted
 
 columns:
   - id: creationTime
