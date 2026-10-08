@@ -76,3 +76,7 @@ If you need any assistance or have any questions regarding Citeck `ecos-history`
 ## License
 
 Citeck `ecos-history` is released under the [GNU Lesser General Public License](LICENSE).
+
+## Release notes
+
+- [History 2.27.1 release notes](docs/releases/2.27.1.md) — COREDEV-630.

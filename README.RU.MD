@@ -76,3 +76,6 @@ docker compose -f docker/sonar.yml up -d
 ## Лицензия
 
 Citeck `ecos-gateway` распространяется под лицензией [GNU Lesser General Public License](LICENSE).
+## Изменения версий
+
+- [Изменения History 2.27.1](docs/releases/2.27.1.md) — COREDEV-630.
