@@ -297,7 +297,7 @@ class EcosEventsListener(
                     val comment = MLText(
                         fieldName.mapValues {
                             "${it.value}: ${REMOVE_ACTION_TITLE.getClosestValue(it.key)} " +
-                                addedDisp.joinToString(", ")
+                                removedDisp.joinToString(", ")
                         }
                     ).toString()
 
