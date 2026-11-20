@@ -23,6 +23,6 @@ public class HistoryApp {
      * @param args the command line arguments
      */
     public static void main(String[] args) {
-        new EcosSpringApplication(HistoryApp.class).run();
+        new EcosSpringApplication(HistoryApp.class).run(args);
     }
 }
